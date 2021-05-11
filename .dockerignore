@@ -1,0 +1,9 @@
+# ignore build files
+**/target/*
+
+# ignore Visual Studio Code integration files
+**/.vscode/*
+**/.metals/*
+**/.bloop/*
+**/metals.sbt
+**/project/project/**
