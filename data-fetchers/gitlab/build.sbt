@@ -4,7 +4,7 @@ version := "0.1"
 
 val scalajVersion: String = "2.4.2"
 val circeVersion: String = "0.12.3"
-scapegoatVersion in ThisBuild := "1.4.8"
+ThisBuild / scapegoatVersion := "1.4.8"
 
 libraryDependencies ++= Seq(
     "org.scalaj" %% "scalaj-http" % scalajVersion,
