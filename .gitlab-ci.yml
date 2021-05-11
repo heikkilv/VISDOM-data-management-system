@@ -3,5 +3,4 @@ stages:
     - "Compile"
     - "Unit Test"
 
-include:
-    file: './data-fetchers/gitlab/build.yml'
+include: "./data-fetchers/gitlab/build.yml"
