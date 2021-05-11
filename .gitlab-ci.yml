@@ -1,0 +1,6 @@
+stages:
+    - "Static Analysis"
+    - "Compile"
+    - "Unit Test"
+
+include: "/data-fetchers/gitlab/build.yml"
