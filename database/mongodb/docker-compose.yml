@@ -40,7 +40,7 @@ services:
         ports:
             - ${MONGO_EXPRESS_PORT}:8081
         volumes:
-            - ./scripts/wait-for-it.sh:/wait-for-it.sh
+            - ./utility-scripts/wait-for-it.sh:/wait-for-it.sh
         networks:
             - visdom-mongodb-network
 
