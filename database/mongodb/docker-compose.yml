@@ -46,9 +46,10 @@ services:
 
 volumes:
     visdom-mongodb-data:
-        name: visdom-mongodb-data
+        name: ${MONGODB_VOLUME}
         external: true
 
 networks:
     visdom-mongodb-network:
-        name: visdom-mongodb-network
+        name: ${MONGODB_NETWORK}
+        external: true
