@@ -1,13 +1,16 @@
 package visdom.fetchers.gitlab
 
-import io.circe.{Json, JsonObject, ParsingFailure, parser}
-import java.net.URLEncoder
-import java.nio.charset.StandardCharsets.UTF_8
-import scalaj.http.{Http, HttpRequest, HttpResponse}
+import io.circe.Json
+import io.circe.JsonObject
+import scalaj.http.Http
+import scalaj.http.HttpConstants.utf8
+import scalaj.http.HttpConstants.urlEncode
+import scalaj.http.HttpRequest
+import scalaj.http.HttpResponse
 
 
 class GitlabCommitHandler(
-    hostAddress: String,
+    hostServer: GitlabServer,
     projectName: String,
     reference: String,
     includeStatistics: Boolean
@@ -16,9 +19,9 @@ class GitlabCommitHandler(
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/commits.html
         val uri: String = List(
-            hostAddress,
+            hostServer.baseAddress,
             GitlabConstants.PathProjects,
-            URLEncoder.encode(projectName, UTF_8.name()),
+            urlEncode(projectName, utf8),
             GitlabConstants.PathRepository,
             GitlabConstants.PathCommits
         ).mkString("/")
@@ -28,22 +31,19 @@ class GitlabCommitHandler(
             GitlabConstants.ParamWithStats -> includeStatistics.toString()
         )
 
-        Http(uri).params(params)
+        val commitRequest: HttpRequest = Http(uri).params(params)
+        hostServer.modifyRequest(commitRequest)
     }
 
-    def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        parser.parse(response.body) match {
-            case Left(errorValue: ParsingFailure) => Left(errorValue.message)
-            case Right(jsonResult: Json) => jsonResult.asArray match {
-                case None => Left("Invalid JSON array")
-                case Some(jsonVector) => {
-                    val jsonObjectVector: Vector[JsonObject] = JsonUtils.onlyJsonObjects(jsonVector)
-                    val jsonObjectVectorWithProjectNames: Vector[JsonObject] = jsonObjectVector.map(
-                        jsonObject => addProjectName(jsonObject)
-                    )
-                    Right(jsonObjectVectorWithProjectNames)
-                }
+    override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
+        super.processResponse(response) match {
+            case Right(jsonObjectVector: Vector[JsonObject]) => {
+                val jsonObjectVectorWithProjectNames: Vector[JsonObject] = jsonObjectVector.map(
+                    jsonObject => addProjectName(jsonObject)
+                )
+                Right(jsonObjectVectorWithProjectNames)
             }
+            case Left(errorMessage: String) => Left(errorMessage)
         }
     }
 

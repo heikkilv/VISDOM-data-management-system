@@ -1,6 +1,9 @@
 package visdom.fetchers.gitlab
 
 object GitlabConstants {
+    // the base path for the GitLab API
+    val PathBase: String = "api/v4"
+
     // constants for constructing query paths
     val PathProjects: String = "projects"
     val PathRepository: String = "repository"
@@ -17,6 +20,7 @@ object GitlabConstants {
     val HeaderPrivateToken: String = "Private-Token"
 
     // constants for JSON attributes
+    val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
 
     // constants for default values
@@ -25,4 +29,7 @@ object GitlabConstants {
 
     // constants for HTTP status codes
     val StatusCodeOk: Int = 200
+
+    // constants for predefined error messages
+    val ErrorJsonArray: String = "Invalid JSON array"
 }

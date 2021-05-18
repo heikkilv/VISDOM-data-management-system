@@ -1,38 +1,50 @@
 package visdom.fetchers.gitlab
 
+import io.circe.Json
+import io.circe.JsonObject
+import io.circe.parser
+import io.circe.ParsingFailure
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import io.circe.JsonObject
 
 
 abstract class GitlabDataHandler() {
     def getRequest(): HttpRequest
-    def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]]
+
+    def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
+        parser.parse(response.body) match {
+            case Right(jsonResult: Json) => jsonResult.asArray match {
+                case Some(jsonVector) => Right(utils.JsonUtils.onlyJsonObjects(jsonVector))
+                case None => Left(GitlabConstants.ErrorJsonArray)
+            }
+            case Left(errorValue: ParsingFailure) => Left(errorValue.message)
+        }
+    }
 
     def processAllResponses(responses: Vector[HttpResponse[String]]): Either[String, Vector[JsonObject]] = {
         def processAllResponsesInternal(
             responsesInternal: Vector[HttpResponse[String]],
             results: Vector[JsonObject]
         ): Either[String, Vector[JsonObject]] = responsesInternal.headOption match {
-            case None => Right(results)
             case Some(response: HttpResponse[String]) => processResponse(response) match {
-                case Left(errorString: String) => Left(errorString)
                 case Right(jsonVector: Vector[JsonObject]) => {
                     processAllResponsesInternal(responsesInternal.drop(1), results ++ jsonVector)
                 }
+                case Left(errorString: String) => Left(errorString)
             }
+            case None => Right(results)
         }
 
         processAllResponsesInternal(responses, Vector())
     }
 
-    def makeRequest(request: HttpRequest): Vector[HttpResponse[String]] = {
+    def makeRequests(request: HttpRequest): Vector[HttpResponse[String]] = {
         def makeRequestInternal(
             requestInternal: HttpRequest,
             responses: Vector[HttpResponse[String]],
             page: Int
         ): Vector[HttpResponse[String]] = {
-            HttpUtils.makeRequest(requestInternal) match {
+            utils.HttpUtils.makeRequest(requestInternal) match {
                 case Some(response: HttpResponse[String]) => response.code match {
                     case GitlabConstants.StatusCodeOk => {
                         val allResponses: Vector[HttpResponse[String]] = responses ++ Vector(response)
@@ -43,6 +55,7 @@ abstract class GitlabDataHandler() {
                             case None => allResponses
                         }
                     }
+                    case _ => responses
                 }
                 case None => responses
             }
@@ -52,7 +65,7 @@ abstract class GitlabDataHandler() {
             (GitlabConstants.ParamPerPage, GitlabConstants.DefaultPerPage.toString()),
             (GitlabConstants.ParamPage, GitlabConstants.DefaultStartPage.toString())
         )
-        makeRequestInternal(request, Vector(), GitlabConstants.DefaultStartPage)
+        makeRequestInternal(requestWithPageParams, Vector(), GitlabConstants.DefaultStartPage)
     }
 
     private def getNextRequest(
@@ -61,9 +74,14 @@ abstract class GitlabDataHandler() {
         currentPage: Int
     ): Option[HttpRequest] = {
         response.header(GitlabConstants.HeaderNextPage) match {
-            case Some(nextPageValue: String) => GeneralUtils.toInt(nextPageValue) match {
+            case Some(nextPageValue: String) => utils.GeneralUtils.toInt(nextPageValue) match {
                 case Some(nextPage: Int) if (nextPage == currentPage + 1) => {
-                    Some(request.param(GitlabConstants.HeaderNextPage, nextPageValue))
+                    val nextRequest: HttpRequest = utils.HttpUtils.replaceRequestParam(
+                        request,
+                        GitlabConstants.ParamPage,
+                        nextPageValue
+                    )
+                    Some(nextRequest)
                 }
                 case _ => None
             }

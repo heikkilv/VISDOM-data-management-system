@@ -1,4 +1,4 @@
-package visdom.fetchers.gitlab
+package visdom.fetchers.gitlab.utils
 
 import io.circe.Json
 import io.circe.JsonObject
