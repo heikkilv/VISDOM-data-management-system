@@ -21,4 +21,8 @@ object GitlabConstants {
 
     // constants for default values
     val DefaultPerPage: Int = 100
+    val DefaultStartPage: Int = 1
+
+    // constants for HTTP status codes
+    val StatusCodeOk: Int = 200
 }

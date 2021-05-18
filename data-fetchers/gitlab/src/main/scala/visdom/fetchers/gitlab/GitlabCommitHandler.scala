@@ -47,23 +47,6 @@ class GitlabCommitHandler(
         }
     }
 
-    def processAllResponses(responses: Vector[HttpResponse[String]]): Either[String, Vector[JsonObject]] = {
-        def processAllResponsesInternal(
-            responsesInternal: Vector[HttpResponse[String]],
-            results: Vector[JsonObject]
-        ): Either[String, Vector[JsonObject]] = responsesInternal.headOption match {
-            case None => Right(results)
-            case Some(response: HttpResponse[String]) => processResponse(response) match {
-                case Left(errorString: String) => Left(errorString)
-                case Right(jsonVector: Vector[JsonObject]) => {
-                    processAllResponsesInternal(responsesInternal.drop(1), results ++ jsonVector)
-                }
-            }
-        }
-
-        processAllResponsesInternal(responses, Vector())
-    }
-
     private def addProjectName(jsonObject: JsonObject): JsonObject = {
         jsonObject.add(GitlabConstants.AttributeProjectName, Json.fromString(projectName))
     }
