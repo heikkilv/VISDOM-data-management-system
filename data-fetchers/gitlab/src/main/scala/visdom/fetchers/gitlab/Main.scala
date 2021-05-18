@@ -1,15 +1,11 @@
 package visdom.fetchers.gitlab
 
-import javax.net.ssl.SSLParameters
-import javax.xml.ws.Response
+import io.circe.JsonObject
 
 object Main extends App
 {
     import io.circe.{Json, ParsingFailure}
     import scalaj.http.{Http, HttpOptions, HttpRequest, HttpResponse}
-
-    val SmallSleep: Int = 100
-    val LargeSleep: Int = 500
 
     def makeRequest(inputRequest: HttpRequest): Option[HttpResponse[String]] = {
         try {
@@ -32,13 +28,48 @@ object Main extends App
                 case Left(error_value) => Json.fromString(error_value.message)
             }
 
-            val projects: Int = json_result.asArray match {
-                case Some(jsonVector) => jsonVector.size
-                case None => 0
+            val (projects, first_project): (Int, String) = json_result.asArray match {
+                case Some(jsonVector) => jsonVector.headOption match {
+                    case Some(firstJson) => firstJson.asObject match {
+                        case Some(firstObject) => firstObject.apply(GitlabConstants.AttributePathWithNamespace) match {
+                            case Some(pathValue) => pathValue.asString match {
+                                case Some(pathString) => (jsonVector.size, pathString)
+                                case None => (jsonVector.size, "")
+                            }
+                            case None => (jsonVector.size, "")
+                        }
+                        case None => (jsonVector.size, "")
+                    }
+                    case None => (jsonVector.size, "")
+                }
+                case None => (0, "")
             }
             println(s"Status code: ${response.code}")
             println(s"$projects projects received")
-            println(s"Content: $json_result")
+
+            val host: String = "https://gitlab.com"
+            val reference: String = "master"
+
+            val server: GitlabServer = new GitlabServer(host, None, None)
+            val fetcher: GitlabCommitHandler = new GitlabCommitHandler(server, first_project, reference, true)
+            val commitRequest: HttpRequest = fetcher.getRequest()
+            val responses: Vector[HttpResponse[String]] = fetcher.makeRequests(commitRequest)
+            val commits: Either[String, Vector[JsonObject]] = fetcher.processAllResponses(responses)
+
+            commits match {
+                case Right(jsonResults: Vector[JsonObject]) => {
+                    println(s"Found ${jsonResults.length} commits at ${first_project}")
+                    jsonResults.headOption match {
+                        case Some(firstCommit) => {
+                            println("The first commit:")
+                            println(Json.fromJsonObject(firstCommit).spaces4SortKeys)
+                        }
+                        case None =>
+                    }
+                }
+                case Left(errorMessage: String) => println(s"error: ${errorMessage}")
+            }
+
         }
     }
 }
