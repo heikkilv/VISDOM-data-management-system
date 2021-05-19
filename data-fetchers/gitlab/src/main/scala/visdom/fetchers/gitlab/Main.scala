@@ -59,7 +59,7 @@ object Main extends App
                 None,
                 None,
                 Some(true),
-                None,
+                Some(true),
                 None
             )
             val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(commitFetcherOptions)

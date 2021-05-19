@@ -23,6 +23,34 @@ object JsonUtils {
         onlyObjectsInternal(sourceVector, Vector())
     }
 
+    def addSubAttribute(
+        jsonObject: JsonObject,
+        rootAttribute: String,
+        subAttribute: String,
+        value: Json
+    ): JsonObject = {
+        jsonObject.apply(rootAttribute) match {
+            case Some(element: Json) => element.asObject match {
+                case Some(elementObject: JsonObject) => {
+                    // combining the new value with previous values in the JSON object
+                    val newElementObject: JsonObject = elementObject.add(subAttribute, value)
+                    jsonObject.add(rootAttribute, Json.fromJsonObject(newElementObject))
+                }
+                case None => {
+                    // the element was not a JSON object, overwriting it with a new value
+                    jsonObject.add(
+                        rootAttribute,
+                        Json.fromFields(Vector((subAttribute, value)))
+                    )
+                }
+            }
+            case None => jsonObject.add(
+                rootAttribute,
+                Json.fromFields(Vector((subAttribute, value)))
+            )
+        }
+    }
+
     def modifyJsonResult[T](
         results: Either[String, Vector[JsonObject]],
         modifier: (JsonObject, T) => JsonObject,
@@ -43,4 +71,7 @@ object JsonUtils {
         jsonObject.add(GitlabConstants.AttributeProjectName, Json.fromString(projectName))
     }
 
+    def removeAttribute(jsonObject: JsonObject, attributeName: String): JsonObject = {
+        jsonObject.remove(attributeName)
+    }
 }

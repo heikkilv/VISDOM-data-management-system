@@ -26,3 +26,9 @@ final case class GitlabFileOptions(
     useRecursiveSearch: Option[Boolean],
     includeCommitLinks: Option[Boolean]
 ) extends GitlabFetchOptions
+
+final case class GitlabCommitDiffOptions(
+    hostServer: GitlabServer,
+    projectName: String,
+    commitId: String
+) extends GitlabFetchOptions

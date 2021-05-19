@@ -6,6 +6,7 @@ object GitlabConstants {
 
     // constants for constructing query paths
     val PathCommits: String = "commits"
+    val PathDiff: String = "diff"
     val PathProjects: String = "projects"
     val PathRepository: String = "repository"
     val PathTree: String = "tree"
@@ -25,6 +26,10 @@ object GitlabConstants {
     val HeaderPrivateToken: String = "Private-Token"
 
     // constants for JSON attributes
+    val AttributeDiff: String = "diff"
+    val attributeFiles: String = "files"
+    val attributeId: String = "id"
+    val attributeLinks: String = "_links"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
 

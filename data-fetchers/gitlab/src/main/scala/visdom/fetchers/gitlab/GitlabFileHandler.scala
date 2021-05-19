@@ -12,7 +12,7 @@ class GitlabFileHandler(options: GitlabFileOptions)
     extends GitlabDataHandler {
 
     def getRequest(): HttpRequest = {
-        // https://docs.gitlab.com/ee/api/repositories.html
+        // https://docs.gitlab.com/ee/api/repositories.html#list-repository-tree
         val uri: String = List(
             options.hostServer.baseAddress,
             GitlabConstants.PathProjects,
@@ -43,7 +43,7 @@ class GitlabFileHandler(options: GitlabFileOptions)
         options.filePath match {
             case Some(filePath: String) => {
                 paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamPath, filePath
+                    GitlabConstants.ParamPath, urlEncode(filePath, utf8)
                 ))
             }
             case None =>
