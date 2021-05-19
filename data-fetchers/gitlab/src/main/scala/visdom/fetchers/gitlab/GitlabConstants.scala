@@ -5,13 +5,15 @@ object GitlabConstants {
     val PathBase: String = "api/v4"
 
     // constants for constructing query paths
+    val PathCommits: String = "commits"
     val PathProjects: String = "projects"
     val PathRepository: String = "repository"
-    val PathCommits: String = "commits"
+    val PathTree: String = "tree"
 
     // constants for query parameters
     val ParamPage: String = "page"
     val ParamPerPage: String = "per_page"
+    val ParamRecursive: String = "recursive"
     val ParamRef: String = "ref"
     val ParamWithStats: String = "with_stats"
 

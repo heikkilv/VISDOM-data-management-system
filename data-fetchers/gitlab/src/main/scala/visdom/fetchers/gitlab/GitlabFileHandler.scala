@@ -8,26 +8,26 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 
 
-class GitlabCommitHandler(
+class GitlabFileHandler(
     hostServer: GitlabServer,
     projectName: String,
     reference: String,
-    includeStatistics: Boolean
+    useRecursiveSearch: Boolean
 ) extends GitlabDataHandler {
 
     def getRequest(): HttpRequest = {
-        // https://docs.gitlab.com/ee/api/commits.html
+        // https://docs.gitlab.com/ee/api/repositories.html
         val uri: String = List(
             hostServer.baseAddress,
             GitlabConstants.PathProjects,
             urlEncode(projectName, utf8),
             GitlabConstants.PathRepository,
-            GitlabConstants.PathCommits
+            GitlabConstants.PathTree
         ).mkString("/")
 
         val params: Map[String, String] = Map(
             GitlabConstants.ParamRef -> reference,
-            GitlabConstants.ParamWithStats -> includeStatistics.toString()
+            GitlabConstants.ParamRecursive -> useRecursiveSearch.toString()
         )
 
         val commitRequest: HttpRequest = Http(uri).params(params)
