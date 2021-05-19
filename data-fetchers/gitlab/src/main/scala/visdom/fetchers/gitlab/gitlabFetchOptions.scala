@@ -27,7 +27,7 @@ final case class GitlabFileOptions(
     includeCommitLinks: Option[Boolean]
 ) extends GitlabFetchOptions
 
-final case class GitlabCommitDiffOptions(
+final case class GitlabCommitLinkOptions(
     hostServer: GitlabServer,
     projectName: String,
     commitId: String

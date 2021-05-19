@@ -8,6 +8,7 @@ object GitlabConstants {
     val PathCommits: String = "commits"
     val PathDiff: String = "diff"
     val PathProjects: String = "projects"
+    val PathRefs: String = "refs"
     val PathRepository: String = "repository"
     val PathTree: String = "tree"
 
@@ -27,11 +28,12 @@ object GitlabConstants {
 
     // constants for JSON attributes
     val AttributeDiff: String = "diff"
-    val attributeFiles: String = "files"
-    val attributeId: String = "id"
-    val attributeLinks: String = "_links"
+    val AttributeFiles: String = "files"
+    val AttributeId: String = "id"
+    val AttributeLinks: String = "_links"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
+    val AttributeRefs: String = "refs"
 
     // constants for default values
     val DefaultPerPage: Int = 100
@@ -43,3 +45,8 @@ object GitlabConstants {
     // constants for predefined error messages
     val ErrorJsonArray: String = "Invalid JSON array"
 }
+
+abstract class GitlabCommitLinkType
+
+final case object GitlabCommitDiff extends GitlabCommitLinkType
+final case object GitlabCommitRefs extends GitlabCommitLinkType

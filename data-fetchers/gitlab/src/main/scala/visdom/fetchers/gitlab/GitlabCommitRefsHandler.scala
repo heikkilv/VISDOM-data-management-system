@@ -8,10 +8,10 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 
 
-class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
+class GitlabCommitRefsHandler(options: GitlabCommitLinkOptions)
     extends GitlabCommitLinkHandler {
     def getRequest(): HttpRequest = {
-        // https://docs.gitlab.com/ee/api/commits.html#get-the-diff-of-a-commit
+        // https://docs.gitlab.com/ee/api/commits.html#get-references-a-commit-is-pushed-to
         val uri: String = List(
             options.hostServer.baseAddress,
             GitlabConstants.PathProjects,
@@ -19,18 +19,9 @@ class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
             GitlabConstants.PathRepository,
             GitlabConstants.PathCommits,
             options.commitId,
-            GitlabConstants.PathDiff
+            GitlabConstants.PathRefs
         ).mkString("/")
 
         options.hostServer.modifyRequest(Http(uri))
-    }
-
-    override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        val baseCommitResults: Either[String, Vector[JsonObject]] = super.processResponse(response)
-        utils.JsonUtils.modifyJsonResult(
-            baseCommitResults,
-            utils.JsonUtils.removeAttribute,
-            GitlabConstants.AttributeDiff
-        )
     }
 }

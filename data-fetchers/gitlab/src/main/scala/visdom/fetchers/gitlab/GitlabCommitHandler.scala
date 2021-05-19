@@ -12,6 +12,8 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 
 
+abstract class GitlabCommitLinkHandler extends GitlabDataHandler
+
 class GitlabCommitHandler(options: GitlabCommitOptions)
     extends GitlabDataHandler {
 
@@ -39,18 +41,24 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             options.projectName
         )
 
-        val resultsAfterLinks: Either[String, Vector[JsonObject]] = modifiedCommitResults match {
+        modifiedCommitResults match {
             case Right(commitResults: Vector[JsonObject]) => {
                 options.includeFileLinks match {
                     case Some(includeFileLinks: Boolean) if includeFileLinks => {
-                        Right(fetchAllDiffData(commitResults))
+                        val commitDataWithFiles: Vector[JsonObject] =
+                            fetchAllLinkData(GitlabCommitDiff, commitResults)
+                        options.includeReferenceLinks match {
+                            case Some(includeReferenceLinks: Boolean) if includeReferenceLinks => {
+                                Right(fetchAllLinkData(GitlabCommitRefs, commitDataWithFiles))
+                            }
+                            case _ => Right(commitDataWithFiles)
+                        }
                     }
                     case _ => modifiedCommitResults
                 }
             }
             case Left(_) => modifiedCommitResults
         }
-        resultsAfterLinks
     }
 
     private def processOptionalParameters(request: HttpRequest): HttpRequest = {
@@ -95,37 +103,49 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             case None =>
         }
 
-        // includeReferenceLinks
-
         request.params(paramMap)
     }
 
-    private def fetchDiffData(commitId: String): Either[String, Vector[JsonObject]] = {
-        val commitDiffOptions: GitlabCommitDiffOptions = GitlabCommitDiffOptions(
+    private def fetchLinkData(
+        linkType: GitlabCommitLinkType,
+        commitId: String
+    ): Either[String, Vector[JsonObject]] = {
+        val commitLinkOptions: GitlabCommitLinkOptions = GitlabCommitLinkOptions(
             options.hostServer,
             options.projectName,
             commitId
         )
-        val commitDiffFetcher: GitlabCommitDiffHandler = new GitlabCommitDiffHandler(commitDiffOptions)
-        val commitDiffRequest: HttpRequest = commitDiffFetcher.getRequest()
-        val commitDiffResponses: Vector[HttpResponse[String]] = commitDiffFetcher.makeRequests(commitDiffRequest)
-        commitDiffFetcher.processAllResponses(commitDiffResponses)
+        val commitLinkFetcher: GitlabCommitLinkHandler = linkType match {
+            case GitlabCommitDiff => new GitlabCommitDiffHandler(commitLinkOptions)
+            case GitlabCommitRefs => new GitlabCommitRefsHandler(commitLinkOptions)
+        }
+        val commitLinkRequest: HttpRequest = commitLinkFetcher.getRequest()
+        val commitLinkResponses: Vector[HttpResponse[String]] =
+            commitLinkFetcher.makeRequests(commitLinkRequest)
+
+        commitLinkFetcher.processAllResponses(commitLinkResponses)
     }
 
-    private def fetchAllDiffData(commitData: Vector[JsonObject]): Vector[JsonObject] = {
+    private def fetchAllLinkData(
+        linkType: GitlabCommitLinkType,
+        commitData: Vector[JsonObject]
+    ): Vector[JsonObject] = {
         commitData.map(
             commitObject => {
-                commitObject.apply(GitlabConstants.attributeId) match {
+                commitObject.apply(GitlabConstants.AttributeId) match {
                     case Some(commitIdJson: Json) => commitIdJson.asString match {
-                        case Some(commitId: String) => fetchDiffData(commitId) match {
+                        case Some(commitId: String) => fetchLinkData(linkType, commitId) match {
                             case Right(diffData: Vector[JsonObject]) => {
                                 val diffJson: Json = Json.fromValues(
                                     diffData.map(diffObject => Json.fromJsonObject(diffObject))
                                 )
                                 utils.JsonUtils.addSubAttribute(
                                     commitObject,
-                                    GitlabConstants.attributeLinks,
-                                    GitlabConstants.attributeFiles,
+                                    GitlabConstants.AttributeLinks,
+                                    linkType match {
+                                        case GitlabCommitDiff => GitlabConstants.AttributeFiles
+                                        case GitlabCommitRefs => GitlabConstants.AttributeRefs
+                                    },
                                     diffJson
                                 )
                             }
