@@ -36,18 +36,7 @@ class GitlabCommitHandler(
     }
 
     override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        super.processResponse(response) match {
-            case Right(jsonObjectVector: Vector[JsonObject]) => {
-                val jsonObjectVectorWithProjectNames: Vector[JsonObject] = jsonObjectVector.map(
-                    jsonObject => addProjectName(jsonObject)
-                )
-                Right(jsonObjectVectorWithProjectNames)
-            }
-            case Left(errorMessage: String) => Left(errorMessage)
-        }
-    }
-
-    private def addProjectName(jsonObject: JsonObject): JsonObject = {
-        jsonObject.add(GitlabConstants.AttributeProjectName, Json.fromString(projectName))
+        val baseCommitResults: Either[String, Vector[JsonObject]] = super.processResponse(response)
+        utils.JsonUtils.modifyJsonResult(baseCommitResults, utils.JsonUtils.addProjectName, projectName)
     }
 }
