@@ -51,10 +51,10 @@ object Main extends App
             val reference: String = "master"
 
             val server: GitlabServer = new GitlabServer(host, None, None)
-            val fetcher: GitlabCommitHandler = new GitlabCommitHandler(server, first_project, reference, true)
-            val commitRequest: HttpRequest = fetcher.getRequest()
-            val responses: Vector[HttpResponse[String]] = fetcher.makeRequests(commitRequest)
-            val commits: Either[String, Vector[JsonObject]] = fetcher.processAllResponses(responses)
+            val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(server, first_project, reference, true)
+            val commitRequest: HttpRequest = commitFetcher.getRequest()
+            val responses: Vector[HttpResponse[String]] = commitFetcher.makeRequests(commitRequest)
+            val commits: Either[String, Vector[JsonObject]] = commitFetcher.processAllResponses(responses)
 
             commits match {
                 case Right(jsonResults: Vector[JsonObject]) => {
@@ -70,6 +70,24 @@ object Main extends App
                 case Left(errorMessage: String) => println(s"error: ${errorMessage}")
             }
 
+            val fileFetcher: GitlabFileHandler = new GitlabFileHandler(server, first_project, reference, true)
+            val fileRequest: HttpRequest = fileFetcher.getRequest()
+            val fileResponses: Vector[HttpResponse[String]] = fileFetcher.makeRequests(fileRequest)
+            val files: Either[String, Vector[JsonObject]] = fileFetcher.processAllResponses(fileResponses)
+
+            files match {
+                case Right(jsonResults: Vector[JsonObject]) => {
+                    println(s"Found ${jsonResults.length} files at ${first_project}")
+                    jsonResults.headOption match {
+                        case Some(firstFile) => {
+                            println("The first file:")
+                            println(Json.fromJsonObject(firstFile).spaces4SortKeys)
+                        }
+                        case None =>
+                    }
+                }
+                case Left(errorMessage: String) => println(s"error: ${errorMessage}")
+            }
         }
     }
 }
