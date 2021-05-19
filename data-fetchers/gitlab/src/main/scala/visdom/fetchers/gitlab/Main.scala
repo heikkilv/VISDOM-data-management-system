@@ -87,7 +87,7 @@ object Main extends App
                 reference,
                 None,
                 Some(true),
-                None
+                Some(true)
             )
             val fileFetcher: GitlabFileHandler = new GitlabFileHandler(fileFetcherOptions)
             val fileRequest: HttpRequest = fileFetcher.getRequest()

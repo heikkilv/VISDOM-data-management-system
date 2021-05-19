@@ -27,10 +27,12 @@ object GitlabConstants {
     val HeaderPrivateToken: String = "Private-Token"
 
     // constants for JSON attributes
+    val AttributeCommits: String = "commits"
     val AttributeDiff: String = "diff"
     val AttributeFiles: String = "files"
     val AttributeId: String = "id"
     val AttributeLinks: String = "_links"
+    val AttributePath: String = "path"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
     val AttributeRefs: String = "refs"
