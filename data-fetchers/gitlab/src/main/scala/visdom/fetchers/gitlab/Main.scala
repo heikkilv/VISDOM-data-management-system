@@ -51,7 +51,18 @@ object Main extends App
             val reference: String = "master"
 
             val server: GitlabServer = new GitlabServer(host, None, None)
-            val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(server, first_project, reference, true)
+            val commitFetcherOptions: GitlabCommitOptions = GitlabCommitOptions(
+                server,
+                first_project,
+                reference,
+                None,
+                None,
+                None,
+                Some(true),
+                None,
+                None
+            )
+            val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(commitFetcherOptions)
             val commitRequest: HttpRequest = commitFetcher.getRequest()
             val responses: Vector[HttpResponse[String]] = commitFetcher.makeRequests(commitRequest)
             val commits: Either[String, Vector[JsonObject]] = commitFetcher.processAllResponses(responses)
@@ -70,7 +81,15 @@ object Main extends App
                 case Left(errorMessage: String) => println(s"error: ${errorMessage}")
             }
 
-            val fileFetcher: GitlabFileHandler = new GitlabFileHandler(server, first_project, reference, true)
+            val fileFetcherOptions: GitlabFileOptions = GitlabFileOptions(
+                server,
+                first_project,
+                reference,
+                None,
+                Some(true),
+                None
+            )
+            val fileFetcher: GitlabFileHandler = new GitlabFileHandler(fileFetcherOptions)
             val fileRequest: HttpRequest = fileFetcher.getRequest()
             val fileResponses: Vector[HttpResponse[String]] = fileFetcher.makeRequests(fileRequest)
             val files: Either[String, Vector[JsonObject]] = fileFetcher.processAllResponses(fileResponses)

@@ -8,34 +8,59 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 
 
-class GitlabFileHandler(
-    hostServer: GitlabServer,
-    projectName: String,
-    reference: String,
-    useRecursiveSearch: Boolean
-) extends GitlabDataHandler {
+class GitlabFileHandler(options: GitlabFileOptions)
+    extends GitlabDataHandler {
 
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/repositories.html
         val uri: String = List(
-            hostServer.baseAddress,
+            options.hostServer.baseAddress,
             GitlabConstants.PathProjects,
-            urlEncode(projectName, utf8),
+            urlEncode(options.projectName, utf8),
             GitlabConstants.PathRepository,
             GitlabConstants.PathTree
         ).mkString("/")
 
-        val params: Map[String, String] = Map(
-            GitlabConstants.ParamRef -> reference,
-            GitlabConstants.ParamRecursive -> useRecursiveSearch.toString()
+        val commitRequest: HttpRequest = processOptionalParameters(
+            Http(uri).param(GitlabConstants.ParamRef, options.reference)
         )
-
-        val commitRequest: HttpRequest = Http(uri).params(params)
-        hostServer.modifyRequest(commitRequest)
+        options.hostServer.modifyRequest(commitRequest)
     }
 
     override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
         val baseCommitResults: Either[String, Vector[JsonObject]] = super.processResponse(response)
-        utils.JsonUtils.modifyJsonResult(baseCommitResults, utils.JsonUtils.addProjectName, projectName)
+        utils.JsonUtils.modifyJsonResult(
+            baseCommitResults,
+            utils.JsonUtils.addProjectName,
+            options.projectName
+        )
+    }
+
+    private def processOptionalParameters(request: HttpRequest): HttpRequest = {
+        @SuppressWarnings(Array("org.wartremover.warts.Var"))
+        var paramMap: Seq[(String, String)] = Seq.empty
+
+        options.filePath match {
+            case Some(filePath: String) => {
+                paramMap = paramMap ++ Seq((
+                    GitlabConstants.ParamPath, filePath
+                ))
+            }
+            case None =>
+        }
+
+        options.useRecursiveSearch match {
+            case Some(useRecursiveSearch: Boolean) => {
+                paramMap = paramMap ++ Seq((
+                    GitlabConstants.ParamRecursive,
+                    useRecursiveSearch.toString()
+                ))
+            }
+            case None =>
+        }
+
+        // includeCommitLinks
+
+        request.params(paramMap)
     }
 }

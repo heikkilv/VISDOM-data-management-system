@@ -12,9 +12,12 @@ object GitlabConstants {
 
     // constants for query parameters
     val ParamPage: String = "page"
+    val ParamPath: String = "path"
     val ParamPerPage: String = "per_page"
     val ParamRecursive: String = "recursive"
     val ParamRef: String = "ref"
+    val ParamSince: String = "since"
+    val ParamUntil: String = "until"
     val ParamWithStats: String = "with_stats"
 
     // constants for query and response headers
