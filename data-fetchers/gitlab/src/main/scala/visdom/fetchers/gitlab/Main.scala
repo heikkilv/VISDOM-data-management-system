@@ -124,6 +124,6 @@ object Main extends App
     handleData(databaseName, MongoConstants.CollectionFiles, getData(fileFetcherOptions, None))
 
     println("Waiting for 10 seconds.")
-    Thread.sleep(10000)
+    Thread.sleep(endSleep)
     println("The end.")
 }
