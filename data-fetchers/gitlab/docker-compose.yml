@@ -19,6 +19,8 @@ services:
             - GITLAB_HOST=${GITLAB_HOST}
             - GITLAB_PROJECT=${GITLAB_PROJECT}
             - GITLAB_TOKEN=${GITLAB_TOKEN}
+            - GITLAB_REFERENCE=${GITLAB_REFERENCE}
+            - GITLAB_INSECURE_CONNECTION=${GITLAB_INSECURE_CONNECTION}
         networks:
             - visdom-mongodb-network
 
