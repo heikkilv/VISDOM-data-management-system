@@ -1,0 +1,23 @@
+version: '3.7'
+
+services:
+    spark-app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: visdom/spark-test-app:0.1
+        container_name: visdom-spark-test-app
+        ports:
+            - 4040:4040
+        environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
+            - ENABLE_INIT_DAEMON=false
+            - SPARK_MASTER_NAME=${SPARK_MASTER_HOST}
+            - SPARK_MASTER_PORT=7077
+        networks:
+            - visdom-spark-network
+
+networks:
+    visdom-spark-network:
+        name: ${SPARK_NETWORK}
+        external: true
