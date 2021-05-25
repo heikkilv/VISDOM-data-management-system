@@ -1,0 +1,4 @@
+networks:
+    spark-network:
+        name: ${SPARK_NETWORK}
+        external: true
