@@ -1,0 +1,12 @@
+    spark-worker-SPARK_WORKER_NUMBER:
+        image: bde2020/spark-worker:3.1.1-hadoop3.2
+        container_name: ${SPARK_WORKER_BASE_NAME}-SPARK_WORKER_NUMBER
+        depends_on:
+            - spark-master
+        ports:
+            - SPARK_WORKER_UI_PORT:8081
+        environment:
+            - SPARK_MASTER=spark://${SPARK_MASTER_HOST}:7077
+        networks:
+            - spark-network
+

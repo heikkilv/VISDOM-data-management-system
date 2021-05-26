@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+    spark-app:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: visdom/gitlab-adapter:0.1
+        container_name: visdom-gitlab-adapter
+        ports:
+            - 4040:4040
+        environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
+            - ENABLE_INIT_DAEMON=false
+            - MONGODB_HOST=${MONGODB_HOST}
+            - MONGODB_PORT=${MONGODB_PORT}
+            - MONGODB_USERNAME=${MONGODB_USERNAME}
+            - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+            - MONGODB_DATABASE=${MONGODB_DATABASE}
+            - MONGODB_COLLECTION=${MONGODB_COLLECTION}
+            - SPARK_MASTER_NAME=${SPARK_MASTER_HOST}
+            - SPARK_MASTER_PORT=7077
+        networks:
+            - visdom-spark-network
+
+networks:
+    visdom-spark-network:
+        name: ${ADAPTER_NETWORK}
+        external: true
