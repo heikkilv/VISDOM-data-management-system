@@ -9,7 +9,7 @@ object Session {
     // Suppress the log messages
     Logger.getLogger("org").setLevel(Level.OFF)
 
-    def getSession(): SparkSession = {
+    val sparkSession: SparkSession = {
         SparkSession
             .builder
             .master(Constants.SparkMaster)
