@@ -1,6 +1,20 @@
 package visdom.fetchers.gitlab
 
 object GitlabConstants {
+    // the environmental variables for the GitLab data source
+    val EnvironmentGitlabHost: String = "GITLAB_HOST"
+    val EnvironmentGitlabProject: String = "GITLAB_PROJECT"
+    val EnvironmentGitlabToken: String = "GITLAB_TOKEN"
+    val EnvironmentGitlabReference: String = "GITLAB_REFERENCE"
+    val EnvironmentGitlabInsecure: String = "GITLAB_INSECURE_CONNECTION"
+
+    // the default values for the environment variables
+    val DefaultGitlabHost: String = ""
+    val DefaultGitlabProject: String = ""
+    val DefaultGitlabToken: String = ""
+    val DefaultGitlabReference: String = "master"
+    val DefaultGitlabInsecure: String = "false"
+
     // the base path for the GitLab API
     val PathBase: String = "api/v4"
 
