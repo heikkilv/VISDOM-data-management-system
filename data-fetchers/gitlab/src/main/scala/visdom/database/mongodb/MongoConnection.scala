@@ -57,17 +57,19 @@ object MongoConnection {
     )
 
     @SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements"))
-    val mongoClient: MongoClient = MongoClient(
-        MongoClientSettings.builder()
+    val mongoClient: MongoClient = MongoClient({
+        val clientSettingsBuilder: MongoClientSettings.Builder = MongoClientSettings.builder()
             .applicationName(applicationName)
             .applyToClusterSettings(
                 (builder: ClusterSettings.Builder) => builder.hosts(
                     List(mongoServerAddress).asJava
                 )
             )
-            .credential(mongoCredentials)
-            .build()
-    )
+        (mongoCredentials.getUserName().isEmpty match {
+            case true => clientSettingsBuilder
+            case false => clientSettingsBuilder.credential(mongoCredentials)
+        }).build()
+    })
 
     def insertData(
         databaseName: String,
