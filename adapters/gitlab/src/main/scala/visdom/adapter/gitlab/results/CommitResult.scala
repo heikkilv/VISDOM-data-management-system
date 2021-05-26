@@ -6,7 +6,7 @@ import org.bson.BsonNull
 import org.apache.spark.sql.Row
 
 
-case class CommitResult(
+final case class CommitResult(
     projectName: String,
     committer: String,
     date: String,

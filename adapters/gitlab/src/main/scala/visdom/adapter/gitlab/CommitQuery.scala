@@ -13,8 +13,10 @@ import org.bson.BsonDocument
 
 
 object CommitQuery {
+    val DateStringLength: Int = 10
+
     def utcStringToDate: String => String = {
-        datetimeString => datetimeString.substring(0, 10)
+        datetimeString => datetimeString.substring(0, DateStringLength)
     }
     val dateStringUDF: UserDefinedFunction = udf(utcStringToDate)
 
