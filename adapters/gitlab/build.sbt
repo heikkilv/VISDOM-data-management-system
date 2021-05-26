@@ -13,3 +13,10 @@ libraryDependencies ++= Seq(
     "org.slf4j" % "slf4j-api" % loggerVersion,
     "org.slf4j" % "slf4j-simple" % loggerVersion
 )
+
+ThisBuild / scapegoatVersion := "1.4.8"
+libraryDependencies += "org.scalactic" %% "scalactic" % "3.2.7"
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.7" % "test"
+libraryDependencies += "org.scalatest" %% "scalatest-funsuite" % "3.2.7" % "test"
+
+wartremoverErrors ++= Warts.unsafe

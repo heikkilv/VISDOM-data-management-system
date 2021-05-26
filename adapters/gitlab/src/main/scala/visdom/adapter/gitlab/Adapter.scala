@@ -1,34 +1,39 @@
-package test
+package visdom.adapter.gitlab
 
-import org.apache.log4j.Logger
-import org.apache.log4j.Level
+import org.apache.spark.SparkContext
 import org.apache.spark.sql.SparkSession
+import com.mongodb.spark.config.ReadConfig
+import com.mongodb.spark.MongoSpark
+import com.mongodb.spark.rdd.MongoRDD
+import org.bson.Document
+import visdom.spark.Session
+import visdom.spark.Constants
 
 
 object Adapter {
     def main(args: Array[String]) {
-        // Suppress the log messages
-        Logger.getLogger("org").setLevel(Level.OFF)
+        val sparkSession: SparkSession = Session.getSession()
+        val sparkContext: SparkContext = sparkSession.sparkContext
+        val connectionString = sparkContext.getConf.getOption(Constants.MongoInputUriSetting)
 
-        val EnvironmentApplicationName: String = "APPLICATION_NAME"
-        val EnvironmentSparkMaster: String = "SPARK_MASTER_NAME"
-        val EnvironmentSparkPort: String = "SPARK_MASTER_PORT"
-        val DefaultApplicationName: String = "Adapter"
-        val DefaultSparkMaster: String = "spark-master"
-        val DefaultSparkPort: String = "7707"
+        val defaultDatabase: String = Constants.DefaultDatabaseName
+        val defaultCollectionName: String = Constants.DefaultMongoCollection
+        val fileCollectionName: String = "files"
 
-        val applicationName: String = sys.env.getOrElse(EnvironmentApplicationName, DefaultApplicationName)
-        val sparkMaster: String = "spark://" + Seq(
-            sys.env.getOrElse(EnvironmentSparkMaster, DefaultSparkMaster),
-            sys.env.getOrElse(EnvironmentSparkPort, DefaultSparkPort)
-        ).mkString(":")
+        val fileReadConfig: ReadConfig = ReadConfig(
+            databaseName = defaultDatabase,
+            collectionName = fileCollectionName,
+            connectionString = connectionString
+        )
 
-        val spark: SparkSession = SparkSession
-            .builder
-            .master(sparkMaster)
-            .appName(applicationName)
-            .getOrCreate()
+        val defaultCollection: MongoRDD[Document] = MongoSpark.load(sparkContext)
+        val defaultCount: Long = defaultCollection.count()
+        val fileCollection: MongoRDD[Document] = MongoSpark.load(sparkContext, fileReadConfig)
+        val fileCount: Long = fileCollection.count()
 
-        spark.stop()
+        println(s"Found ${defaultCount} documents in ${defaultDatabase}.${defaultCollectionName}")
+        println(s"Found ${fileCount} documents in ${defaultDatabase}.${fileCollectionName}")
+
+        sparkSession.stop()
     }
 }
