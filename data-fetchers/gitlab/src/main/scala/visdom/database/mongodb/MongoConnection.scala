@@ -1,6 +1,5 @@
 package visdom.database.mongodb
 
-import io.circe.JsonObject
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient
 import org.mongodb.scala.MongoClientSettings
@@ -18,7 +17,6 @@ import org.mongodb.scala.model.UpdateOptions
 import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
-import visdom.utils.json.Conversions.jsonObjectsToBson
 
 
 object MongoConnection {
@@ -76,17 +74,6 @@ object MongoConnection {
             case false => clientSettingsBuilder.credential(mongoCredentials)
         }).build()
     })
-
-    def insertData(
-        databaseName: String,
-        collectionName: String,
-        dataObjects: Vector[JsonObject]
-    ): SingleObservable[InsertManyResult] = {
-        val database: MongoDatabase = mongoClient.getDatabase(databaseName)
-        val collection: MongoCollection[Document] = database.getCollection(collectionName)
-        val bsonDocuments: Vector[Document] = jsonObjectsToBson(dataObjects)
-        collection.insertMany(bsonDocuments)
-    }
 
     def storeDocument(
         collection: MongoCollection[Document],

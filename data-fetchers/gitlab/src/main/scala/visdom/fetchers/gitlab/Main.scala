@@ -1,15 +1,11 @@
 package visdom.fetchers.gitlab
 
-import io.circe.JsonObject
-import org.mongodb.scala.result.InsertManyResult
-import scalaj.http.HttpRequest
-import scalaj.http.HttpResponse
-import visdom.database.mongodb.MongoConnection.insertData
-import visdom.database.mongodb.MongoConnection.mongoClient
-import visdom.database.mongodb.MongoConstants
-import visdom.utils.json.Conversions.jsonObjectsToBson
 import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.bson.Document
+import scalaj.http.HttpRequest
+import scalaj.http.HttpResponse
+import visdom.database.mongodb.MongoConnection.mongoClient
+import visdom.database.mongodb.MongoConstants
 
 
 object Main extends App
