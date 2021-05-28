@@ -62,28 +62,10 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
-        val commitIdOption: Option[String] = document.getStringOption(GitlabConstants.AttributeId)
-        val linkDocumentOption: Option[BsonDocument] = commitIdOption match {
-            case Some(commitId: String) => collectData(Seq(
-                (GitlabConstants.AttributeFiles, options.includeFileLinks match {
-                    case Some(includeFileLinks: Boolean) if includeFileLinks => {
-                        fetchLinkData(GitlabCommitDiff, commitId)
-                    }
-                    case _ => None
-                }),
-                (GitlabConstants.AttributeRefs, options.includeReferenceLinks match {
-                    case Some(includeReferenceLinks: Boolean) if includeReferenceLinks =>
-                        fetchLinkData(GitlabCommitRefs, commitId)
-                    case _ => None
-                })
-            ))
-            case None => None
-        }
-
         val documentWithMetadata: BsonDocument = addIdentifierAttributes(document).append(
             GitlabConstants.AttributeMetadata, getMetadata()
         )
-        linkDocumentOption match {
+        getLinkData(document) match {
             case Some(linkDocument: BsonDocument) => documentWithMetadata.append(
                 GitlabConstants.AttributeLinks, linkDocument
             )
@@ -122,6 +104,25 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                 )
             ).asJava
         )
+    }
+
+    def getLinkData(document: BsonDocument): Option[BsonDocument] = {
+        document.getStringOption(GitlabConstants.AttributeId) match {
+            case Some(commitId: String) => collectData(Seq(
+                (GitlabConstants.AttributeFiles, options.includeFileLinks match {
+                    case Some(includeFileLinks: Boolean) if includeFileLinks => {
+                        fetchLinkData(GitlabCommitDiff, commitId)
+                    }
+                    case _ => None
+                }),
+                (GitlabConstants.AttributeRefs, options.includeReferenceLinks match {
+                    case Some(includeReferenceLinks: Boolean) if includeReferenceLinks =>
+                        fetchLinkData(GitlabCommitRefs, commitId)
+                    case _ => None
+                })
+            ))
+            case None => None
+        }
     }
 
     def collectData(documentData: Seq[(String, Option[Array[Document]])]): Option[BsonDocument] = {
