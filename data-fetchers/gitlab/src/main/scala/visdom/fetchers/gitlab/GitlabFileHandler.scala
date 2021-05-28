@@ -1,12 +1,25 @@
 package visdom.fetchers.gitlab
 
-import io.circe.Json
-import io.circe.JsonObject
+import java.time.Instant
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
-import scalaj.http.HttpResponse
+import scala.collection.JavaConverters.seqAsJavaListConverter
+import org.mongodb.scala.MongoCollection
+import org.mongodb.scala.MongoDatabase
+import org.mongodb.scala.bson.BsonArray
+import org.mongodb.scala.bson.BsonBoolean
+import org.mongodb.scala.bson.BsonDateTime
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonElement
+import org.mongodb.scala.bson.BsonInt32
+import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.BsonString
+import org.mongodb.scala.bson.BsonValue
+import org.mongodb.scala.bson.Document
+import visdom.database.mongodb.MongoConstants
+import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
 
 
 class GitlabFileHandler(options: GitlabFileOptions)
@@ -28,25 +41,147 @@ class GitlabFileHandler(options: GitlabFileOptions)
         options.hostServer.modifyRequest(commitRequest)
     }
 
-    override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        val baseFileResults: Either[String, Vector[JsonObject]] = super.processResponse(response)
-        val modifiedFileResults: Either[String, Vector[JsonObject]] = utils.JsonUtils.modifyJsonResult(
-            baseFileResults,
-            utils.JsonUtils.addProjectName,
-            options.projectName
-        )
-
-        modifiedFileResults match {
-            case Right(fileResults: Vector[JsonObject]) => {
-                options.includeCommitLinks match {
-                    case Some(includeCommitLinks: Boolean) if includeCommitLinks => {
-                        Right(fetchAllLinkData(fileResults))
-                    }
-                    case _ => modifiedFileResults
-                }
-            }
-            case Left(_) => modifiedFileResults
+    override def getCollection(): Option[MongoCollection[Document]] = {
+        options.mongoDatabase match {
+            case Some(database: MongoDatabase) => Some(
+                database.getCollection(MongoConstants.CollectionFiles)
+            )
+            case None => None
         }
+    }
+
+    override def getIdentifierAttributes(): Array[String] = {
+        Array(
+            GitlabConstants.ParamPath,
+            GitlabConstants.AttributeProjectName,
+            GitlabConstants.AttributeHostName
+        )
+    }
+
+    override def processDocument(document: BsonDocument): BsonDocument = {
+        val filePathOption: Option[String] = document.getStringOption(GitlabConstants.AttributePath)
+        val linkDocumentOption: Option[BsonDocument] = filePathOption match {
+            case Some(filePath: String) => collectData(Seq(
+                (GitlabConstants.AttributeCommits, options.includeCommitLinks match {
+                    case Some(includeCommitLinks: Boolean) if includeCommitLinks => {
+                        fetchLinkData(filePath) match {
+                            case Some(value) => Some(
+                                // only include the commit id from the commit data
+                                value.map(
+                                    linkDocument => simplifyCommitLink(linkDocument)
+                                ).flatten
+                            )
+                            case None => None
+                        }
+                    }
+                    case _ => None
+                })
+            ))
+            case None => None
+        }
+
+        val documentWithMetadata: BsonDocument = addIdentifierAttributes(document).append(
+            GitlabConstants.AttributeMetadata, getMetadata()
+        )
+        linkDocumentOption match {
+            case Some(linkDocument: BsonDocument) => documentWithMetadata.append(
+                GitlabConstants.AttributeLinks, linkDocument
+            )
+            case None => documentWithMetadata
+        }
+    }
+
+    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
+        document
+            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
+            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+    }
+
+    private def getMetadata(): BsonDocument = {
+        new BsonDocument(
+            List(
+                new BsonElement(
+                    GitlabConstants.AttributeLastModified,
+                    new BsonDateTime(Instant.now().toEpochMilli())
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeApiVersion,
+                    new BsonInt32(GitlabConstants.GitlabApiVersion)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeIncludeLinksCommits,
+                    new BsonBoolean(options.includeCommitLinks.getOrElse(false))
+                )
+            ).asJava
+        )
+    }
+
+    private def simplifyCommitLink(document: Document): Option[BsonString] = {
+        document.containsKey(GitlabConstants.AttributeId) match {
+            case true => document.get(GitlabConstants.AttributeId) match {
+                case Some(idAttribute: BsonValue) => idAttribute.isString() match {
+                    case true => Some(idAttribute.asString())
+                    case false => None
+                }
+                case None => None
+            }
+            case false => None
+        }
+    }
+
+    def collectData(documentData: Seq[(String, Option[Array[BsonString]])]): Option[BsonDocument] = {
+        def collectDataInternal(
+            documentInternal: Option[BsonDocument],
+            dataInternal: Seq[(String, Option[BsonArray])]
+        ): Option[BsonDocument] = {
+            dataInternal.headOption match {
+                case Some(dataElement: (String, Option[BsonArray])) => collectDataInternal(
+                    (dataElement._2 match {
+                        case Some(actualData: BsonArray) => documentInternal match {
+                            case Some(internalDocument: BsonDocument) =>
+                                Some(internalDocument.append(dataElement._1, actualData))
+                            case None =>
+                                Some(new BsonDocument(dataElement._1, actualData))
+                        }
+                        case None => documentInternal
+                    }),
+                    dataInternal.drop(1)
+                )
+                case None => documentInternal
+            }
+        }
+
+        collectDataInternal(
+            None,
+            documentData.map(
+                documentElement => (
+                    documentElement._1,
+                    documentElement._2 match {
+                        case Some(stringArray: Array[BsonString]) => Some(
+                            new BsonArray(stringArray.toList.asJava)
+                        )
+                        case None => None
+                    }
+                )
+            )
+        )
+    }
+
+    private def fetchLinkData(filePath: String): Option[Array[Document]] = {
+        val commitOptions: GitlabCommitOptions = GitlabCommitOptions(
+            hostServer = options.hostServer,
+            mongoDatabase = None,
+            projectName = options.projectName,
+            reference = options.reference,
+            startDate = None,
+            endDate = None,
+            filePath = Some(filePath),
+            includeStatistics = None,
+            includeFileLinks = None,
+            includeReferenceLinks = None
+        )
+        val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(commitOptions)
+        commitFetcher.process()
     }
 
     private def processOptionalParameters(request: HttpRequest): HttpRequest = {
@@ -56,7 +191,7 @@ class GitlabFileHandler(options: GitlabFileOptions)
         options.filePath match {
             case Some(filePath: String) => {
                 paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamPath, urlEncode(filePath, utf8)
+                    GitlabConstants.ParamPath, filePath
                 ))
             }
             case None =>
@@ -72,61 +207,6 @@ class GitlabFileHandler(options: GitlabFileOptions)
             case None =>
         }
 
-        // includeCommitLinks
-
         request.params(paramMap)
-    }
-
-    private def fetchLinkData(filePath: String): Either[String, Vector[JsonObject]] = {
-        val commitOptions: GitlabCommitOptions = GitlabCommitOptions(
-            options.hostServer,
-            options.projectName,
-            options.reference,
-            None,
-            None,
-            Some(filePath),
-            None,
-            None,
-            None
-        )
-        val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(commitOptions)
-        val commitRequest: HttpRequest = commitFetcher.getRequest()
-        val commitResponses: Vector[HttpResponse[String]] =
-            commitFetcher.makeRequests(commitRequest)
-
-        commitFetcher.processAllResponses(commitResponses)
-    }
-
-    private def fetchAllLinkData(fileData: Vector[JsonObject]): Vector[JsonObject] = {
-        fileData.map(
-            fileObject => {
-                fileObject.apply(GitlabConstants.AttributePath) match {
-                    case Some(pathJson: Json) => pathJson.asString match {
-                        case Some(filePath: String) => fetchLinkData(filePath) match {
-                            case Right(commitData: Vector[JsonObject]) => {
-                                // only pick the commit ids as a list
-                                val commitJson: Json = Json.fromValues(
-                                    commitData.map(
-                                        commitObject => commitObject.apply(GitlabConstants.AttributeId) match {
-                                            case Some(commitIdJson: Json) => commitIdJson.asString
-                                            case None => None
-                                        }
-                                    ).flatten.map(commitId => Json.fromString(commitId))
-                                )
-                                utils.JsonUtils.addSubAttribute(
-                                    fileObject,
-                                    GitlabConstants.AttributeLinks,
-                                    GitlabConstants.AttributeCommits,
-                                    commitJson
-                                )
-                            }
-                            case Left(errorMessage: String) => fileObject
-                        }
-                        case None => fileObject
-                    }
-                    case None => fileObject
-                }
-            }
-        )
     }
 }

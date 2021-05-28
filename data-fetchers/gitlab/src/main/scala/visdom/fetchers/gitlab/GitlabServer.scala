@@ -6,6 +6,7 @@ import scalaj.http.HttpRequest
 
 
 class GitlabServer(hostAddress: String, apiToken: Option[String], allowUnsafeSSL: Option[Boolean]) {
+    val hostName: String = hostAddress
     val baseAddress: String = List(hostAddress, GitlabConstants.PathBase).mkString("/")
 
     def modifyRequest(request: HttpRequest): HttpRequest = {

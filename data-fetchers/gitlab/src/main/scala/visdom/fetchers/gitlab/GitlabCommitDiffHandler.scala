@@ -1,11 +1,13 @@
 package visdom.fetchers.gitlab
 
-import io.circe.JsonObject
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
+import visdom.fetchers.gitlab.utils.JsonUtils
 
 
 class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
@@ -25,12 +27,7 @@ class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
         options.hostServer.modifyRequest(Http(uri))
     }
 
-    override def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        val baseCommitResults: Either[String, Vector[JsonObject]] = super.processResponse(response)
-        utils.JsonUtils.modifyJsonResult(
-            baseCommitResults,
-            utils.JsonUtils.removeAttribute,
-            GitlabConstants.AttributeDiff
-        )
+    override def processDocument(document: BsonDocument): BsonDocument = {
+        JsonUtils.removeAttribute(document, GitlabConstants.AttributeDiff)
     }
 }

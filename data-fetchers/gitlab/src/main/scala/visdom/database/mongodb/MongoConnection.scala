@@ -4,14 +4,20 @@ import io.circe.JsonObject
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient
 import org.mongodb.scala.MongoClientSettings
+import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.MongoCredential
+import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.ServerAddress
 import org.mongodb.scala.SingleObservable
+import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.connection.ClusterSettings
+import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.ReplaceOptions
+import org.mongodb.scala.model.UpdateOptions
 import org.mongodb.scala.result.InsertManyResult
+import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.MongoDatabase
-import org.mongodb.scala.MongoCollection
 import visdom.utils.json.Conversions.jsonObjectsToBson
 
 
@@ -80,5 +86,34 @@ object MongoConnection {
         val collection: MongoCollection[Document] = database.getCollection(collectionName)
         val bsonDocuments: Vector[Document] = jsonObjectsToBson(dataObjects)
         collection.insertMany(bsonDocuments)
+    }
+
+    def storeDocument(
+        collection: MongoCollection[Document],
+        document: Document,
+        identifierAttributes: Array[String]
+    ): Unit = {
+        val documentFilter: Bson = Filters.and(
+            identifierAttributes.map(
+                identifierName => Filters.equal(
+                    identifierName,
+                    document.getOrElse(identifierName, new BsonNull)
+                )
+            ):_*
+        )
+
+        collection.replaceOne(
+            documentFilter,
+            document,
+            ReplaceOptions().upsert(true)
+        ).subscribe(
+            doOnNext = (result: UpdateResult) =>
+                result.getMatchedCount() match {
+                    case 0 => println(s"document ${result.getUpsertedId()} inserted")
+                    case _ => println(s"${result.getModifiedCount()} document updated")
+                },
+            doOnError = (error: Throwable) =>
+                println(s"Database error: ${error.toString()}")
+        )
     }
 }

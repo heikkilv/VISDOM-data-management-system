@@ -1,71 +1,103 @@
 package visdom.fetchers.gitlab
 
-import io.circe.Json
-import io.circe.JsonObject
-import io.circe.parser
-import io.circe.ParsingFailure
+import org.mongodb.scala.MongoCollection
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.Document
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
+import visdom.database.mongodb.MongoConnection
+import visdom.fetchers.gitlab.utils.JsonUtils.parseJson
 
 
 abstract class GitlabDataHandler() {
     def getRequest(): HttpRequest
 
-    def processResponse(response: HttpResponse[String]): Either[String, Vector[JsonObject]] = {
-        parser.parse(response.body) match {
-            case Right(jsonResult: Json) => jsonResult.asArray match {
-                case Some(jsonVector) => Right(utils.JsonUtils.onlyJsonObjects(jsonVector))
-                case None => Left(GitlabConstants.ErrorJsonArray)
+    def processDocument(document: BsonDocument): BsonDocument = {
+        document
+    }
+
+    def getCollection(): Option[MongoCollection[Document]] = {
+        None
+    }
+
+    def getIdentifierAttributes(): Array[String] = {
+        Array(GitlabConstants.AttributeId)
+    }
+
+    def processResponse(response: HttpResponse[String]): Array[Document] = {
+        try {
+            parseJson(response.body)
+                .asArray()
+                .getValues()
+                .asScala
+                .toArray
+                .map(bsonValue => bsonValue.isDocument match {
+                    case true => Some(bsonValue.asDocument())
+                    case false => None
+                })
+                .flatten
+                .map(document => {
+                    val finalDocument: Document = Document(processDocument(document))
+                    getCollection() match {
+                        case Some(collection: MongoCollection[Document]) => MongoConnection.storeDocument(
+                            collection,
+                            finalDocument,
+                            getIdentifierAttributes()
+                        )
+                        case None =>
+                    }
+                    finalDocument
+                })
+        }
+        catch {
+            case error: Throwable => {
+                println(error.getMessage())
+                Array()
             }
-            case Left(errorValue: ParsingFailure) => Left(errorValue.message)
         }
     }
 
-    def processAllResponses(responses: Vector[HttpResponse[String]]): Either[String, Vector[JsonObject]] = {
-        def processAllResponsesInternal(
-            responsesInternal: Vector[HttpResponse[String]],
-            results: Vector[JsonObject]
-        ): Either[String, Vector[JsonObject]] = responsesInternal.headOption match {
-            case Some(response: HttpResponse[String]) => processResponse(response) match {
-                case Right(jsonVector: Vector[JsonObject]) => {
-                    processAllResponsesInternal(responsesInternal.drop(1), results ++ jsonVector)
-                }
-                case Left(errorString: String) => Left(errorString)
-            }
-            case None => Right(results)
-        }
-
-        processAllResponsesInternal(responses, Vector())
-    }
-
-    def makeRequests(request: HttpRequest): Vector[HttpResponse[String]] = {
-        def makeRequestInternal(
+    def handleRequests(firstRequest: HttpRequest): Option[Array[Document]] = {
+        def handleRequestInternal(
             requestInternal: HttpRequest,
-            responses: Vector[HttpResponse[String]],
+            resultDocuments: Array[Document],
             page: Int
-        ): Vector[HttpResponse[String]] = {
+        ): Array[Document] = {
             utils.HttpUtils.makeRequest(requestInternal) match {
                 case Some(response: HttpResponse[String]) => response.code match {
                     case GitlabConstants.StatusCodeOk => {
-                        val allResponses: Vector[HttpResponse[String]] = responses ++ Vector(response)
+                        val resultArray: Array[Document] = processResponse(response)
+                        val allResults: Array[Document] = resultDocuments ++ resultArray
                         getNextRequest(requestInternal, response, page) match {
-                            case Some(nextRequest: HttpRequest) => {
-                                makeRequestInternal(nextRequest, allResponses, page + 1)
-                            }
-                            case None => allResponses
+                            case Some(nextRequest: HttpRequest) =>
+                                handleRequestInternal(nextRequest, allResults, page + 1)
+                            case None => allResults
                         }
                     }
-                    case _ => responses
+                    case _ => resultDocuments
                 }
-                case None => responses
+                case None => resultDocuments
             }
         }
 
-        val requestWithPageParams: HttpRequest = request.params(
+        val requestWithPageParams: HttpRequest = firstRequest.params(
             (GitlabConstants.ParamPerPage, GitlabConstants.DefaultPerPage.toString()),
             (GitlabConstants.ParamPage, GitlabConstants.DefaultStartPage.toString())
         )
-        makeRequestInternal(requestWithPageParams, Vector(), GitlabConstants.DefaultStartPage)
+        val results: Array[Document] = handleRequestInternal(
+            requestWithPageParams,
+            Array(),
+            GitlabConstants.DefaultStartPage
+        )
+        results.isEmpty match {
+            case true => None
+            case false => Some(results)
+        }
+    }
+
+    def process(): Option[Array[Document]] = {
+        handleRequests(getRequest())
     }
 
     private def getNextRequest(

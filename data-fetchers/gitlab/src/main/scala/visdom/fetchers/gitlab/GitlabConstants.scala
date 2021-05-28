@@ -41,11 +41,19 @@ object GitlabConstants {
     val HeaderPrivateToken: String = "Private-Token"
 
     // constants for JSON attributes
+    val AttributeApiVersion: String = "api_version"
     val AttributeCommits: String = "commits"
     val AttributeDiff: String = "diff"
     val AttributeFiles: String = "files"
+    val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
+    val AttributeIncludeLinksCommits: String = "include_links_commits"
+    val AttributeIncludeLinksFiles: String = "include_links_files"
+    val AttributeIncludeLinksRefs: String = "include_links_refs"
+    val AttributeIncludeStatistics: String = "include_statistics"
+    val AttributeLastModified: String = "last_modified"
     val AttributeLinks: String = "_links"
+    val AttributeMetadata: String = "_metadata"
     val AttributePath: String = "path"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
@@ -60,6 +68,9 @@ object GitlabConstants {
 
     // constants for predefined error messages
     val ErrorJsonArray: String = "Invalid JSON array"
+
+    // the GitLab API version
+    val GitlabApiVersion: Int = 4
 }
 
 abstract class GitlabCommitLinkType
