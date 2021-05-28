@@ -1,5 +1,7 @@
 package visdom.fetchers.gitlab
 
+import org.bson.BsonArray
+import org.bson.BSONException
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
@@ -7,7 +9,6 @@ import scala.collection.JavaConverters.asScalaBufferConverter
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConnection
-import visdom.fetchers.gitlab.utils.JsonUtils.parseJson
 
 
 abstract class GitlabDataHandler() {
@@ -27,8 +28,8 @@ abstract class GitlabDataHandler() {
 
     def processResponse(response: HttpResponse[String]): Array[Document] = {
         try {
-            parseJson(response.body)
-                .asArray()
+            // all valid responses from GitLab API should be JSON arrays containing JSON objects
+            BsonArray.parse(response.body)
                 .getValues()
                 .asScala
                 .toArray
@@ -51,7 +52,7 @@ abstract class GitlabDataHandler() {
                 })
         }
         catch {
-            case error: Throwable => {
+            case error: BSONException => {
                 println(error.getMessage())
                 Array()
             }
