@@ -7,11 +7,16 @@ import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
+import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.gitlab.utils.JsonUtils
 
 
 class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
-    extends GitlabCommitLinkHandler {
+    extends GitlabCommitLinkHandler(options) {
+
+    def getFetcherType(): String = GitlabConstants.FetcherTypeCommitDiff
+    def getCollectionName(): String = MongoConstants.CollectionTemp
+
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/commits.html#get-the-diff-of-a-commit
         val uri: String = List(
