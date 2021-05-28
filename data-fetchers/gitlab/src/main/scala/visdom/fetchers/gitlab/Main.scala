@@ -1,12 +1,11 @@
 package visdom.fetchers.gitlab
 
-import io.circe.JsonObject
-import org.mongodb.scala.result.InsertManyResult
+import org.mongodb.scala.MongoDatabase
+import org.mongodb.scala.bson.Document
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import visdom.database.mongodb.MongoConnection.insertData
+import visdom.database.mongodb.MongoConnection.mongoClient
 import visdom.database.mongodb.MongoConstants
-import visdom.utils.json.Conversions.jsonObjectsToBson
 
 
 object Main extends App
@@ -53,54 +52,29 @@ object Main extends App
             ).toBoolean
         )
     )
-
-    def getData(
-        dataOptions: GitlabFetchOptions,
-        commitLinkType: Option[GitlabCommitLinkType]
-    ): Either[String, Vector[JsonObject]] = {
-        val dataHandlerOption: Option[GitlabDataHandler] = dataOptions match {
-            case commitOptions: GitlabCommitOptions => Some(new GitlabCommitHandler(commitOptions))
-            case fileOptions: GitlabFileOptions => Some(new GitlabFileHandler(fileOptions))
-            case commitLinkOptions: GitlabCommitLinkOptions => commitLinkType match {
-                case Some(value) => value match {
-                    case GitlabCommitDiff => Some(new GitlabCommitDiffHandler(commitLinkOptions))
-                    case GitlabCommitRefs => Some(new GitlabCommitRefsHandler(commitLinkOptions))
-                }
-                case None => None
-            }
-        }
-
-        dataHandlerOption match {
-            case Some(dataHandler: GitlabDataHandler) => {
-                val dataRequest: HttpRequest = dataHandler.getRequest()
-                val responses: Vector[HttpResponse[String]] = dataHandler.makeRequests(dataRequest)
-                dataHandler.processAllResponses(responses)
-            }
-            case None => Left("Error: no data fetcher could be created")
-        }
-    }
+    private val database: MongoDatabase = mongoClient.getDatabase(databaseName)
 
     def handleData(
-        database: String,
-        collection: String,
-        rawData: Either[String, Vector[JsonObject]]
-    ): Unit = {
-        rawData match {
-            case Right(jsonData: Vector[JsonObject]) => {
-                println(s"Found ${jsonData.length} commits at ${project}")
-                insertData(database, collection, jsonData).subscribe(
-                    doOnNext = (result: InsertManyResult) =>
-                        println(s"${result.getInsertedIds.size()} documents written to the database"),
-                    doOnError = (error: Throwable) =>
-                        println(s"Database error: ${error.toString()}")
-                )
-            }
-            case Left(errorMessage: String) => println(s"Fetch error: ${errorMessage}")
+        fetchOptions: GitlabFetchOptions
+    ): Int = {
+        val dataHandlerOption: Option[GitlabDataHandler] = fetchOptions match {
+            case commitFetchOption: GitlabCommitOptions => Some(new GitlabCommitHandler(commitFetchOption))
+            case fileFetcherOptions: GitlabFileOptions => Some(new GitlabFileHandler(fileFetcherOptions))
+            case _ => None
+        }
+        val documentsOption: Option[Array[Document]] = dataHandlerOption match {
+            case Some(dataHandler: GitlabDataHandler) => dataHandler.process()
+            case None => None
+        }
+        documentsOption match {
+            case Some(documents: Array[Document]) => documents.size
+            case None => 0
         }
     }
 
     val commitFetcherOptions: GitlabCommitOptions = GitlabCommitOptions(
         hostServer = server,
+        mongoDatabase = Some(database),
         projectName = project,
         reference = reference,
         startDate = None,
@@ -113,6 +87,7 @@ object Main extends App
 
     val fileFetcherOptions: GitlabFileOptions = GitlabFileOptions(
         hostServer = server,
+        mongoDatabase = Some(database),
         projectName = project,
         reference = reference,
         filePath = None,
@@ -120,8 +95,10 @@ object Main extends App
         includeCommitLinks = Some(true)
     )
 
-    handleData(databaseName, MongoConstants.CollectionCommits, getData(commitFetcherOptions, None))
-    handleData(databaseName, MongoConstants.CollectionFiles, getData(fileFetcherOptions, None))
+    val commits: Int = handleData(commitFetcherOptions)
+    val files: Int = handleData(fileFetcherOptions)
+    println(s"Found ${commits} commits.")
+    println(s"Found ${files} files.")
 
     println("Waiting for 10 seconds.")
     Thread.sleep(endSleep)
