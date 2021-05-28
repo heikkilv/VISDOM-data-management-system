@@ -1,10 +1,17 @@
 package visdom.fetchers.gitlab.utils
 
-import org.mongodb.scala.bson.BsonDocument
+import java.time.ZonedDateTime
 import org.mongodb.scala.bson.Document
-import org.mongodb.scala.bson.BsonValue
+import org.mongodb.scala.bson.BsonDateTime
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.BsonValue
 import visdom.fetchers.gitlab.GitlabConstants
+import org.mongodb.scala.bson.BsonInt32
+import org.mongodb.scala.bson.BsonInt64
+import org.mongodb.scala.bson.BsonBoolean
+import org.mongodb.scala.bson.BsonDouble
 
 
 object JsonUtils {
@@ -17,6 +24,27 @@ object JsonUtils {
                 }
                 case false => None
             }
+        }
+
+        def appendOption(key: String, optionValue: Option[BsonValue]): BsonDocument = {
+            optionValue match {
+                case Some(value: BsonValue) => document.append(key, value)
+                case None => document
+            }
+        }
+    }
+
+    def toBsonValue[T](value: T): BsonValue = {
+        value match {
+            case stringValue: String => BsonString(stringValue)
+            case intValue: Int => BsonInt32(intValue)
+            case longValue: Long => BsonInt64(longValue)
+            case doubleValue: Double => BsonDouble(doubleValue)
+            case booleanValue: Boolean => BsonBoolean(booleanValue)
+            case zonedDateTimeValue: ZonedDateTime => BsonDateTime(
+                zonedDateTimeValue.toInstant().toEpochMilli()
+            )
+            case _ => BsonNull()
         }
     }
 

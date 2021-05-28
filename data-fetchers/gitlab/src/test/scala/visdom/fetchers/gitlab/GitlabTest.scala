@@ -1,10 +1,10 @@
 import org.scalatest.funsuite.AnyFunSuite
-import visdom.fetchers.gitlab.Main
+import visdom.fetchers.gitlab.utils.HttpUtils
 
-class SetSuite extends AnyFunSuite {
+class GitlabTest extends AnyFunSuite {
     val emptyResponse = scalaj.http.HttpResponse("", 0, Map())
 
-    val responseOption = Main.makeRequest(scalaj.http.Http("https://gitlab.com/api/v4/projects"))
+    val responseOption = HttpUtils.makeRequest(scalaj.http.Http("https://gitlab.com/api/v4/projects"))
     val response = responseOption.getOrElse(emptyResponse)
 
     test("Testing API response status code from gitlab.com") {

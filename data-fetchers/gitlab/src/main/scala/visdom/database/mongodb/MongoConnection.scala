@@ -9,6 +9,7 @@ import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.ServerAddress
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.connection.ClusterSettings
 import org.mongodb.scala.model.Filters
@@ -22,7 +23,7 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 object MongoConnection {
     private val environmentVariables: Map[String, String] = sys.env
 
-    private val applicationName: String = environmentVariables.getOrElse(
+    val applicationName: String = environmentVariables.getOrElse(
         MongoConstants.ApplicationName,
         MongoConstants.DefaultApplicationName
     )
@@ -80,14 +81,20 @@ object MongoConnection {
         document: Document,
         identifierAttributes: Array[String]
     ): Unit = {
-        val documentFilter: Bson = Filters.and(
-            identifierAttributes.map(
-                identifierName => Filters.equal(
-                    identifierName,
-                    document.getOrElse(identifierName, new BsonNull)
-                )
-            ):_*
-        )
+        val documentFilter: Bson = identifierAttributes.isEmpty match {
+            case true => Filters.equal(
+                MongoConstants.AttributeDefaultId,
+                BsonObjectId()
+            )
+            case false => Filters.and(
+                identifierAttributes.map(
+                    identifierName => Filters.equal(
+                        identifierName,
+                        document.getOrElse(identifierName, new BsonNull)
+                    )
+                ):_*
+            )
+        }
 
         collection.replaceOne(
             documentFilter,

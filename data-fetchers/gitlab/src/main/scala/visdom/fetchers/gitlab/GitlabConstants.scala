@@ -42,8 +42,13 @@ object GitlabConstants {
 
     // constants for JSON attributes
     val AttributeApiVersion: String = "api_version"
+    val AttributeApplicationName: String = "application_name"
     val AttributeCommits: String = "commits"
+    val AttributeDatabase: String = "database"
     val AttributeDiff: String = "diff"
+    val AttributeDocumentUpdatedCount: String = "documents_updated_count"
+    val AttributeEndDate: String = "end_date"
+    val AttributeFilePath: String = "file_path"
     val AttributeFiles: String = "files"
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
@@ -54,10 +59,23 @@ object GitlabConstants {
     val AttributeLastModified: String = "last_modified"
     val AttributeLinks: String = "_links"
     val AttributeMetadata: String = "_metadata"
+    val AttributeOptions: String = "options"
     val AttributePath: String = "path"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
+    val AttributeReference: String = "reference"
     val AttributeRefs: String = "refs"
+    val AttributeStartDate: String = "start_date"
+    val AttributeTimestamp: String = "timestamp"
+    val AttributeType: String = "type"
+    val AttributeUseRecursiveSearch: String = "use_recursive_search"
+    val AttributeVersion: String = "version"
+
+    // constants for the different GitLab fetcher types
+    val FetcherTypeCommits: String = "commits"
+    val FetcherTypeCommitDiff: String = "commit_links_files"
+    val FetcherTypeCommitRefs: String = "commit_links_refs"
+    val FetcherTypeFiles: String = "files"
 
     // constants for default values
     val DefaultPerPage: Int = 100
@@ -71,6 +89,9 @@ object GitlabConstants {
 
     // the GitLab API version
     val GitlabApiVersion: Int = 4
+
+    val FetcherType: String = "GitLab"
+    val FetcherVersion: String = "0.1"
 }
 
 abstract class GitlabCommitLinkType

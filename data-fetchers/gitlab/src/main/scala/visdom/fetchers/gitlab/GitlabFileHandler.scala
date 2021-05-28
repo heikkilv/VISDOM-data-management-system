@@ -6,8 +6,6 @@ import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.MongoCollection
-import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
@@ -20,10 +18,30 @@ import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.Document
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
+import visdom.fetchers.gitlab.utils.JsonUtils.toBsonValue
 
 
 class GitlabFileHandler(options: GitlabFileOptions)
-    extends GitlabDataHandler {
+    extends GitlabDataHandler(options) {
+
+    def getFetcherType(): String = GitlabConstants.FetcherTypeFiles
+    def getCollectionName(): String = MongoConstants.CollectionFiles
+
+    override def getOptionsDocument(): BsonDocument = {
+        BsonDocument(GitlabConstants.AttributeReference -> options.reference)
+            .appendOption(
+                GitlabConstants.AttributeFilePath,
+                options.filePath.map(stringValue => toBsonValue(stringValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeUseRecursiveSearch,
+                options.useRecursiveSearch.map(booleanValue => toBsonValue(booleanValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeIncludeLinksCommits,
+                options.includeCommitLinks.map(booleanValue => toBsonValue(booleanValue))
+            )
+    }
 
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/repositories.html#list-repository-tree
@@ -39,15 +57,6 @@ class GitlabFileHandler(options: GitlabFileOptions)
             Http(uri).param(GitlabConstants.ParamRef, options.reference)
         )
         options.hostServer.modifyRequest(commitRequest)
-    }
-
-    override def getCollection(): Option[MongoCollection[Document]] = {
-        options.mongoDatabase match {
-            case Some(database: MongoDatabase) => Some(
-                database.getCollection(MongoConstants.CollectionFiles)
-            )
-            case None => None
-        }
     }
 
     override def getIdentifierAttributes(): Array[String] = {

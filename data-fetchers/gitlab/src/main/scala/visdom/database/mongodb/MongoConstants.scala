@@ -19,4 +19,8 @@ object MongoConstants {
 
     val CollectionCommits: String = "commits"
     val CollectionFiles: String = "files"
+    val CollectionMetadata: String = "metadata"
+    val CollectionTemp: String = "temp"
+
+    val AttributeDefaultId: String = "_id"
 }

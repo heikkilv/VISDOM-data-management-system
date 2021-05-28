@@ -4,8 +4,6 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit.SECONDS
-import org.mongodb.scala.MongoCollection
-import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
@@ -21,12 +19,44 @@ import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
+import visdom.fetchers.gitlab.utils.JsonUtils.toBsonValue
 
 
-abstract class GitlabCommitLinkHandler extends GitlabDataHandler
+abstract class GitlabCommitLinkHandler(options: GitlabCommitLinkOptions) extends GitlabDataHandler(options)
 
 class GitlabCommitHandler(options: GitlabCommitOptions)
-    extends GitlabDataHandler {
+    extends GitlabDataHandler(options) {
+
+    def getFetcherType(): String = GitlabConstants.FetcherTypeCommits
+    def getCollectionName(): String = MongoConstants.CollectionCommits
+
+    override def getOptionsDocument(): BsonDocument = {
+        BsonDocument(GitlabConstants.AttributeReference -> options.reference)
+            .appendOption(
+                GitlabConstants.AttributeStartDate,
+                options.startDate.map(dateValue => toBsonValue(dateValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeEndDate,
+                options.endDate.map(dateValue => toBsonValue(dateValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeFilePath,
+                options.filePath.map(stringValue => toBsonValue(stringValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeIncludeStatistics,
+                options.includeStatistics.map(booleanValue => toBsonValue(booleanValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeIncludeLinksFiles,
+                options.includeFileLinks.map(booleanValue => toBsonValue(booleanValue))
+            )
+            .appendOption(
+                GitlabConstants.AttributeIncludeLinksRefs,
+                options.includeReferenceLinks.map(booleanValue => toBsonValue(booleanValue))
+            )
+    }
 
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/commits.html#list-repository-commits
@@ -42,15 +72,6 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             Http(uri).param(GitlabConstants.ParamRef, options.reference)
         )
         options.hostServer.modifyRequest(commitRequest)
-    }
-
-    override def getCollection(): Option[MongoCollection[Document]] = {
-        options.mongoDatabase match {
-            case Some(database: MongoDatabase) => Some(
-                database.getCollection(MongoConstants.CollectionCommits)
-            )
-            case None => None
-        }
     }
 
     override def getIdentifierAttributes(): Array[String] = {

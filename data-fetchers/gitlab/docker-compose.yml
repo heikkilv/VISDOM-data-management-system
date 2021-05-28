@@ -10,6 +10,7 @@ services:
         container_name: ${APPLICATION_NAME}
         restart: "no"
         environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
             - MONGODB_HOST=${MONGODB_HOST}
             - MONGODB_PORT=${MONGODB_PORT}
             - MONGODB_USERNAME=${MONGODB_USERNAME}
