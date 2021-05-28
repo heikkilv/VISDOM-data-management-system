@@ -23,7 +23,7 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 object MongoConnection {
     private val environmentVariables: Map[String, String] = sys.env
 
-    private val applicationName: String = environmentVariables.getOrElse(
+    val applicationName: String = environmentVariables.getOrElse(
         MongoConstants.ApplicationName,
         MongoConstants.DefaultApplicationName
     )

@@ -1,8 +1,13 @@
 package visdom.fetchers.gitlab
 
+import java.time.Instant
 import org.mongodb.scala.MongoDatabase
+import org.mongodb.scala.bson.BsonDateTime
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
+import visdom.database.mongodb.MongoConnection.applicationName
 import visdom.database.mongodb.MongoConnection.mongoClient
+import visdom.database.mongodb.MongoConnection.storeDocument
 import visdom.database.mongodb.MongoConstants
 
 
@@ -86,8 +91,28 @@ object Routes {
         includeCommitLinks = Some(true)
     )
 
-    private def storeMetadata(): Boolean = {
-        false
+    def storeMetadata(): Unit = {
+        val metadataDocument: Document = Document(
+            BsonDocument(
+                GitlabConstants.AttributeApplicationName -> applicationName,
+                GitlabConstants.AttributeType -> GitlabConstants.FetcherType,
+                GitlabConstants.AttributeVersion -> GitlabConstants.FetcherVersion,
+                GitlabConstants.AttributeDatabase -> databaseName
+            )
+            .append(
+                GitlabConstants.AttributeTimestamp,
+                BsonDateTime(Instant.now().toEpochMilli())
+            )
+        )
+        storeDocument(
+            metadataDatabase.getCollection(MongoConstants.CollectionMetadata),
+            metadataDocument,
+            Array(
+                GitlabConstants.AttributeApplicationName,
+                GitlabConstants.AttributeType,
+                GitlabConstants.AttributeVersion
+            )
+        )
     }
 
     def fetchCommits(): Int = {
