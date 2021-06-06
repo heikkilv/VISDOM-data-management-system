@@ -11,6 +11,8 @@ object GitlabConstants {
     val EnvironmentGitlabToken: String = "GITLAB_TOKEN"
     val EnvironmentGitlabReference: String = "GITLAB_REFERENCE"
     val EnvironmentGitlabInsecure: String = "GITLAB_INSECURE_CONNECTION"
+    val EnvironmentHostName: String = "HOST_NAME"
+    val EnvironmentHostPort: String = "HOST_PORT"
 
     // the default values for the environment variables
     val DefaultGitlabHost: String = ""
