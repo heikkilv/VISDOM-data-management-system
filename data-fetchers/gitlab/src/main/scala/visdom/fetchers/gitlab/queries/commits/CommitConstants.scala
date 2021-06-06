@@ -67,9 +67,9 @@ object CommitConstants {
             "reference": "master",
             "startDate": "2020-01-01T00:00:00.000Z",
             "endDate": "2021-01-01T00:00:00.000Z",
-            "includeStatistics": true,
-            "includeFileLinks": true,
-            "includeReferenceLinks": false
+            "includeStatistics": "true",
+            "includeFileLinks": "true",
+            "includeReferenceLinks": "false"
         }
     }"""
 

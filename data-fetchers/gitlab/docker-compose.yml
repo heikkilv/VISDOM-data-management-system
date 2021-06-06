@@ -10,10 +10,10 @@ services:
         container_name: ${APPLICATION_NAME}
         restart: "no"
         ports:
-            - ${APPLICATION_PORT}:8080
+            - ${HOST_PORT}:8080
         environment:
             - APPLICATION_NAME=${APPLICATION_NAME}
-            - HOST_NAME={HOST_NAME}
+            - HOST_NAME=${HOST_NAME}
             - HOST_PORT=${HOST_PORT}
             - MONGODB_HOST=${MONGODB_HOST}
             - MONGODB_PORT=${MONGODB_PORT}
