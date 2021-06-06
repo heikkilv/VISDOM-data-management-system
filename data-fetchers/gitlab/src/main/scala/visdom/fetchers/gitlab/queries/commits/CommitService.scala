@@ -24,6 +24,9 @@ import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
 import scala.concurrent.Await
+import visdom.fetchers.gitlab.queries.GitlabResponse
+import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
+import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 
 
 // scalastyle:off method.length
@@ -125,7 +128,7 @@ with CommitProtocol {
                 description = CommitConstants.CommitStatusAcceptedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[CommitResponseAccepted]),
+                        schema = new Schema(implementation = classOf[GitlabResponseAccepted[CommitQueryOptions]]),
                         examples = Array(
                             new ExampleObject(
                                 name = CommitConstants.CommitResponseExampleAcceptedName,
@@ -140,7 +143,7 @@ with CommitProtocol {
                 description = CommitConstants.CommitStatusInvalidDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[CommitResponseInvalid]),
+                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = CommitConstants.CommitResponseExampleInvalidName1,
@@ -159,7 +162,7 @@ with CommitProtocol {
                 description = CommitConstants.CommitStatusUnauthorizedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[CommitResponseUnauthorized]),
+                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = CommitConstants.CommitResponseExampleUnauthorizedName,
@@ -174,7 +177,7 @@ with CommitProtocol {
                 description = CommitConstants.CommitStatusNotFoundDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[CommitResponseNotFound]),
+                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = CommitConstants.CommitResponseExampleNotFoundName,
@@ -189,7 +192,7 @@ with CommitProtocol {
                 description = CommitConstants.CommitStatusErrorDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[CommitResponseError]),
+                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = CommitConstants.CommitResponseExampleErrorName,
@@ -228,7 +231,7 @@ with CommitProtocol {
             includeFileLinks,
             includeReferenceLinks
         ) => get {
-            val response: CommitResponse = try {
+            val response: GitlabResponse = try {
                 Await.result(
                     (
                         commitActor ? CommitQueryOptions(
@@ -241,27 +244,29 @@ with CommitProtocol {
                             includeFileLinks,
                             includeReferenceLinks
                         )
-                    ).mapTo[CommitResponse],
+                    ).mapTo[GitlabResponse],
                     maxWaitTime
                 )
             } catch  {
-                case error: TimeoutException => CommitResponseError(
+                case error: TimeoutException => GitlabResponseProblem(
                     CommitConstants.CommitQueryErrorStatus,
                     error.getMessage()
                 )
             }
 
             response match {
-                case acceptedResponse: CommitResponseAccepted =>
+                case acceptedResponse: GitlabResponseAccepted[CommitQueryOptions] @unchecked =>
                     complete(StatusCodes.Accepted, acceptedResponse)
-                case invalidResponse: CommitResponseInvalid =>
-                    complete(StatusCodes.BadRequest, invalidResponse)
-                case unauthorizedResponse: CommitResponseUnauthorized =>
-                    complete(StatusCodes.Unauthorized, unauthorizedResponse)
-                case notFoundResponse: CommitResponseNotFound =>
-                    complete(StatusCodes.NotFound, notFoundResponse)
-                case errorResponse: CommitResponseError=>
-                    complete(StatusCodes.InternalServerError, errorResponse)
+                case problemResponse: GitlabResponseProblem => problemResponse.status match {
+                    case CommitConstants.CommitQueryInvalidStatus =>
+                        complete(StatusCodes.BadRequest, problemResponse)
+                    case CommitConstants.CommitQueryUnauthorizedStatus =>
+                        complete(StatusCodes.Unauthorized, problemResponse)
+                    case CommitConstants.CommitQueryNotFoundStatus =>
+                        complete(StatusCodes.NotFound, problemResponse)
+                    case CommitConstants.CommitQueryErrorStatus =>
+                        complete(StatusCodes.InternalServerError, problemResponse)
+                }
             }
         }
     }

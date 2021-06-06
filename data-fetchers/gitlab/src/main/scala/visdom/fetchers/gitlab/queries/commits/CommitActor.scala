@@ -14,6 +14,9 @@ import visdom.fetchers.gitlab.utils.HttpUtils
 import org.mongodb.scala.bson.collection.immutable.Document
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
+import visdom.fetchers.gitlab.queries.GitlabResponse
+import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
+import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 
 
 class CommitActor extends Actor with ActorLogging {
@@ -23,34 +26,34 @@ class CommitActor extends Actor with ActorLogging {
     def receive: Receive = {
         case queryOptions: CommitQueryOptions => {
             log.info(s"Received commits query with options: ${queryOptions.toString()}")
-            val response: CommitResponse = CommitActor.getFetchOptions(queryOptions) match {
+            val response: GitlabResponse = CommitActor.getFetchOptions(queryOptions) match {
                 case Right(fetchParameters: CommitSpecificFetchParameters) => {
                     CommitActor.checkProjectAvailability(fetchParameters.projectName) match {
                         case GitlabConstants.StatusCodeOk => {
                             // start the commit data fetching
                             val commitFetching = Future(CommitActor.startCommitFetching(fetchParameters))
 
-                            CommitResponseAccepted(
+                            GitlabResponseAccepted(
                                 CommitConstants.CommitQueryAcceptedStatus,
                                 CommitConstants.CommitStatusAcceptedDescription,
                                 queryOptions
                             )
                         }
-                        case GitlabConstants.StatusCodeUnauthorized => CommitResponseUnauthorized(
+                        case GitlabConstants.StatusCodeUnauthorized => GitlabResponseProblem(
                             CommitConstants.CommitQueryUnauthorizedStatus,
                             s"Access to project '${fetchParameters.projectName}' not allowed"
                         )
-                        case GitlabConstants.StatusCodeNotFound => CommitResponseNotFound(
+                        case GitlabConstants.StatusCodeNotFound => GitlabResponseProblem(
                             CommitConstants.CommitQueryNotFoundStatus,
                             s"Project '${fetchParameters.projectName}' not found"
                         )
-                        case _ => CommitResponseError(
+                        case _ => GitlabResponseProblem(
                             CommitConstants.CommitQueryErrorStatus,
                             CommitConstants.CommitStatusErrorDescription
                         )
                     }
                 }
-                case Left(errorDescription: String) => CommitResponseInvalid(
+                case Left(errorDescription: String) => GitlabResponseProblem(
                     CommitConstants.CommitQueryInvalidStatus,
                     errorDescription
                 )

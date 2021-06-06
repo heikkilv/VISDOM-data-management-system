@@ -1,5 +1,6 @@
 package visdom.fetchers.gitlab.queries.commits
 
+
 final case class CommitQueryOptions(
     projectName: String,
     reference: String,
