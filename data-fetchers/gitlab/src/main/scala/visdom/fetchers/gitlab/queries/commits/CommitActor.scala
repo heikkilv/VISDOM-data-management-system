@@ -102,6 +102,7 @@ object CommitActor {
         }
     }
 
+    // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: CommitQueryOptions): Either[String, CommitSpecificFetchParameters] = {
         val startDate: Option[ZonedDateTime] = toZonedDateTime(queryOptions.startDate)
         val endDate: Option[ZonedDateTime] = toZonedDateTime(queryOptions.endDate)
@@ -147,6 +148,7 @@ object CommitActor {
             ))
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def checkProjectAvailability(projectName: String): Int = {
         HttpUtils.getProjectQueryStatusCode(server, projectName)

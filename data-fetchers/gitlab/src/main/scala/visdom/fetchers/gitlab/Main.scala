@@ -28,5 +28,5 @@ object Main extends App with SwaggerUiSite
         SwaggerDocService.routes,
         swaggerUiSiteRoute
     )
-    Http().bindAndHandle(routes, "0.0.0.0", 8080)
+    Http().bindAndHandle(routes, "0.0.0.0", GitlabConstants.HttpInternalPort)
 }

@@ -103,9 +103,11 @@ object GitlabConstants {
 
     val FetcherType: String = "GitLab"
     val FetcherVersion: String = "0.2"
+    val HttpInternalPort: Int = 8080
 
     // the default wait time for HTTP queries to the GitLab API
-    val DefaultWaitDuration: Duration = Duration(10, TimeUnit.SECONDS)
+    val DefaultWaitDurationSeconds: Int = 10
+    val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
 }
 
 abstract class GitlabCommitLinkType

@@ -26,6 +26,7 @@ import scala.util.Success
 import scala.concurrent.Await
 
 
+// scalastyle:off method.length
 @Path(CommitConstants.CommitRootPath)
 class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
@@ -115,7 +116,7 @@ with CommitProtocol {
                     defaultValue = CommitConstants.ParameterDefaultIncludeReferenceLinksString,
                     allowableValues = Array(CommitConstants.FalseString, CommitConstants.TrueString)
                 )
-            ),
+            )
         ),
         responses = Array(
             new ApiResponse(
@@ -264,3 +265,4 @@ with CommitProtocol {
         }
     }
 }
+// scalastyle:on method.length

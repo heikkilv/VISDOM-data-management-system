@@ -81,23 +81,27 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
             resultDocuments: Array[Document],
             page: Int
         ): Array[Document] = {
+            def responseHelper(response: HttpResponse[String]): Array[Document] = {
+                response.code match {
+                    case GitlabConstants.StatusCodeOk => {
+                        val resultArray: Array[Document] = processResponse(response)
+                        val allResults: Array[Document] = resultDocuments ++ resultArray
+                        getNextRequest(requestInternal, response, page) match {
+                            case Some(nextRequest: HttpRequest) =>
+                                handleRequestInternal(nextRequest, allResults, page + 1)
+                            case None => allResults
+                        }
+                    }
+                    case _ => resultDocuments
+                }
+            }
+
             try {
                 Await.result(
                     utils.HttpUtils.makeRequest(requestInternal),
                     GitlabConstants.DefaultWaitDuration
                 ) match {
-                    case Some(response: HttpResponse[String]) => response.code match {
-                        case GitlabConstants.StatusCodeOk => {
-                            val resultArray: Array[Document] = processResponse(response)
-                            val allResults: Array[Document] = resultDocuments ++ resultArray
-                            getNextRequest(requestInternal, response, page) match {
-                                case Some(nextRequest: HttpRequest) =>
-                                    handleRequestInternal(nextRequest, allResults, page + 1)
-                                case None => allResults
-                            }
-                        }
-                        case _ => resultDocuments
-                    }
+                    case Some(response: HttpResponse[String]) => responseHelper(response)
                     case None => resultDocuments
                 }
             } catch  {
@@ -114,22 +118,7 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
             Array(),
             GitlabConstants.DefaultStartPage
         )
-        val resultsOption: Option[Array[Document]] = results.isEmpty match {
-            case true => None
-            case false => Some(results)
-        }
-
-        // store a metadata document to MongoDB
-        getMetadataCollection() match {
-            case Some(metadataCollection: MongoCollection[Document]) => MongoConnection.storeDocument(
-                metadataCollection,
-                getMetadataDocument(resultsOption),
-                Array()
-            )
-            case None =>
-        }
-
-        resultsOption
+        handleResults(results)
     }
 
     final def getCollection(): Option[MongoCollection[Document]] = {
@@ -197,5 +186,24 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
             }
             case None => None
         }
+    }
+
+    private def handleResults(results: Array[Document]): Option[Array[Document]] = {
+        val resultsOption: Option[Array[Document]] = results.isEmpty match {
+            case true => None
+            case false => Some(results)
+        }
+
+        // store a metadata document to MongoDB
+        getMetadataCollection() match {
+            case Some(metadataCollection: MongoCollection[Document]) => MongoConnection.storeDocument(
+                metadataCollection,
+                getMetadataDocument(resultsOption),
+                Array()
+            )
+            case None =>
+        }
+
+        resultsOption
     }
 }
