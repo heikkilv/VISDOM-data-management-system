@@ -27,6 +27,7 @@ import scala.concurrent.Await
 
 
 // scalastyle:off method.length
+@SuppressWarnings(Array("UnusedMethodParameter"))
 @Path(CommitConstants.CommitRootPath)
 class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
