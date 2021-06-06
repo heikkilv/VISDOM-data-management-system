@@ -20,6 +20,8 @@ object GitlabConstants {
     val DefaultGitlabToken: String = ""
     val DefaultGitlabReference: String = "master"
     val DefaultGitlabInsecure: String = "false"
+    val DefaultHostName: String = "localhost"
+    val DefaultHostPort: String = "8765"
 
     // the base path for the GitLab API
     val PathBase: String = "api/v4"
