@@ -185,9 +185,9 @@ class GitlabFileHandler(options: GitlabFileOptions)
             startDate = None,
             endDate = None,
             filePath = Some(filePath),
-            includeStatistics = None,
-            includeFileLinks = None,
-            includeReferenceLinks = None
+            includeStatistics = false,
+            includeFileLinks = false,
+            includeReferenceLinks = false
         )
         val commitFetcher: GitlabCommitHandler = new GitlabCommitHandler(commitOptions)
         commitFetcher.process()

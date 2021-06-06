@@ -1,21 +1,32 @@
 package visdom.fetchers.gitlab
 
-import scalaj.http.HttpRequest
-import scalaj.http.HttpResponse
+import akka.actor.ActorSystem
+import akka.actor.Props
+import akka.actor.Terminated
+import akka.http.scaladsl.Http
+import akka.http.scaladsl.server.Directives.concat
+import scala.concurrent.ExecutionContextExecutor
+import scala.concurrent.Future
+import scala.sys.ShutdownHookThread
+import visdom.fetchers.gitlab.queries.commits.CommitActor
+import visdom.fetchers.gitlab.queries.commits.CommitService
 
 
-object Main extends App
+object Main extends App with SwaggerUiSite
 {
-    private val endSleep: Int = 5000
-
     Routes.storeMetadata()
 
-    val commits: Int = Routes.fetchCommits()
-    val files: Int = Routes.fetchFiles
-    println(s"Found ${commits} commits.")
-    println(s"Found ${files} files.")
+    implicit val system: ActorSystem = ActorSystem("akka-http-sample")
+    val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
+        val termination: Future[Terminated] = system.terminate()
+    })
+    implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    println(s"Waiting for ${endSleep/1000} seconds.")
-    Thread.sleep(endSleep)
-    println("The end.")
+    val commitReference = system.actorOf(Props[CommitActor])
+    val routes = concat(
+        new CommitService(commitReference).route,
+        SwaggerDocService.routes,
+        swaggerUiSiteRoute
+    )
+    Http().bindAndHandle(routes, "0.0.0.0", 8080)
 }

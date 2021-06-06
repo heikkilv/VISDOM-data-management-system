@@ -29,7 +29,7 @@ object Routes {
         MongoConstants.DefaultMongoTargetDatabase
     )
 
-    private val server: GitlabServer = new GitlabServer(
+    val server: GitlabServer = new GitlabServer(
         hostAddress = sys.env.getOrElse(
             GitlabConstants.EnvironmentGitlabHost,
             GitlabConstants.DefaultGitlabHost
@@ -48,7 +48,7 @@ object Routes {
         )
     )
     private val metadataDatabase: MongoDatabase = mongoClient.getDatabase(metadataDatabaseName)
-    private val targetDatabase: MongoDatabase = mongoClient.getDatabase(databaseName)
+    val targetDatabase: MongoDatabase = mongoClient.getDatabase(databaseName)
 
     private def handleData(
         fetchOptions: GitlabFetchOptions
@@ -76,9 +76,9 @@ object Routes {
         startDate = None,
         endDate = None,
         filePath = None,
-        includeStatistics = Some(true),
-        includeFileLinks = Some(true),
-        includeReferenceLinks = Some(true)
+        includeStatistics = true,
+        includeFileLinks = true,
+        includeReferenceLinks = true
     )
 
     private val fileFetcherOptions: GitlabFileOptions = GitlabFileOptions(

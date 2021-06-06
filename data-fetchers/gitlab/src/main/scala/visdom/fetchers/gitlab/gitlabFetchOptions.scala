@@ -9,6 +9,28 @@ abstract class GitlabFetchOptions {
     val mongoDatabase: Option[MongoDatabase]
 }
 
+abstract class CommitSpecificFetchOptions {
+    val projectName: String
+    val reference: String
+    val startDate: Option[ZonedDateTime]
+    val endDate: Option[ZonedDateTime]
+    val filePath: Option[String]
+    val includeStatistics: Boolean
+    val includeFileLinks: Boolean
+    val includeReferenceLinks: Boolean
+}
+
+final case class CommitSpecificFetchParameters(
+    projectName: String,
+    reference: String,
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    filePath: Option[String],
+    includeStatistics: Boolean,
+    includeFileLinks: Boolean,
+    includeReferenceLinks: Boolean
+) extends CommitSpecificFetchOptions
+
 final case class GitlabCommitOptions(
     hostServer: GitlabServer,
     mongoDatabase: Option[MongoDatabase],
@@ -17,9 +39,9 @@ final case class GitlabCommitOptions(
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     filePath: Option[String],
-    includeStatistics: Option[Boolean],
-    includeFileLinks: Option[Boolean],
-    includeReferenceLinks: Option[Boolean]
+    includeStatistics: Boolean,
+    includeFileLinks: Boolean,
+    includeReferenceLinks: Boolean
 ) extends GitlabFetchOptions
 
 final case class GitlabFileOptions(

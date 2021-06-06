@@ -1,6 +1,7 @@
 package visdom.fetchers.gitlab
 
 import java.time.Instant
+import java.util.concurrent.TimeoutException
 import org.bson.BsonArray
 import org.bson.BSONException
 import org.mongodb.scala.MongoCollection
@@ -12,6 +13,7 @@ import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.Document
 import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.concurrent.Await
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConnection
@@ -79,20 +81,27 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
             resultDocuments: Array[Document],
             page: Int
         ): Array[Document] = {
-            utils.HttpUtils.makeRequest(requestInternal) match {
-                case Some(response: HttpResponse[String]) => response.code match {
-                    case GitlabConstants.StatusCodeOk => {
-                        val resultArray: Array[Document] = processResponse(response)
-                        val allResults: Array[Document] = resultDocuments ++ resultArray
-                        getNextRequest(requestInternal, response, page) match {
-                            case Some(nextRequest: HttpRequest) =>
-                                handleRequestInternal(nextRequest, allResults, page + 1)
-                            case None => allResults
+            try {
+                Await.result(
+                    utils.HttpUtils.makeRequest(requestInternal),
+                    GitlabConstants.DefaultWaitDuration
+                ) match {
+                    case Some(response: HttpResponse[String]) => response.code match {
+                        case GitlabConstants.StatusCodeOk => {
+                            val resultArray: Array[Document] = processResponse(response)
+                            val allResults: Array[Document] = resultDocuments ++ resultArray
+                            getNextRequest(requestInternal, response, page) match {
+                                case Some(nextRequest: HttpRequest) =>
+                                    handleRequestInternal(nextRequest, allResults, page + 1)
+                                case None => allResults
+                            }
                         }
+                        case _ => resultDocuments
                     }
-                    case _ => resultDocuments
+                    case None => resultDocuments
                 }
-                case None => resultDocuments
+            } catch  {
+                case _: TimeoutException => resultDocuments
             }
         }
 

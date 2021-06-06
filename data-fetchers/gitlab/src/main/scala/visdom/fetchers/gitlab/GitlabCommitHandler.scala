@@ -31,31 +31,24 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
     def getCollectionName(): String = MongoConstants.CollectionCommits
 
     override def getOptionsDocument(): BsonDocument = {
-        BsonDocument(GitlabConstants.AttributeReference -> options.reference)
-            .appendOption(
-                GitlabConstants.AttributeStartDate,
-                options.startDate.map(dateValue => toBsonValue(dateValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeEndDate,
-                options.endDate.map(dateValue => toBsonValue(dateValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeFilePath,
-                options.filePath.map(stringValue => toBsonValue(stringValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeIncludeStatistics,
-                options.includeStatistics.map(booleanValue => toBsonValue(booleanValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeIncludeLinksFiles,
-                options.includeFileLinks.map(booleanValue => toBsonValue(booleanValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeIncludeLinksRefs,
-                options.includeReferenceLinks.map(booleanValue => toBsonValue(booleanValue))
-            )
+        BsonDocument(
+            GitlabConstants.AttributeReference -> options.reference,
+            GitlabConstants.AttributeIncludeStatistics -> options.includeStatistics,
+            GitlabConstants.AttributeIncludeLinksFiles -> options.includeFileLinks,
+            GitlabConstants.AttributeIncludeLinksRefs -> options.includeReferenceLinks
+        )
+        .appendOption(
+            GitlabConstants.AttributeStartDate,
+            options.startDate.map(dateValue => toBsonValue(dateValue))
+        )
+        .appendOption(
+            GitlabConstants.AttributeEndDate,
+            options.endDate.map(dateValue => toBsonValue(dateValue))
+        )
+        .appendOption(
+            GitlabConstants.AttributeFilePath,
+            options.filePath.map(stringValue => toBsonValue(stringValue))
+        )
     }
 
     def getRequest(): HttpRequest = {
@@ -69,7 +62,9 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
         ).mkString("/")
 
         val commitRequest: HttpRequest = processOptionalParameters(
-            Http(uri).param(GitlabConstants.ParamRef, options.reference)
+            Http(uri)
+                .param(GitlabConstants.ParamRef, options.reference)
+                .param(GitlabConstants.ParamWithStats, options.includeStatistics.toString())
         )
         options.hostServer.modifyRequest(commitRequest)
     }
@@ -113,15 +108,15 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                 ),
                 new BsonElement(
                     GitlabConstants.AttributeIncludeStatistics,
-                    new BsonBoolean(options.includeStatistics.getOrElse(false))
+                    new BsonBoolean(options.includeStatistics)
                 ),
                 new BsonElement(
                     GitlabConstants.AttributeIncludeLinksFiles,
-                    new BsonBoolean(options.includeFileLinks.getOrElse(false))
+                    new BsonBoolean(options.includeFileLinks)
                 ),
                 new BsonElement(
                     GitlabConstants.AttributeIncludeLinksRefs,
-                    new BsonBoolean(options.includeReferenceLinks.getOrElse(false))
+                    new BsonBoolean(options.includeReferenceLinks)
                 )
             ).asJava
         )
@@ -131,15 +126,12 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
         document.getStringOption(GitlabConstants.AttributeId) match {
             case Some(commitId: String) => collectData(Seq(
                 (GitlabConstants.AttributeFiles, options.includeFileLinks match {
-                    case Some(includeFileLinks: Boolean) if includeFileLinks => {
-                        fetchLinkData(GitlabCommitDiff, commitId)
-                    }
-                    case _ => None
+                    case true => fetchLinkData(GitlabCommitDiff, commitId)
+                    case false => None
                 }),
                 (GitlabConstants.AttributeRefs, options.includeReferenceLinks match {
-                    case Some(includeReferenceLinks: Boolean) if includeReferenceLinks =>
-                        fetchLinkData(GitlabCommitRefs, commitId)
-                    case _ => None
+                    case true => fetchLinkData(GitlabCommitRefs, commitId)
+                    case false => None
                 })
             ))
             case None => None
@@ -216,15 +208,6 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             case Some(filePath: String) => {
                 paramMap = paramMap ++ Seq((
                     GitlabConstants.ParamPath, filePath
-                ))
-            }
-            case None =>
-        }
-
-        options.includeStatistics match {
-            case Some(includeStatistics: Boolean) => {
-                paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamWithStats, includeStatistics.toString()
                 ))
             }
             case None =>

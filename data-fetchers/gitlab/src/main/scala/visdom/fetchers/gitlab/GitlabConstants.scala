@@ -1,5 +1,9 @@
 package visdom.fetchers.gitlab
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
+
+
 object GitlabConstants {
     // the environmental variables for the GitLab data source
     val EnvironmentGitlabHost: String = "GITLAB_HOST"
@@ -83,6 +87,9 @@ object GitlabConstants {
 
     // constants for HTTP status codes
     val StatusCodeOk: Int = 200
+    val StatusCodeUnauthorized: Int = 401
+    val StatusCodeNotFound: Int = 404
+    val StatusCodeUnknown: Int = 0
 
     // constants for predefined error messages
     val ErrorJsonArray: String = "Invalid JSON array"
@@ -91,7 +98,10 @@ object GitlabConstants {
     val GitlabApiVersion: Int = 4
 
     val FetcherType: String = "GitLab"
-    val FetcherVersion: String = "0.1"
+    val FetcherVersion: String = "0.2"
+
+    // the default wait time for HTTP queries to the GitLab API
+    val DefaultWaitDuration: Duration = Duration(10, TimeUnit.SECONDS)
 }
 
 abstract class GitlabCommitLinkType
