@@ -6,11 +6,15 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: visdom/gitlab-fetcher:0.1
+        image: visdom/gitlab-fetcher:0.2
         container_name: ${APPLICATION_NAME}
         restart: "no"
+        ports:
+            - ${APPLICATION_PORT}:8080
         environment:
             - APPLICATION_NAME=${APPLICATION_NAME}
+            - APPLICATION_PORT=${APPLICATION_PORT}
+            - HOST_NAME={HOST_NAME}
             - MONGODB_HOST=${MONGODB_HOST}
             - MONGODB_PORT=${MONGODB_PORT}
             - MONGODB_USERNAME=${MONGODB_USERNAME}
@@ -18,9 +22,7 @@ services:
             - MONGODB_METADATA_DATABASE=${MONGODB_METADATA_DATABASE}
             - MONGODB_DATA_DATABASE=${MONGODB_DATA_DATABASE}
             - GITLAB_HOST=${GITLAB_HOST}
-            - GITLAB_PROJECT=${GITLAB_PROJECT}
             - GITLAB_TOKEN=${GITLAB_TOKEN}
-            - GITLAB_REFERENCE=${GITLAB_REFERENCE}
             - GITLAB_INSECURE_CONNECTION=${GITLAB_INSECURE_CONNECTION}
         networks:
             - visdom-mongodb-network
