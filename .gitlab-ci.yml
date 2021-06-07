@@ -4,5 +4,5 @@ stages:
     - "Unit Test"
 
 include:
-    - "/data-fetchers/gitlab/build.yml"
+    - "/fetchers/gitlab/.gitlab-ci.yml"
     - "/adapters/gitlab/.gitlab-ci.yml"
