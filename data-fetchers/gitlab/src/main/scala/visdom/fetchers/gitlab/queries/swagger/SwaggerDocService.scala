@@ -6,6 +6,7 @@ import com.github.swagger.akka.model.Info
 import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitService
 import visdom.fetchers.gitlab.queries.files.FileService
+import visdom.fetchers.gitlab.queries.info.InfoService
 import visdom.fetchers.gitlab.queries.swagger.SwaggerConstants
 
 
@@ -22,7 +23,8 @@ object SwaggerDocService extends SwaggerHttpService {
     override val apiClasses: Set[Class[_]] = Set(
         classOf[AllDataService],
         classOf[CommitService],
-        classOf[FileService]
+        classOf[FileService],
+        classOf[InfoService]
     )
     override val host = List(hostServerName, hostServerPort).mkString(":")
     override val info: Info = Info(version = SwaggerConstants.SwaggerJsonVersion)

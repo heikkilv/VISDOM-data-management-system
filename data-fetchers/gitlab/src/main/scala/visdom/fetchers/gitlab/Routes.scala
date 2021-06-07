@@ -12,19 +12,11 @@ import visdom.database.mongodb.MongoConstants
 
 
 object Routes {
-    private val project: String = sys.env.getOrElse(
-        GitlabConstants.EnvironmentGitlabProject,
-        GitlabConstants.DefaultGitlabProject
-    )
-    private val reference: String = sys.env.getOrElse(
-        GitlabConstants.EnvironmentGitlabReference,
-        GitlabConstants.DefaultGitlabReference
-    )
     private val metadataDatabaseName: String = sys.env.getOrElse(
         MongoConstants.MongoMetadataDatabase,
         MongoConstants.DefaultMongoMetadataDatabase
     )
-    private val databaseName: String = sys.env.getOrElse(
+    val databaseName: String = sys.env.getOrElse(
         MongoConstants.MongoTargetDatabase,
         MongoConstants.DefaultMongoTargetDatabase
     )

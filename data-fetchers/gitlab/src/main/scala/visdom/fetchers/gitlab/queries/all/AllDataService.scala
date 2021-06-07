@@ -31,11 +31,11 @@ import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 // scalastyle:off method.length
 @SuppressWarnings(Array("UnusedMethodParameter"))
 @Path(AllDataConstants.AllDataRootPath)
-class AllDataService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
+class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with AllDataProtocol {
     val route: Route = (
-        getCommitRoute
+        getAllDataRoute
     )
 
     @GET
@@ -164,7 +164,7 @@ with AllDataProtocol {
             )
         )
     )
-    def getCommitRoute: RequestContext => Future[RouteResult] = (
+    def getAllDataRoute: RequestContext => Future[RouteResult] = (
         path(AllDataConstants.AllDataPath) &
         parameters(
             Constants.ParameterProjectName.withDefault(""),
@@ -183,7 +183,7 @@ with AllDataProtocol {
             val response: GitlabResponse = try {
                 Await.result(
                     (
-                        commitActor ? AllDataQueryOptions(
+                        allDataActor ? AllDataQueryOptions(
                             projectName,
                             reference,
                             startDate,

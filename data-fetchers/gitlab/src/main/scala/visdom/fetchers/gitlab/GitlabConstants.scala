@@ -7,18 +7,14 @@ import scala.concurrent.duration.Duration
 object GitlabConstants {
     // the environmental variables for the GitLab data source
     val EnvironmentGitlabHost: String = "GITLAB_HOST"
-    val EnvironmentGitlabProject: String = "GITLAB_PROJECT"
     val EnvironmentGitlabToken: String = "GITLAB_TOKEN"
-    val EnvironmentGitlabReference: String = "GITLAB_REFERENCE"
     val EnvironmentGitlabInsecure: String = "GITLAB_INSECURE_CONNECTION"
     val EnvironmentHostName: String = "HOST_NAME"
     val EnvironmentHostPort: String = "HOST_PORT"
 
     // the default values for the environment variables
     val DefaultGitlabHost: String = ""
-    val DefaultGitlabProject: String = ""
     val DefaultGitlabToken: String = ""
-    val DefaultGitlabReference: String = "master"
     val DefaultGitlabInsecure: String = "false"
     val DefaultHostName: String = "localhost"
     val DefaultHostPort: String = "8765"

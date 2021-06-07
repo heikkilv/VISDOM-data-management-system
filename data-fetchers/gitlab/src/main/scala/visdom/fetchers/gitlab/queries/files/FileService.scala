@@ -31,11 +31,11 @@ import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 // scalastyle:off method.length
 @SuppressWarnings(Array("UnusedMethodParameter"))
 @Path(FileConstants.FileRootPath)
-class FileService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
+class FileService(fileActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with FileProtocol {
     val route: Route = (
-        getCommitRoute
+        getFileRoute
     )
 
     @GET
@@ -172,7 +172,7 @@ with FileProtocol {
             )
         )
     )
-    def getCommitRoute: RequestContext => Future[RouteResult] = (
+    def getFileRoute: RequestContext => Future[RouteResult] = (
         path(FileConstants.FilePath) &
         parameters(
             Constants.ParameterProjectName.withDefault(""),
@@ -195,7 +195,7 @@ with FileProtocol {
             val response: GitlabResponse = try {
                 Await.result(
                     (
-                        commitActor ? FileQueryOptions(
+                        fileActor ? FileQueryOptions(
                             projectName,
                             reference,
                             path,
