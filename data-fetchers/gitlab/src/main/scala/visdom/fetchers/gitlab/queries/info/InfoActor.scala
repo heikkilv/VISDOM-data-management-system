@@ -15,7 +15,7 @@ class InfoActor extends Actor with ActorLogging {
     @SuppressWarnings(Array("org.wartremover.warts.Any"))
     def receive: Receive = {
         case BaseInfo => {
-            log.info(s"Received info query")
+            log.info("Received info query")
             val response: InfoResponse = InfoResponse(
                 fetcherName = MongoConnection.applicationName,
                 fetcherType = GitlabConstants.FetcherType,
