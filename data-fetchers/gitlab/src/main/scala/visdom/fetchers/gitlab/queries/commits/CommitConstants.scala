@@ -1,7 +1,5 @@
 package visdom.fetchers.gitlab.queries.commits
 
-import visdom.fetchers.gitlab.queries.Constants
-
 
 object CommitConstants {
     final val CommitRootPath = "/commits"

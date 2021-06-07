@@ -8,6 +8,8 @@ import akka.http.scaladsl.server.Directives.concat
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 import scala.sys.ShutdownHookThread
+import visdom.fetchers.gitlab.queries.all.AllDataActor
+import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.commits.CommitService
 import visdom.fetchers.gitlab.queries.files.FileActor
@@ -25,6 +27,7 @@ object Main extends App with SwaggerUiSite
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
     val routes = concat(
+        new AllDataService(system.actorOf(Props[AllDataActor])).route,
         new CommitService(system.actorOf(Props[CommitActor])).route,
         new FileService(system.actorOf(Props[FileActor])).route,
         SwaggerDocService.routes,

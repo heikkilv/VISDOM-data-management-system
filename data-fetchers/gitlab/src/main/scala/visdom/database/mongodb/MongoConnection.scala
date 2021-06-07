@@ -103,8 +103,8 @@ object MongoConnection {
         ).subscribe(
             doOnNext = (result: UpdateResult) =>
                 result.getMatchedCount() match {
-                    case 0 => println(s"document ${result.getUpsertedId()} inserted")
-                    case _ => println(s"${result.getModifiedCount()} document updated")
+                    case 0 => // println(s"document ${result.getUpsertedId()} inserted")
+                    case _ => // println(s"${result.getModifiedCount()} document updated")
                 },
             doOnError = (error: Throwable) =>
                 println(s"Database error: ${error.toString()}")

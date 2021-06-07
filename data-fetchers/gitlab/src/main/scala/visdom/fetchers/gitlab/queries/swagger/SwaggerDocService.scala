@@ -3,6 +3,7 @@ package visdom.fetchers.gitlab
 import akka.http.scaladsl.server.Directives
 import com.github.swagger.akka.SwaggerHttpService
 import com.github.swagger.akka.model.Info
+import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitService
 import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.swagger.SwaggerConstants
@@ -19,6 +20,7 @@ object SwaggerDocService extends SwaggerHttpService {
     )
 
     override val apiClasses: Set[Class[_]] = Set(
+        classOf[AllDataService],
         classOf[CommitService],
         classOf[FileService]
     )

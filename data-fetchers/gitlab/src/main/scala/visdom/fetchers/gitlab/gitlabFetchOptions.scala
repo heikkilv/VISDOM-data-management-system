@@ -77,3 +77,17 @@ final case class GitlabCommitLinkOptions(
     projectName: String,
     commitId: String
 ) extends GitlabFetchOptions
+
+abstract class AllDataSpecificFetchOptions {
+    val projectName: String
+    val reference: String
+    val startDate: Option[ZonedDateTime]
+    val endDate: Option[ZonedDateTime]
+}
+
+final case class AllDataSpecificFetchParameters(
+    projectName: String,
+    reference: String,
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime]
+) extends AllDataSpecificFetchOptions
