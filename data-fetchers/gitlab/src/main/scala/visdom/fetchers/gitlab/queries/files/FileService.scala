@@ -1,4 +1,4 @@
-package visdom.fetchers.gitlab.queries.commits
+package visdom.fetchers.gitlab.queries.files
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
@@ -30,10 +30,10 @@ import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 
 // scalastyle:off method.length
 @SuppressWarnings(Array("UnusedMethodParameter"))
-@Path(CommitConstants.CommitRootPath)
-class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(FileConstants.FileRootPath)
+class FileService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with CommitProtocol {
+with FileProtocol {
     val route: Route = (
         getCommitRoute
     )
@@ -41,8 +41,8 @@ with CommitProtocol {
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = CommitConstants.CommitEndpointSummary,
-        description = CommitConstants.CommitEndpointDescription,
+        summary = FileConstants.FileEndpointSummary,
+        description = FileConstants.FileEndpointDescription,
         parameters = Array(
             new Parameter(
                 name = Constants.ParameterProjectName,
@@ -62,61 +62,30 @@ with CommitProtocol {
                 )
             ),
             new Parameter(
-                name = Constants.ParameterStartDate,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = Constants.ParameterDescriptionStartDate,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    format = Constants.DateTimeFormat
-                )
-            ),
-            new Parameter(
-                name = Constants.ParameterEndDate,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = Constants.ParameterDescriptionEndDate,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    format = Constants.DateTimeFormat
-                )
-            ),
-            new Parameter(
                 name = Constants.ParameterFilePath,
                 in = ParameterIn.QUERY,
                 required = false,
                 description = Constants.ParameterDescriptionFilePath
             ),
             new Parameter(
-                name = Constants.ParameterIncludeStatistics,
+                name = Constants.ParameterRecursive,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = Constants.ParameterDescriptionIncludeStatistics,
+                description = Constants.ParameterDescriptionRecursive,
                 schema = new Schema(
                     implementation = classOf[String],
-                    defaultValue = Constants.ParameterDefaultIncludeStatisticsString,
+                    defaultValue = Constants.ParameterDefaultRecursiveString,
                     allowableValues = Array(Constants.FalseString, Constants.TrueString)
                 )
             ),
             new Parameter(
-                name = Constants.ParameterIncludeFileLinks,
+                name = Constants.ParameterIncludeCommitLinks,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = Constants.ParameterDescriptionIncludeFileLinks,
+                description = Constants.ParameterDescriptionIncludeCommitLinks,
                 schema = new Schema(
                     implementation = classOf[String],
-                    defaultValue = Constants.ParameterDefaultIncludeFileLinksString,
-                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
-                )
-            ),
-            new Parameter(
-                name = Constants.ParameterIncludeReferenceLinks,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = Constants.ParameterDescriptionIncludeReferenceLinks,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    defaultValue = Constants.ParameterDefaultIncludeReferenceLinksString,
+                    defaultValue = Constants.ParameterDefaultIncludeCommitLinksString,
                     allowableValues = Array(Constants.FalseString, Constants.TrueString)
                 )
             )
@@ -124,14 +93,14 @@ with CommitProtocol {
         responses = Array(
             new ApiResponse(
                 responseCode = Constants.StatusAcceptedCode,
-                description = CommitConstants.CommitStatusAcceptedDescription,
+                description = FileConstants.FileStatusAcceptedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseAccepted[CommitQueryOptions]]),
+                        schema = new Schema(implementation = classOf[GitlabResponseAccepted[FileQueryOptions]]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleAcceptedName,
-                                value = CommitConstants.CommitResponseExampleAccepted
+                                value = FileConstants.FileResponseExampleAccepted
                             )
                         )
                     )
@@ -204,44 +173,34 @@ with CommitProtocol {
         )
     )
     def getCommitRoute: RequestContext => Future[RouteResult] = (
-        path(CommitConstants.CommitPath) &
+        path(FileConstants.FilePath) &
         parameters(
             Constants.ParameterProjectName.withDefault(""),
             Constants.ParameterReference
                 .withDefault(Constants.ParameterDefaultReference),
-            Constants.ParameterStartDate.optional,
-            Constants.ParameterEndDate.optional,
             Constants.ParameterFilePath.optional,
-            Constants.ParameterIncludeStatistics
-                .withDefault(Constants.ParameterDefaultIncludeStatisticsString),
-            Constants.ParameterIncludeFileLinks
-                .withDefault(Constants.ParameterDefaultIncludeFileLinksString),
-            Constants.ParameterIncludeReferenceLinks
-                .withDefault(Constants.ParameterDefaultIncludeReferenceLinksString)
+            Constants.ParameterRecursive
+                .withDefault(Constants.ParameterDefaultRecursiveString),
+            Constants.ParameterIncludeCommitLinks
+                .withDefault(Constants.ParameterDefaultIncludeCommitLinksString)
         )
     ) {
         (
             projectName,
             reference,
-            startDate,
-            endDate,
             path,
-            includeStatistics,
-            includeFileLinks,
-            includeReferenceLinks
+            recursive,
+            includeCommitLinks
         ) => get {
             val response: GitlabResponse = try {
                 Await.result(
                     (
-                        commitActor ? CommitQueryOptions(
+                        commitActor ? FileQueryOptions(
                             projectName,
                             reference,
-                            startDate,
-                            endDate,
                             path,
-                            includeStatistics,
-                            includeFileLinks,
-                            includeReferenceLinks
+                            recursive,
+                            includeCommitLinks
                         )
                     ).mapTo[GitlabResponse],
                     maxWaitTime
@@ -254,7 +213,7 @@ with CommitProtocol {
             }
 
             response match {
-                case acceptedResponse: GitlabResponseAccepted[CommitQueryOptions] @unchecked =>
+                case acceptedResponse: GitlabResponseAccepted[FileQueryOptions] @unchecked =>
                     complete(StatusCodes.Accepted, acceptedResponse)
                 case problemResponse: GitlabResponseProblem => problemResponse.status match {
                     case Constants.QueryInvalidStatus =>

@@ -44,14 +44,31 @@ final case class GitlabCommitOptions(
     includeReferenceLinks: Boolean
 ) extends GitlabFetchOptions
 
+
+abstract class FileSpecificFetchOptions {
+    val projectName: String
+    val reference: String
+    val filePath: Option[String]
+    val recursive: Boolean
+    val includeCommitLinks: Boolean
+}
+
+final case class FileSpecificFetchParameters(
+    projectName: String,
+    reference: String,
+    filePath: Option[String],
+    recursive: Boolean,
+    includeCommitLinks: Boolean
+) extends FileSpecificFetchOptions
+
 final case class GitlabFileOptions(
     hostServer: GitlabServer,
     mongoDatabase: Option[MongoDatabase],
     projectName: String,
     reference: String,
     filePath: Option[String],
-    useRecursiveSearch: Option[Boolean],
-    includeCommitLinks: Option[Boolean]
+    recursive: Boolean,
+    includeCommitLinks: Boolean
 ) extends GitlabFetchOptions
 
 final case class GitlabCommitLinkOptions(

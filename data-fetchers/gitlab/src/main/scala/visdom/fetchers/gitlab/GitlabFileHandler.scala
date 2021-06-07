@@ -28,19 +28,15 @@ class GitlabFileHandler(options: GitlabFileOptions)
     def getCollectionName(): String = MongoConstants.CollectionFiles
 
     override def getOptionsDocument(): BsonDocument = {
-        BsonDocument(GitlabConstants.AttributeReference -> options.reference)
-            .appendOption(
-                GitlabConstants.AttributeFilePath,
-                options.filePath.map(stringValue => toBsonValue(stringValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeUseRecursiveSearch,
-                options.useRecursiveSearch.map(booleanValue => toBsonValue(booleanValue))
-            )
-            .appendOption(
-                GitlabConstants.AttributeIncludeLinksCommits,
-                options.includeCommitLinks.map(booleanValue => toBsonValue(booleanValue))
-            )
+        BsonDocument(
+            GitlabConstants.AttributeReference -> options.reference,
+            GitlabConstants.AttributeRecursive -> options.recursive,
+            GitlabConstants.AttributeIncludeLinksCommits -> options.includeCommitLinks
+        )
+        .appendOption(
+            GitlabConstants.AttributeFilePath,
+            options.filePath.map(stringValue => toBsonValue(stringValue))
+        )
     }
 
     def getRequest(): HttpRequest = {
@@ -54,7 +50,9 @@ class GitlabFileHandler(options: GitlabFileOptions)
         ).mkString("/")
 
         val commitRequest: HttpRequest = processOptionalParameters(
-            Http(uri).param(GitlabConstants.ParamRef, options.reference)
+            Http(uri)
+                .param(GitlabConstants.ParamRef, options.reference)
+                .param(GitlabConstants.ParamRecursive, options.recursive.toString())
         )
         options.hostServer.modifyRequest(commitRequest)
     }
@@ -72,7 +70,7 @@ class GitlabFileHandler(options: GitlabFileOptions)
         val linkDocumentOption: Option[BsonDocument] = filePathOption match {
             case Some(filePath: String) => collectData(Seq(
                 (GitlabConstants.AttributeCommits, options.includeCommitLinks match {
-                    case Some(includeCommitLinks: Boolean) if includeCommitLinks => {
+                    case true => {
                         fetchLinkData(filePath) match {
                             case Some(value) => Some(
                                 // only include the commit id from the commit data
@@ -118,8 +116,12 @@ class GitlabFileHandler(options: GitlabFileOptions)
                     new BsonInt32(GitlabConstants.GitlabApiVersion)
                 ),
                 new BsonElement(
+                    GitlabConstants.AttributeRecursive,
+                    new BsonBoolean(options.recursive)
+                ),
+                new BsonElement(
                     GitlabConstants.AttributeIncludeLinksCommits,
-                    new BsonBoolean(options.includeCommitLinks.getOrElse(false))
+                    new BsonBoolean(options.includeCommitLinks)
                 )
             ).asJava
         )
@@ -201,16 +203,6 @@ class GitlabFileHandler(options: GitlabFileOptions)
             case Some(filePath: String) => {
                 paramMap = paramMap ++ Seq((
                     GitlabConstants.ParamPath, filePath
-                ))
-            }
-            case None =>
-        }
-
-        options.useRecursiveSearch match {
-            case Some(useRecursiveSearch: Boolean) => {
-                paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamRecursive,
-                    useRecursiveSearch.toString()
                 ))
             }
             case None =>

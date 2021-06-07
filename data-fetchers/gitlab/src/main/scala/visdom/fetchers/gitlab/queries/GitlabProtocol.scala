@@ -9,7 +9,6 @@ import spray.json.RootJsonFormat
 import visdom.fetchers.gitlab.GitlabConstants
 
 
-
 trait GitlabProtocol
 extends DefaultJsonProtocol
 with SprayJsonSupport {

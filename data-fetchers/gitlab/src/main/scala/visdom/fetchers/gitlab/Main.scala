@@ -10,6 +10,8 @@ import scala.concurrent.Future
 import scala.sys.ShutdownHookThread
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.commits.CommitService
+import visdom.fetchers.gitlab.queries.files.FileActor
+import visdom.fetchers.gitlab.queries.files.FileService
 
 
 object Main extends App with SwaggerUiSite
@@ -22,9 +24,9 @@ object Main extends App with SwaggerUiSite
     })
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
-    val commitReference = system.actorOf(Props[CommitActor])
     val routes = concat(
-        new CommitService(commitReference).route,
+        new CommitService(system.actorOf(Props[CommitActor])).route,
+        new FileService(system.actorOf(Props[FileActor])).route,
         SwaggerDocService.routes,
         swaggerUiSiteRoute
     )

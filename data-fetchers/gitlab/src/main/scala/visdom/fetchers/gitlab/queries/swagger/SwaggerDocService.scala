@@ -4,6 +4,7 @@ import akka.http.scaladsl.server.Directives
 import com.github.swagger.akka.SwaggerHttpService
 import com.github.swagger.akka.model.Info
 import visdom.fetchers.gitlab.queries.commits.CommitService
+import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.swagger.SwaggerConstants
 
 
@@ -17,7 +18,10 @@ object SwaggerDocService extends SwaggerHttpService {
         GitlabConstants.DefaultHostPort
     )
 
-    override val apiClasses: Set[Class[_]] = Set(classOf[CommitService])
+    override val apiClasses: Set[Class[_]] = Set(
+        classOf[CommitService],
+        classOf[FileService]
+    )
     override val host = List(hostServerName, hostServerPort).mkString(":")
     override val info: Info = Info(version = SwaggerConstants.SwaggerJsonVersion)
     override val unwantedDefinitions: Seq[String] = SwaggerConstants.SwaggerJsonUnwantedDefinitions

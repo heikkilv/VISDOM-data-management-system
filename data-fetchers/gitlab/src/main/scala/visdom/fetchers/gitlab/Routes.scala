@@ -68,29 +68,6 @@ object Routes {
         }
     }
 
-    private val commitFetcherOptions: GitlabCommitOptions = GitlabCommitOptions(
-        hostServer = server,
-        mongoDatabase = Some(targetDatabase),
-        projectName = project,
-        reference = reference,
-        startDate = None,
-        endDate = None,
-        filePath = None,
-        includeStatistics = true,
-        includeFileLinks = true,
-        includeReferenceLinks = true
-    )
-
-    private val fileFetcherOptions: GitlabFileOptions = GitlabFileOptions(
-        hostServer = server,
-        mongoDatabase = Some(targetDatabase),
-        projectName = project,
-        reference = reference,
-        filePath = None,
-        useRecursiveSearch = Some(true),
-        includeCommitLinks = Some(true)
-    )
-
     def storeMetadata(): Unit = {
         val metadataDocument: Document = Document(
             BsonDocument(
@@ -113,13 +90,5 @@ object Routes {
                 GitlabConstants.AttributeVersion
             )
         )
-    }
-
-    def fetchCommits(): Int = {
-        handleData(commitFetcherOptions)
-    }
-
-    def fetchFiles(): Int = {
-        handleData(fileFetcherOptions)
     }
 }

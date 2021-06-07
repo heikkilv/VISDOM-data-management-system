@@ -71,12 +71,12 @@ object GitlabConstants {
     val AttributePath: String = "path"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributeProjectName: String = "project_name"
+    val AttributeRecursive: String = "recursive"
     val AttributeReference: String = "reference"
     val AttributeRefs: String = "refs"
     val AttributeStartDate: String = "start_date"
     val AttributeTimestamp: String = "timestamp"
     val AttributeType: String = "type"
-    val AttributeUseRecursiveSearch: String = "use_recursive_search"
     val AttributeVersion: String = "version"
 
     // constants for the different GitLab fetcher types
