@@ -18,7 +18,7 @@ final case class TimestampResult(
             JsArray(
                 timestamps
                     .map(timestamp => JsString(toUtcString(timestamp)))
-                    .toList
+                    .toVector
             )
         )
     }

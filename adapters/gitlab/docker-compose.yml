@@ -9,6 +9,7 @@ services:
         container_name: visdom-gitlab-adapter
         ports:
             - 4040:4040
+            - 9876:8080
         environment:
             - APPLICATION_NAME=${APPLICATION_NAME}
             - ENABLE_INIT_DAEMON=false
