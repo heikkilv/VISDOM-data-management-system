@@ -13,17 +13,10 @@ import visdom.spark.Constants
 
 
 object TimestampQuery {
-    def getDataFrame(sparkSession: SparkSession, filePaths: Array[String]): Dataset[TimestampResult] = {
-        import sparkSession.implicits.newProductEncoder
-
-        // read configuration for the files collection
-        val fileReadConfig: ReadConfig = ReadConfig(
-            databaseName = Constants.DefaultDatabaseName,
-            collectionName = GitlabConstants.CollectionFiles,
-            connectionString = sparkSession.sparkContext.getConf.getOption(
-                Constants.MongoInputUriSetting
-            )
-        )
+    def getCommitTimestampMap(
+        sparkSession: SparkSession,
+        projectCommits: Array[schemas.FileDistinctCommitSchema]
+    ): Map[schemas.CommitTimestampSchemaKey, String] = {
         // read configuration for the commits collection
         val commitReadConfig: ReadConfig = ReadConfig(
             databaseName = Constants.DefaultDatabaseName,
@@ -44,6 +37,28 @@ object TimestampQuery {
             .as(Encoders.product[schemas.CommitTimestampSchema])
             .cache()
 
+        // collected map with project names and commit ids as keys and the commit timestamps as values
+        commitDataFrame
+            .filter(
+                row => projectCommits.contains(schemas.FileDistinctCommitSchema(row.project_name, row.id))
+            )
+            .collect()
+            .map(x => (schemas.CommitTimestampSchemaKey(x.project_name, x.id), x.created_at))
+            .toMap
+    }
+
+    def getDataFrame(sparkSession: SparkSession, filePaths: Array[String]): Dataset[TimestampResult] = {
+        import sparkSession.implicits.newProductEncoder
+
+        // read configuration for the files collection
+        val fileReadConfig: ReadConfig = ReadConfig(
+            databaseName = Constants.DefaultDatabaseName,
+            collectionName = GitlabConstants.CollectionFiles,
+            connectionString = sparkSession.sparkContext.getConf.getOption(
+                Constants.MongoInputUriSetting
+            )
+        )
+
         // dataset for files with the required paths
         val fileDataFrame: Dataset[schemas.FileCommitSchema] = MongoSpark
             .load[schemas.FileSchema](sparkSession, fileReadConfig)
@@ -62,14 +77,8 @@ object TimestampQuery {
             .distinct()
             .collect()
 
-        // collected map with project names and commit ids as keys and the commit timestamps as values
-        val timestampDataMap: Map[schemas.CommitTimestampSchemaKey, String] = commitDataFrame
-            .filter(
-                row => projectCommits.contains(schemas.FileDistinctCommitSchema(row.project_name, row.id))
-            )
-            .collect()
-            .map(x => (schemas.CommitTimestampSchemaKey(x.project_name, x.id), x.created_at))
-            .toMap
+        val timestampDataMap: Map[schemas.CommitTimestampSchemaKey, String] =
+            getCommitTimestampMap(sparkSession, projectCommits)
 
         // dataset where the commit ids are mapped to the commit timestamps
         val fileDataFrameWithTimestamps: Dataset[TimestampResult] = fileDataFrame

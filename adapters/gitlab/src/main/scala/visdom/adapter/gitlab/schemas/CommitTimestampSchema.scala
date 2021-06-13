@@ -9,5 +9,5 @@ final case class CommitTimestampSchema(
 
 final case class CommitTimestampSchemaKey(
     project_name: String,
-    id: String,
+    id: String
 )
