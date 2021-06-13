@@ -5,7 +5,7 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        image: visdom/gitlab-adapter:0.1
+        image: visdom/gitlab-adapter:0.2
         container_name: visdom-gitlab-adapter
         ports:
             - 4040:4040

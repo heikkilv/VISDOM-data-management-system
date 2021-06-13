@@ -23,7 +23,7 @@ object CommitQuery {
     def getDataFrame(sparkSession: SparkSession): DataFrame = {
         val commitReadConfig: ReadConfig = ReadConfig(
             databaseName = Constants.DefaultDatabaseName,
-            collectionName = CommitConstants.CollectionCommits,
+            collectionName = GitlabConstants.CollectionCommits,
             connectionString = sparkSession.sparkContext.getConf.getOption(
                 Constants.MongoInputUriSetting
             )
@@ -31,22 +31,22 @@ object CommitQuery {
 
         MongoSpark.load[schemas.CommitSchema](sparkSession, commitReadConfig)
             .select(
-                column(CommitConstants.ColumnProjectName),
-                column(CommitConstants.ColumnCommitterName),
+                column(GitlabConstants.ColumnProjectName),
+                column(GitlabConstants.ColumnCommitterName),
                 dateStringUDF(
-                    column(CommitConstants.ColumnCommittedDate)
-                ).as(CommitConstants.ColumnDate)
+                    column(GitlabConstants.ColumnCommittedDate)
+                ).as(GitlabConstants.ColumnDate)
             )
             .groupBy(
-                CommitConstants.ColumnProjectName,
-                CommitConstants.ColumnCommitterName,
-                CommitConstants.ColumnDate
+                GitlabConstants.ColumnProjectName,
+                GitlabConstants.ColumnCommitterName,
+                GitlabConstants.ColumnDate
             )
             .count()
             .orderBy(
-                CommitConstants.ColumnProjectName,
-                CommitConstants.ColumnCommitterName,
-                CommitConstants.ColumnDate
+                GitlabConstants.ColumnProjectName,
+                GitlabConstants.ColumnCommitterName,
+                GitlabConstants.ColumnDate
             )
     }
 
