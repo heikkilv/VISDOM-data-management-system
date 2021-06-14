@@ -2,10 +2,8 @@ package visdom.adapter.gitlab.queries.info
 
 
 object InfoConstants {
-    final val InfoRootPath1 = "/info1"
-    final val InfoPath1 = "info1"
-    final val InfoRootPath2 = "/info2"
-    final val InfoPath2 = "info2"
+    final val InfoRootPath = "/info"
+    final val InfoPath = "info"
 
     final val InfoEndpointDescription = "Returns information about the data adapter."
     final val InfoEndpointSummary = "Returns adapter info."

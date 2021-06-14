@@ -7,6 +7,7 @@ import org.apache.spark.sql.Encoders
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.column
 import spray.json.JsObject
+import visdom.adapter.gitlab.queries.timestamps.TimestampQueryOptions
 import visdom.adapter.gitlab.results.TimestampResult
 import visdom.adapter.gitlab.utils.JsonUtils
 import visdom.spark.Constants
@@ -47,7 +48,10 @@ object TimestampQuery {
             .toMap
     }
 
-    def getDataFrame(sparkSession: SparkSession, filePaths: Array[String]): Dataset[TimestampResult] = {
+    def getDataFrame(
+        sparkSession: SparkSession,
+        queryOptions: TimestampQueryOptions
+    ): Dataset[TimestampResult] = {
         import sparkSession.implicits.newProductEncoder
 
         // read configuration for the files collection
@@ -68,7 +72,7 @@ object TimestampQuery {
                 column(GitlabConstants.ColumnLinksCommits).as(GitlabConstants.ColumnCommits)
             )
             .as(Encoders.product[schemas.FileCommitSchema])
-            .filter(row => filePaths.contains(row.path))
+            .filter(row => queryOptions.filePaths.contains(row.path))
             .cache()
 
         // collection for all the commits (for the relevant files) in each projects
@@ -97,8 +101,8 @@ object TimestampQuery {
         fileDataFrameWithTimestamps
     }
 
-    def getResult(sparkSession: SparkSession, filePaths: Array[String]): JsObject = {
-        val results: Array[TimestampResult] = getDataFrame(sparkSession, filePaths).collect()
+    def getResult(sparkSession: SparkSession, queryOptions: TimestampQueryOptions): JsObject = {
+        val results: Array[TimestampResult] = getDataFrame(sparkSession, queryOptions).collect()
         JsonUtils.toJsObject(results.map(result => result.toJsonTuple()))
     }
 }

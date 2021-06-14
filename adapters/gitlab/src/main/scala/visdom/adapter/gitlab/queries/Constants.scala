@@ -10,6 +10,7 @@ object Constants {
     final val BooleanStrings: Set[String] = Set(FalseString, TrueString)
 
     final val DateFormat = "date"
+    final val DateTimeFormat = "date-time"
 
     final val StatusOkCode = "200"
     final val StatusInvalidCode = "400"
@@ -29,17 +30,24 @@ object Constants {
     final val ParameterUserName = "userName"
     final val ParameterStartDate = "startDate"
     final val ParameterEndDate = "endDate"
+    final val ParameterFilePaths = "filePaths"
 
     final val ParameterDescriptionProjectName = "the GitLab project name"
     final val ParameterDescriptionUserName = "the user name"
     final val ParameterDescriptionStartDate = "the earliest date for the results given in ISO 8601 format"
+    final val ParameterDescriptionStartDateTime = "the earliest considered timestamp given in ISO 8601 format with timezone"
     final val ParameterDescriptionEndDate = "the latest date for the results given in ISO 8601 format"
+    final val ParameterDescriptionEndDateTime = "the latest considered timestamp given in ISO 8601 format with timezone"
+    final val ParameterDescriptionFilePaths = "a comma-separated list of file names"
 
     final val ParameterExampleProjectName = "group/my-project-name"
     final val ParameterExampleUserName = "Example Developer"
+    final val ParameterExampleFilePaths = "README.md,src/TestCode.scala"
 
     val DefaultWaitDurationSeconds: Int = 30
     val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
+
+    final val Comma: String = ","
 
     final val ResponseExampleInvalidName = "Invalid start time example"
     final val ResponseExampleInvalid = """{

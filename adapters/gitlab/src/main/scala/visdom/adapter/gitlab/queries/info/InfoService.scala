@@ -21,8 +21,8 @@ import visdom.adapter.gitlab.queries.Constants
 
 
 @SuppressWarnings(Array("UnusedMethodParameter"))
-@Path(InfoConstants.InfoRootPath1)
-class InfoService1(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(InfoConstants.InfoRootPath)
+class InfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with InfoProtocol {
     val route: Route = (
@@ -53,54 +53,11 @@ with InfoProtocol {
         )
     )
     def getInfoRoute: RequestContext => Future[RouteResult] = (
-        path(InfoConstants.InfoPath1)
+        path(InfoConstants.InfoPath)
     ) {
         get {
             complete(
-                (infoActor ? BaseInfo(1)).mapTo[InfoResponse]
-            )
-        }
-    }
-}
-
-@SuppressWarnings(Array("UnusedMethodParameter"))
-@Path(InfoConstants.InfoRootPath2)
-class InfoService2(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
-extends Directives
-with InfoProtocol {
-    val route: Route = (
-        getInfoRoute
-    )
-
-    @GET
-    @Produces(Array(MediaType.APPLICATION_JSON))
-    @Operation(
-        summary = InfoConstants.InfoEndpointSummary,
-        description = InfoConstants.InfoEndpointDescription,
-        responses = Array(
-            new ApiResponse(
-                responseCode = Constants.StatusOkCode,
-                description = InfoConstants.InfoStatusOkDescription,
-                content = Array(
-                    new Content(
-                        schema = new Schema(implementation = classOf[InfoResponse]),
-                        examples = Array(
-                            new ExampleObject(
-                                name = InfoConstants.InfoResponseExampleName,
-                                value = InfoConstants.InfoResponseExample
-                            )
-                        )
-                    )
-                )
-            )
-        )
-    )
-    def getInfoRoute: RequestContext => Future[RouteResult] = (
-        path(InfoConstants.InfoPath2)
-    ) {
-        get {
-            complete(
-                (infoActor ? BaseInfo(2)).mapTo[InfoResponse]
+                (infoActor ? BaseInfo).mapTo[InfoResponse]
             )
         }
     }

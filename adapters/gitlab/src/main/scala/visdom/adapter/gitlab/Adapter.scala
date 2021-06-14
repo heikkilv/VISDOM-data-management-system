@@ -13,10 +13,11 @@ import scala.sys.ShutdownHookThread
 import visdom.adapter.gitlab.queries.commits.CommitDataService
 import visdom.adapter.gitlab.queries.commits.CommitDataActor
 import visdom.adapter.gitlab.queries.info.InfoActor
-import visdom.adapter.gitlab.queries.info.InfoService1
-import visdom.adapter.gitlab.queries.info.InfoService2
+import visdom.adapter.gitlab.queries.info.InfoService
 import visdom.adapter.gitlab.queries.swagger.SwaggerDocService
 import visdom.adapter.gitlab.queries.swagger.SwaggerUiSite
+import visdom.adapter.gitlab.queries.timestamps.TimestampService
+import visdom.adapter.gitlab.queries.timestamps.TimestampActor
 import visdom.spark.Session
 
 
@@ -35,8 +36,8 @@ object Adapter extends App with SwaggerUiSite {
 
     val routes = concat(
         new CommitDataService(system.actorOf(Props[CommitDataActor])).route,
-        new InfoService1(system.actorOf(Props[InfoActor])).route,
-        new InfoService2(system.actorOf(Props[InfoActor])).route,
+        new TimestampService(system.actorOf(Props[TimestampActor])).route,
+        new InfoService(system.actorOf(Props[InfoActor])).route,
         SwaggerDocService.routes,
         swaggerUiSiteRoute
     )

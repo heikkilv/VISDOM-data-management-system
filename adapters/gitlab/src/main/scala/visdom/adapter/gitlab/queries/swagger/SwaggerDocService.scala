@@ -4,8 +4,8 @@ import akka.http.scaladsl.server.Directives
 import com.github.swagger.akka.SwaggerHttpService
 import com.github.swagger.akka.model.Info
 import visdom.adapter.gitlab.queries.commits.CommitDataService
-import visdom.adapter.gitlab.queries.info.InfoService1
-import visdom.adapter.gitlab.queries.info.InfoService2
+import visdom.adapter.gitlab.queries.info.InfoService
+import visdom.adapter.gitlab.queries.timestamps.TimestampService
 
 
 object SwaggerDocService extends SwaggerHttpService {
@@ -14,8 +14,8 @@ object SwaggerDocService extends SwaggerHttpService {
 
     override val apiClasses: Set[Class[_]] = Set(
         classOf[CommitDataService],
-        classOf[InfoService1],
-        classOf[InfoService2]
+        classOf[TimestampService],
+        classOf[InfoService]
     )
     override val host = List(hostServerName, hostServerPort).mkString(":")
     override val info: Info = Info(version = SwaggerConstants.SwaggerJsonVersion)

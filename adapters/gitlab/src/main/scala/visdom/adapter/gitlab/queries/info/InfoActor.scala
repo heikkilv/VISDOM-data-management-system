@@ -16,7 +16,7 @@ class InfoActor extends Actor with ActorLogging {
 
     @SuppressWarnings(Array("org.wartremover.warts.Any"))
     def receive: Receive = {
-        case BaseInfo(queryType: Int) => {
+        case BaseInfo => {
             log.info("Received info query")
             val response: InfoResponse = InfoResponse(
                 adapterName = "test-adapter",
@@ -24,15 +24,7 @@ class InfoActor extends Actor with ActorLogging {
                 adapterVersion = GitlabConstants.AdapterVersion,
                 startTime = Adapter.startTime
             )
-            val commitQuery: Future[Unit] = Future(
-                queryType match {
-                    case _ => {
-                        val FilePaths: Array[String] = Array("README.md", ".gitignore", "adapters")
-                        val timestampResults: JsObject = TimestampQuery.getResult(Adapter.sparkSession, FilePaths)
-                        println(timestampResults.prettyPrint)
-                    }
-                }
-            )
+
             sender() ! response
         }
     }
