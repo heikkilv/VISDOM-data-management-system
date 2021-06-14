@@ -14,6 +14,6 @@ with SprayJsonSupport {
     implicit val gitlabResponseProblemFormat: RootJsonFormat[GitlabResponseProblem] =
         jsonFormat2(GitlabResponseProblem)
 
-    implicit val timeout: Timeout = Timeout(11.seconds)
+    implicit val timeout: Timeout = Timeout((Constants.DefaultWaitDurationSeconds + 1).seconds)
     val maxWaitTime: Duration = Constants.DefaultWaitDuration
 }

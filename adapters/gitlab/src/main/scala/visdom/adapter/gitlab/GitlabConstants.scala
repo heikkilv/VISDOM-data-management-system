@@ -17,6 +17,7 @@ object GitlabConstants {
     val ColumnPath: String = "path"
 
     val UtcTimeZone: String = "UTC"
+    val DateStringLength: Int = 10
 
     val AdapterType: String = "GitLab"
     val AdapterVersion: String = "0.2"

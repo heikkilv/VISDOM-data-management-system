@@ -1,15 +1,12 @@
 package visdom.adapter.gitlab.queries
 
+import spray.json.JsObject
 
-abstract class GitlabResponse {
-    def status: String
-    def description: String
-}
 
-final case class GitlabResponseAccepted[GitlabQueryOptions](
-    status: String,
-    description: String,
-    options: GitlabQueryOptions
+abstract class GitlabResponse
+
+final case class GitlabResponseOk(
+    data: JsObject
 ) extends GitlabResponse
 
 final case class GitlabResponseProblem(

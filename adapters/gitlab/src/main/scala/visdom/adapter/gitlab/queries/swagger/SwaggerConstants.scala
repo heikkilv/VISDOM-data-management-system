@@ -5,7 +5,8 @@ object SwaggerConstants {
     final val SwaggerJsonVersion: String = "0.2"
     final val SwaggerJsonUnwantedDefinitions: Seq[String] = Seq(
         "Function1",
-        "Function1RequestContextFutureRouteResult"
+        "Function1RequestContextFutureRouteResult",
+        "MapStringJsValue"
     )
 
     final val SwaggerUiPath: String = "swagger"

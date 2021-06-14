@@ -26,9 +26,6 @@ class InfoActor extends Actor with ActorLogging {
             )
             val commitQuery: Future[Unit] = Future(
                 queryType match {
-                    case 1 => {
-                        println(CommitQuery.getResult(Adapter.sparkSession).prettyPrint)
-                    }
                     case _ => {
                         val FilePaths: Array[String] = Array("README.md", ".gitignore", "adapters")
                         val timestampResults: JsObject = TimestampQuery.getResult(Adapter.sparkSession, FilePaths)
