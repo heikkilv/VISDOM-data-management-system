@@ -8,7 +8,7 @@ object InfoConstants {
     final val InfoEndpointDescription = "Returns information about the data adapter."
     final val InfoEndpointSummary = "Returns adapter info."
 
-    final val InfoStatusOkDescription = "The information fetched successfully"
+    final val InfoStatusOkDescription = "The information was fetched successfully"
 
     // the example response for the info endpoint
     final val InfoResponseExampleName = "Example response"

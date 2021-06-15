@@ -5,5 +5,6 @@ final case class InfoResponse(
     adapterName: String,
     adapterType: String,
     adapterVersion: String,
-    startTime: String
+    startTime: String,
+    apiAddress: String
 )

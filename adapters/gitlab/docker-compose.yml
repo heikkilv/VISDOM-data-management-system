@@ -6,13 +6,15 @@ services:
             context: .
             dockerfile: Dockerfile
         image: visdom/gitlab-adapter:0.2
-        container_name: visdom-gitlab-adapter
+        container_name: ${APPLICATION_NAME}
         ports:
-            - 4040:4040
-            - 9876:8080
+            - ${SPARK_PORT}:4040
+            - ${HOST_PORT}:8080
         environment:
             - APPLICATION_NAME=${APPLICATION_NAME}
             - ENABLE_INIT_DAEMON=false
+            - HOST_NAME=${HOST_NAME}
+            - HOST_PORT=${HOST_PORT}
             - MONGODB_HOST=${MONGODB_HOST}
             - MONGODB_PORT=${MONGODB_PORT}
             - MONGODB_USERNAME=${MONGODB_USERNAME}

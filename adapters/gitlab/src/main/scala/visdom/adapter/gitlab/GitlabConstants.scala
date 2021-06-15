@@ -21,4 +21,14 @@ object GitlabConstants {
     val AdapterType: String = "GitLab"
     val AdapterVersion: String = "0.2"
     val HttpInternalPort: Int = 8080
+
+    val EnvironmentApplicationName: String = "APPLICATION_NAME"
+    val EnvironmentHostName: String = "HOST_NAME"
+    val EnvironmentHostPort: String = "HOST_PORT"
+
+    val DefaultApplicationName: String = "GitLab-adapter"
+    val DefaultHostName: String = "localhost"
+    val DefaultHostPort: String = "9876"
+
+    val DoubleDot: String = ":"
 }

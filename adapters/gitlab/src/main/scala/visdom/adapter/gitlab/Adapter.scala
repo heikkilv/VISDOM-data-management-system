@@ -22,7 +22,16 @@ import visdom.spark.Session
 
 
 object Adapter extends App with SwaggerUiSite {
-    val startTime: String = Instant.now().toString()
+    final val StartTime: String = Instant.now().toString()
+    final val AdapterName: String = sys.env.getOrElse(
+        GitlabConstants.EnvironmentApplicationName,
+        GitlabConstants.DefaultApplicationName
+    )
+    final val ApiAddress: String = List(
+        sys.env.getOrElse(GitlabConstants.EnvironmentHostName, GitlabConstants.DefaultHostName),
+        sys.env.getOrElse(GitlabConstants.EnvironmentHostPort, GitlabConstants.DefaultHostPort)
+    ).mkString(GitlabConstants.DoubleDot)
+
     val sparkSession: SparkSession = Session.sparkSession
 
     implicit val system: ActorSystem = ActorSystem("akka-http-sample")

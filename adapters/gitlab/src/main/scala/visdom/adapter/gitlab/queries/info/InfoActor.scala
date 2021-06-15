@@ -19,10 +19,11 @@ class InfoActor extends Actor with ActorLogging {
         case BaseInfo => {
             log.info("Received info query")
             val response: InfoResponse = InfoResponse(
-                adapterName = "test-adapter",
+                adapterName = Adapter.AdapterName,
                 adapterType = GitlabConstants.AdapterType,
                 adapterVersion = GitlabConstants.AdapterVersion,
-                startTime = Adapter.startTime
+                startTime = Adapter.StartTime,
+                apiAddress = Adapter.ApiAddress
             )
 
             sender() ! response
