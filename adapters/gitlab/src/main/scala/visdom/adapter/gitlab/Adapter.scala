@@ -32,7 +32,8 @@ object Adapter extends App with SwaggerUiSite {
         sys.env.getOrElse(GitlabConstants.EnvironmentHostPort, GitlabConstants.DefaultHostPort)
     ).mkString(GitlabConstants.DoubleDot)
 
-    Metadata.storeMetadata()
+    // create or update a metadata document and start periodic updates
+    Metadata.startMetadataTask()
 
     val sparkSession: SparkSession = Session.sparkSession
 
@@ -40,6 +41,7 @@ object Adapter extends App with SwaggerUiSite {
     val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
         val termination: Future[Terminated] = {
             Session.sparkSession.stop()
+            Metadata.stopMetadataTask()
             system.terminate()
         }
     })

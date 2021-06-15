@@ -1,6 +1,8 @@
 package visdom.adapter.gitlab
 
 import java.time.Instant
+import java.util.Timer
+import java.util.TimerTask
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient
 import org.mongodb.scala.MongoClientSettings
@@ -17,6 +19,8 @@ import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.ReplaceOptions
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import scala.concurrent.ExecutionContext
+import scala.concurrent.Future
 import visdom.spark.Constants
 
 
@@ -30,6 +34,11 @@ object Metadata {
     val AttributeStartTime: String = "start_time"
     val AttributeTimestamp: String = "timestamp"
     val AttributeVersion: String = "version"
+
+    val MetadataInitialDelay: Long = 0
+    val MetadataUpdateInterval: Long = 300000
+
+    implicit val ec: ExecutionContext = ExecutionContext.global
 
     val metadataCollection: MongoCollection[Document] =
         MongoClient(Constants.DefaultMongoUri)
@@ -91,5 +100,21 @@ object Metadata {
                 AttributeVersion
             )
         )
+    }
+
+    val metadataTimer: Timer = new Timer()
+
+    val metadataTask: TimerTask = new TimerTask {
+        def run() = {
+            val metadataTask: Future[Unit] = Future(Metadata.storeMetadata())
+        }
+    }
+
+    def startMetadataTask(): Unit = {
+        metadataTimer.schedule(metadataTask, MetadataInitialDelay, MetadataUpdateInterval)
+    }
+
+    def stopMetadataTask(): Unit = {
+        val _ = metadataTask.cancel()
     }
 }
