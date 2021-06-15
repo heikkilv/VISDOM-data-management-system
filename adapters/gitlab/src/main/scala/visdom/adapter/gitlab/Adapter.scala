@@ -32,6 +32,8 @@ object Adapter extends App with SwaggerUiSite {
         sys.env.getOrElse(GitlabConstants.EnvironmentHostPort, GitlabConstants.DefaultHostPort)
     ).mkString(GitlabConstants.DoubleDot)
 
+    Metadata.storeMetadata()
+
     val sparkSession: SparkSession = Session.sparkSession
 
     implicit val system: ActorSystem = ActorSystem("akka-http-sample")

@@ -5,6 +5,7 @@ version := "0.2"
 val AkkaVersion = "2.6.14"
 val AkkaHttpVersion = "10.2.4"
 val MongoConnectorVersion: String = "3.0.1"
+val MongoDriverVersion: String = "4.2.3"
 val SparkVersion: String = "3.1.1"
 val ScalaTestVersion: String = "3.2.7"
 val ScapeGoatVersion: String = "1.4.8"
@@ -20,6 +21,7 @@ libraryDependencies ++= Seq(
     "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
     "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.spark" %% "mongo-spark-connector" % MongoConnectorVersion,
+    "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
     "org.scalatest" %% "scalatest-funsuite" % ScalaTestVersion % "test"
