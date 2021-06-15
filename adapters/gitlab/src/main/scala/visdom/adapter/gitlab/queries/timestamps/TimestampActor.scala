@@ -87,7 +87,7 @@ object TimestampActor {
         else if ({
             val startDate = checkedParameters._3.right.getOrElse(None)
             val endDate = checkedParameters._4.right.getOrElse(None)
-            (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate))
+            (startDate.isDefined && endDate.isDefined && startDate.getOrElse("") > endDate.getOrElse(""))
         }) {
             Left("the endDate must be later than the startDate")
         }

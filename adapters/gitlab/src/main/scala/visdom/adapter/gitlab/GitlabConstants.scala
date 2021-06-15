@@ -9,7 +9,6 @@ object GitlabConstants {
     val ColumnCommits: String = "commits"
     val ColumnCommitterName: String = "committer_name"
     val ColumnCommittedDate: String = "committed_date"
-    val ColumnCreatedAt: String = "created_at"
     val ColumnDate: String = "date"
     val ColumnId: String = "id"
     val ColumnLinks: String = "_links"

@@ -6,8 +6,8 @@ import java.time.ZonedDateTime
 final case class TimestampQueryOptions(
     filePaths: Array[String],
     projectName: Option[String],
-    startDate: Option[ZonedDateTime],
-    endDate: Option[ZonedDateTime]
+    startDate: Option[String],
+    endDate: Option[String]
 )
 
 final case class TimestampQueryOptionsSimple(

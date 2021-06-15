@@ -17,7 +17,13 @@ final case class TimestampResult(
             path,
             JsArray(
                 timestamps
-                    .map(timestamp => JsString(toUtcString(timestamp)))
+                    .map(timestamp => {
+                        toUtcString(timestamp) match {
+                            case Some(utcDateTimeString: String) => Some(JsString(utcDateTimeString))
+                            case None => None
+                        }
+                    })
+                    .flatten
                     .toVector
             )
         )

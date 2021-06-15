@@ -3,6 +3,7 @@ package visdom.adapter.gitlab.queries
 import java.time.LocalDate
 import java.time.DateTimeException
 import java.time.ZonedDateTime
+import visdom.adapter.gitlab.utils.TimeUtils
 
 
 object CommonHelpers {
@@ -68,22 +69,16 @@ object CommonHelpers {
         }
     }
 
-    def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
+    def toDateTimeString(dateTimeStringOption: Option[String]): Option[String] = {
         dateTimeStringOption match {
-            case Some(dateTimeString: String) =>
-                try {
-                    Some(ZonedDateTime.parse(dateTimeString))
-                }
-                catch {
-                    case error: DateTimeException => None
-                }
+            case Some(dateTimeString: String) => TimeUtils.toUtcString(dateTimeString)
             case None => None
         }
     }
 
-    def getCheckedDateTime(dateTimeStringOption: Option[String]): Either[String, Option[ZonedDateTime]] = {
-        toZonedDateTime(dateTimeStringOption) match {
-            case Some(dateTime: ZonedDateTime) => Right(Some(dateTime))
+    def getCheckedDateTime(dateTimeStringOption: Option[String]): Either[String, Option[String]] = {
+        toDateTimeString(dateTimeStringOption) match {
+            case Some(dateTime: String) => Right(Some(dateTime))
             case None => dateTimeStringOption match {
                 case None => Right(None)
                 case Some(dateTimeString: String) =>

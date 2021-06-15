@@ -4,7 +4,7 @@ package visdom.adapter.gitlab.schemas
 final case class CommitTimestampSchema(
     project_name: String,
     id: String,
-    created_at: String
+    committed_date: String
 )
 
 final case class CommitTimestampSchemaKey(
