@@ -13,7 +13,6 @@ object Constants {
     val EnvironmentMongoUsername: String = "MONGODB_USERNAME"
     val EnvironmentMongoPassword: String = "MONGODB_PASSWORD"
     val EnvironmentMongoDatabase: String = "MONGODB_DATABASE"
-    val EnvironmentMongoCollection: String = "MONGODB_COLLECTION"
     val EnvironmentMetadataDatabase: String = "MONGODB_METADATA_DATABASE"
 
     // The default values for the environment variables
@@ -40,7 +39,6 @@ object Constants {
     val ApplicationName: String = sys.env.getOrElse(EnvironmentApplicationName, DefaultApplicationName)
 
     val DefaultDatabaseName: String = sys.env.getOrElse(EnvironmentMongoDatabase, DefaultMongoDatabase)
-    val DefaultCollectionName: String = sys.env.getOrElse(EnvironmentMongoCollection, DefaultMongoCollection)
     val MetadataDatabaseName: String = sys.env.getOrElse(EnvironmentMetadataDatabase, DefaultMetadataDatabase)
 
     val SparkMaster: String = Seq(
@@ -70,6 +68,6 @@ object Constants {
         "/",
         DefaultDatabaseName,
         ".",
-        DefaultCollectionName
+        DefaultMongoCollection
     ).mkString
 }
