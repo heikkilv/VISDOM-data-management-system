@@ -23,6 +23,7 @@ import visdom.spark.Constants
 object Metadata {
     val AttributeDefaultId: String = "id"
     val AttributeAdapterType: String = "adapter_type"
+    val AttributeApiAddress: String = "api_address"
     val AttributeApplicationName: String = "application_name"
     val AttributeComponentType: String = "component_type"
     val AttributeDatabase: String = "database"
@@ -75,6 +76,7 @@ object Metadata {
                 AttributeAdapterType -> GitlabConstants.AdapterType,
                 AttributeVersion -> GitlabConstants.AdapterVersion,
                 AttributeDatabase -> Constants.DefaultDatabaseName,
+                AttributeApiAddress -> Adapter.ApiAddress,
                 AttributeStartTime -> Adapter.StartTime
             )
             .append(AttributeTimestamp, BsonDateTime(Instant.now().toEpochMilli()))
