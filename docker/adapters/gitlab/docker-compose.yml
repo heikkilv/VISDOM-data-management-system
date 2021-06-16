@@ -3,7 +3,7 @@ version: '3.7'
 services:
     spark-app:
         build:
-            context: ../../code
+            context: ../../scala
             dockerfile: Dockerfile-adapter-gitlab
         image: visdom/gitlab-adapter:0.2
         container_name: ${APPLICATION_NAME}

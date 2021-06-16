@@ -4,7 +4,7 @@ services:
 
     visdom-gitlab-fetcher:
         build:
-            context: ../../code
+            context: ../../scala
             dockerfile: Dockerfile-fetcher-gitlab
         image: visdom/gitlab-fetcher:0.2
         container_name: ${APPLICATION_NAME}
