@@ -15,28 +15,28 @@ scalastyle:
     stage: Static Analysis
     image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd code
+        - cd scala
         - sbt scalastyle
 
 scapegoat:
     stage: Static Analysis
     image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd code
+        - cd scala
         - sbt scapegoat
 
 compile:
     stage: Compile
     image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd code
+        - cd scala
         - sbt compile
 
 unit_test:
     stage: Unit Test
     image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd code
+        - cd scala
         - sbt test
 
 fetcher_gitlab:
@@ -46,8 +46,8 @@ fetcher_gitlab:
     script:
         - docker build
           --tag visdom-fetcher-gitlab:test
-          --file code/Dockerfile-fetcher-gitlab
-          code
+          --file scala/Dockerfile-fetcher-gitlab
+          scala
 
 adapter_gitlab:
     stage: Build
@@ -56,5 +56,5 @@ adapter_gitlab:
     script:
         - docker build
           --tag visdom-adapter-gitlab:test
-          --file code/Dockerfile-adapter-gitlab
-          code
+          --file scala/Dockerfile-adapter-gitlab
+          scala
