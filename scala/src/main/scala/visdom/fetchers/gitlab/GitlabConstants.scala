@@ -36,6 +36,7 @@ object GitlabConstants {
     val ParamPerPage: String = "per_page"
     val ParamRecursive: String = "recursive"
     val ParamRef: String = "ref"
+    val ParamRefName: String = "ref_name"
     val ParamSince: String = "since"
     val ParamUntil: String = "until"
     val ParamWithStats: String = "with_stats"

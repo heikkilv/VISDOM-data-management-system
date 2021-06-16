@@ -63,7 +63,7 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
 
         val commitRequest: HttpRequest = processOptionalParameters(
             Http(uri)
-                .param(GitlabConstants.ParamRef, options.reference)
+                .param(GitlabConstants.ParamRefName, options.reference)
                 .param(GitlabConstants.ParamWithStats, options.includeStatistics.toString())
         )
         options.hostServer.modifyRequest(commitRequest)
