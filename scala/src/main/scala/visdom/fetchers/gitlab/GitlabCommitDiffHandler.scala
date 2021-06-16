@@ -8,7 +8,7 @@ import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConstants
-import visdom.fetchers.gitlab.utils.JsonUtils
+import visdom.json.JsonUtils
 
 
 class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)

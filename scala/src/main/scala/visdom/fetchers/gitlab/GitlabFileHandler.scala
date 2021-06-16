@@ -17,8 +17,8 @@ import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.Document
 import visdom.database.mongodb.MongoConstants
-import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
-import visdom.fetchers.gitlab.utils.JsonUtils.toBsonValue
+import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonValue
 
 
 class GitlabFileHandler(options: GitlabFileOptions)

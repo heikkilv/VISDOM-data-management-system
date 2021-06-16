@@ -12,7 +12,6 @@ import visdom.fetchers.gitlab.GitlabCommitOptions
 import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
-import visdom.fetchers.gitlab.utils.HttpUtils
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
 import visdom.fetchers.gitlab.queries.GitlabResponse

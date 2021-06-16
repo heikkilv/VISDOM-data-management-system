@@ -18,8 +18,8 @@ import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import visdom.database.mongodb.MongoConstants
-import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
-import visdom.fetchers.gitlab.utils.JsonUtils.toBsonValue
+import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonValue
 
 
 abstract class GitlabCommitLinkHandler(options: GitlabCommitLinkOptions) extends GitlabDataHandler(options)

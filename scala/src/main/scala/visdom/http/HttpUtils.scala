@@ -1,17 +1,12 @@
-package visdom.fetchers.gitlab.utils
+package visdom.http
 
 import java.util.concurrent.TimeoutException
 import scalaj.http.Http
-import scalaj.http.HttpConstants.utf8
-import scalaj.http.HttpConstants.urlEncode
-import scalaj.http.HttpOptions
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.concurrent.Await
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import visdom.fetchers.gitlab.GitlabConstants
-import visdom.fetchers.gitlab.GitlabServer
+import scala.concurrent.Future
 
 
 object HttpUtils {
@@ -31,10 +26,12 @@ object HttpUtils {
         )
     }
 
+    // adds or replaces the given query parameter to the GET request
     def replaceRequestParam(request: HttpRequest, paramName: String, paramValue: String): HttpRequest = {
         val cleanedParams: Seq[(String, String)] = request.params.filter(param => param._1 != paramName)
 
         Http(request.url)
+            .charset(request.charset)
             .headers(request.headers)
             .params(cleanedParams ++ Seq((paramName, paramValue)))
             .options(request.options)
@@ -44,27 +41,13 @@ object HttpUtils {
         try {
             Await.result(
                 makeRequest(request),
-                GitlabConstants.DefaultWaitDuration
+                HttpConstants.DefaultWaitDuration
             ) match {
                 case Some(response: HttpResponse[String]) => response.code
-                case None => GitlabConstants.StatusCodeUnknown
+                case None => HttpConstants.StatusCodeUnknown
             }
         } catch {
-             case _: TimeoutException => GitlabConstants.StatusCodeUnknown
+             case _: TimeoutException => HttpConstants.StatusCodeUnknown
         }
-    }
-
-    def getProjectQueryStatusCode(gitlabServer: GitlabServer, projectName: String): Int = {
-        returnRequestStatusCode(
-            gitlabServer.modifyRequest(
-                Http(
-                    List(
-                        gitlabServer.baseAddress,
-                        GitlabConstants.PathProjects,
-                        urlEncode(projectName, utf8)
-                    ).mkString("/")
-                )
-            )
-        )
     }
 }

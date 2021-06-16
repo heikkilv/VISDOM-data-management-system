@@ -1,4 +1,4 @@
-package visdom.fetchers.gitlab.utils
+package visdom.json
 
 import java.time.ZonedDateTime
 import org.mongodb.scala.bson.Document
@@ -48,24 +48,11 @@ object JsonUtils {
         }
     }
 
-    private val TempKey: String = "Temp"
-    private val TempJsonStart: String = s"{'${TempKey}':"
-    private val TempJsonEnd: String = "}"
-
-    private def toTempJsonDocument(jsonString: String): String = {
-        TempJsonStart + jsonString + TempJsonEnd
-    }
-
-    def parseJson(jsonString: String): BsonValue = {
-        Document.apply(toTempJsonDocument(jsonString)).getOrElse(TempKey, new BsonNull)
-    }
-
     def removeAttribute(document: BsonDocument, attributeName: String): BsonDocument = {
-        val a = Document()
         document.containsKey(attributeName) match {
             case true => {
                 // remove method removes the key from the document and returns the removed value
-                val removedValue: BsonValue = document.remove(attributeName)
+                val _: BsonValue = document.remove(attributeName)
                 document
             }
             case false => document

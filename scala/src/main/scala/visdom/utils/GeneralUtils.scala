@@ -1,4 +1,5 @@
-package visdom.fetchers.gitlab.utils
+package visdom.utils
+
 
 object GeneralUtils {
     def toInt(stringValue: String): Option[Int] = {

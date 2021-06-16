@@ -18,8 +18,8 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
-import visdom.fetchers.gitlab.utils.JsonUtils.EnrichedBsonDocument
-import visdom.fetchers.gitlab.utils.JsonUtils.toBsonValue
+import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonValue
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions) {
@@ -98,7 +98,7 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
 
             try {
                 Await.result(
-                    utils.HttpUtils.makeRequest(requestInternal),
+                    visdom.http.HttpUtils.makeRequest(requestInternal),
                     GitlabConstants.DefaultWaitDuration
                 ) match {
                     case Some(response: HttpResponse[String]) => responseHelper(response)
@@ -173,9 +173,9 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
         currentPage: Int
     ): Option[HttpRequest] = {
         response.header(GitlabConstants.HeaderNextPage) match {
-            case Some(nextPageValue: String) => utils.GeneralUtils.toInt(nextPageValue) match {
+            case Some(nextPageValue: String) => visdom.utils.GeneralUtils.toInt(nextPageValue) match {
                 case Some(nextPage: Int) if (nextPage == currentPage + 1) => {
-                    val nextRequest: HttpRequest = utils.HttpUtils.replaceRequestParam(
+                    val nextRequest: HttpRequest = visdom.http.HttpUtils.replaceRequestParam(
                         request,
                         GitlabConstants.ParamPage,
                         nextPageValue

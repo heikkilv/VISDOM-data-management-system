@@ -3,7 +3,6 @@ package visdom.fetchers.gitlab.queries
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import visdom.fetchers.gitlab.Routes.server
-import visdom.fetchers.gitlab.utils.HttpUtils
 
 
 object CommonHelpers {
@@ -52,6 +51,6 @@ object CommonHelpers {
     }
 
     def checkProjectAvailability(projectName: String): Int = {
-        HttpUtils.getProjectQueryStatusCode(server, projectName)
+        visdom.http.gitlab.Utils.getProjectQueryStatusCode(server, projectName)
     }
 }
