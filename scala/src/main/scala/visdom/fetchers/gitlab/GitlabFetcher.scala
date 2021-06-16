@@ -9,7 +9,6 @@ import java.time.Instant
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 import scala.sys.ShutdownHookThread
-import visdom.adapter.gitlab.queries.swagger.SwaggerConstants
 import visdom.fetchers.gitlab.queries.all.AllDataActor
 import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitActor
@@ -18,9 +17,10 @@ import visdom.fetchers.gitlab.queries.files.FileActor
 import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.info.InfoActor
 import visdom.fetchers.gitlab.queries.info.InfoService
+import visdom.http.server.swagger.SwaggerRoutes
 
 
-object GitlabFetcher extends App with SwaggerUiSite
+object GitlabFetcher extends App
 {
     val StartTime: String = Instant.now().toString()
 
@@ -42,9 +42,7 @@ object GitlabFetcher extends App with SwaggerUiSite
         new CommitService(system.actorOf(Props[CommitActor])).route,
         new FileService(system.actorOf(Props[FileActor])).route,
         new InfoService(system.actorOf(Props[InfoActor])).route,
-        SwaggerDocService.routes,
-        swaggerUiSiteRoute,
-        SwaggerConstants.RootToSwaggerRedirect
+        SwaggerRoutes.getSwaggerRouter(SwaggerFetcherDocService)
     )
 
     val serverBinding: Future[Http.ServerBinding] =

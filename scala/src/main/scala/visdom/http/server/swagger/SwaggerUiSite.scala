@@ -1,4 +1,4 @@
-package visdom.adapter.gitlab.queries.swagger
+package visdom.http.server.swagger
 
 import akka.http.scaladsl.server.Directives
 

@@ -1,11 +1,12 @@
-package visdom.fetchers.gitlab.queries.swagger
+package visdom.http.server.swagger
 
 
 object SwaggerConstants {
-    final val SwaggerJsonVersion: String = "0.2"
+    final val SwaggerJsonVersionDefault: String = "0.1"
     final val SwaggerJsonUnwantedDefinitions: Seq[String] = Seq(
         "Function1",
-        "Function1RequestContextFutureRouteResult"
+        "Function1RequestContextFutureRouteResult",
+        "MapStringJsValue"
     )
 
     final val SwaggerUiPath: String = "swagger"

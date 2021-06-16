@@ -81,7 +81,7 @@ object Routes {
                 GitlabConstants.AttributeFetcherType -> GitlabConstants.FetcherType,
                 GitlabConstants.AttributeVersion -> GitlabConstants.FetcherVersion,
                 GitlabConstants.AttributeDatabase -> databaseName,
-                AttributeApiAddress -> visdom.fetchers.gitlab.SwaggerDocService.host,
+                AttributeApiAddress -> SwaggerFetcherDocService.host,
                 AttributeSwaggerDefinition -> SwaggerLocation,
                 AttributeStartTime -> GitlabFetcher.StartTime
             )

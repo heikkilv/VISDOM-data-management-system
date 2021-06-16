@@ -14,15 +14,13 @@ import visdom.adapter.gitlab.queries.commits.CommitDataService
 import visdom.adapter.gitlab.queries.commits.CommitDataActor
 import visdom.adapter.gitlab.queries.info.InfoActor
 import visdom.adapter.gitlab.queries.info.InfoService
-import visdom.adapter.gitlab.queries.swagger.SwaggerConstants
-import visdom.adapter.gitlab.queries.swagger.SwaggerDocService
-import visdom.adapter.gitlab.queries.swagger.SwaggerUiSite
 import visdom.adapter.gitlab.queries.timestamps.TimestampService
 import visdom.adapter.gitlab.queries.timestamps.TimestampActor
+import visdom.http.server.swagger.SwaggerRoutes
 import visdom.spark.Session
 
 
-object Adapter extends App with SwaggerUiSite {
+object Adapter extends App {
     final val StartTime: String = Instant.now().toString()
     final val AdapterName: String = sys.env.getOrElse(
         GitlabConstants.EnvironmentApplicationName,
@@ -52,9 +50,7 @@ object Adapter extends App with SwaggerUiSite {
         new CommitDataService(system.actorOf(Props[CommitDataActor])).route,
         new TimestampService(system.actorOf(Props[TimestampActor])).route,
         new InfoService(system.actorOf(Props[InfoActor])).route,
-        SwaggerDocService.routes,
-        swaggerUiSiteRoute,
-        SwaggerConstants.RootToSwaggerRedirect
+        SwaggerRoutes.getSwaggerRouter(SwaggerAdapterDocService)
     )
 
     val serverBinding: Future[Http.ServerBinding] =
