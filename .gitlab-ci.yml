@@ -42,7 +42,7 @@ unit_test:
 fetcher_gitlab:
     stage: Build
     extends:
-        - .docker_registry
+        - .docker_build
     script:
         - docker build
           --tag visdom-fetcher-gitlab:test
@@ -52,7 +52,7 @@ fetcher_gitlab:
 adapter_gitlab:
     stage: Build
     extends:
-        - .docker_registry
+        - .docker_build
     script:
         - docker build
           --tag visdom-adapter-gitlab:test
