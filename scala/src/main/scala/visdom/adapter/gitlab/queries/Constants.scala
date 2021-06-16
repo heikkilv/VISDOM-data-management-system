@@ -49,6 +49,8 @@ object Constants {
 
     final val Comma: String = ","
 
+    final val SwaggerLocation: String = "/api-docs/swagger.json"
+
     final val ResponseExampleInvalidName = "Invalid start time example"
     final val ResponseExampleInvalid = """{
         "status": "BadRequest",

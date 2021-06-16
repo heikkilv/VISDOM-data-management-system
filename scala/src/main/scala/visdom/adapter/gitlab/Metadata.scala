@@ -22,16 +22,18 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.spark.Constants
+import visdom.adapter.gitlab.queries.Constants.SwaggerLocation
 
 
 object Metadata {
     val AttributeDefaultId: String = "id"
     val AttributeAdapterType: String = "adapter_type"
     val AttributeApiAddress: String = "api_address"
-    val AttributeApplicationName: String = "application_name"
+    val AttributeComponentName: String = "application_name"
     val AttributeComponentType: String = "component_type"
     val AttributeDatabase: String = "database"
     val AttributeStartTime: String = "start_time"
+    val AttributeSwaggerDefinition: String = "swagger_definition"
     val AttributeTimestamp: String = "timestamp"
     val AttributeVersion: String = "version"
 
@@ -80,12 +82,13 @@ object Metadata {
     def storeMetadata(): Unit = {
         val metadataDocument: Document = Document(
             BsonDocument(
-                AttributeApplicationName -> Adapter.AdapterName,
+                AttributeComponentName -> Adapter.AdapterName,
                 AttributeComponentType -> GitlabConstants.ComponentType,
                 AttributeAdapterType -> GitlabConstants.AdapterType,
                 AttributeVersion -> GitlabConstants.AdapterVersion,
                 AttributeDatabase -> Constants.DefaultDatabaseName,
                 AttributeApiAddress -> Adapter.ApiAddress,
+                AttributeSwaggerDefinition -> SwaggerLocation,
                 AttributeStartTime -> Adapter.StartTime
             )
             .append(AttributeTimestamp, BsonDateTime(Instant.now().toEpochMilli()))
@@ -94,7 +97,7 @@ object Metadata {
             metadataCollection,
             metadataDocument,
             Array(
-                AttributeApplicationName,
+                AttributeComponentName,
                 AttributeComponentType,
                 AttributeAdapterType,
                 AttributeVersion
@@ -106,7 +109,7 @@ object Metadata {
 
     val metadataTask: TimerTask = new TimerTask {
         def run() = {
-            val metadataTask: Future[Unit] = Future(Metadata.storeMetadata())
+            val metadataTask: Future[Unit] = Future(storeMetadata())
         }
     }
 

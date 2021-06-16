@@ -7,5 +7,5 @@ import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
 
 trait InfoProtocol extends GitlabProtocol {
     implicit val infoResponseFormat: RootJsonFormat[InfoResponse] =
-        jsonFormat6(InfoResponse)
+        jsonFormat9(InfoResponse)
 }

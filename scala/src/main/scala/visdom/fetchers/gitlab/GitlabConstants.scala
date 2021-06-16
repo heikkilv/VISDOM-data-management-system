@@ -74,6 +74,8 @@ object GitlabConstants {
     val AttributeStartDate: String = "start_date"
     val AttributeTimestamp: String = "timestamp"
     val AttributeType: String = "type"
+    val AttributeComponentType: String = "component_type"
+    val AttributeFetcherType: String = "fetcher_type"
     val AttributeVersion: String = "version"
 
     // constants for the different GitLab fetcher types
@@ -98,6 +100,7 @@ object GitlabConstants {
     // the GitLab API version
     val GitlabApiVersion: Int = 4
 
+    val ComponentType: String = "fetcher"
     val FetcherType: String = "GitLab"
     val FetcherVersion: String = "0.2"
     val HttpInternalPort: Int = 8080

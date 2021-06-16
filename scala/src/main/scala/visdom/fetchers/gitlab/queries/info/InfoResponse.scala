@@ -2,10 +2,13 @@ package visdom.fetchers.gitlab.queries.info
 
 
 final case class InfoResponse(
-    fetcherName: String,
+    componentName: String,
+    componentType: String,
     fetcherType: String,
-    fetcherVersion: String,
+    version: String,
     gitlabServer: String,
     mongoDatabase: String,
-    startTime: String
+    startTime: String,
+    apiAddress: String,
+    swaggerDefinition: String
 )

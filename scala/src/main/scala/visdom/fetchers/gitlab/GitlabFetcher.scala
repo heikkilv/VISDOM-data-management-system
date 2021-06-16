@@ -9,6 +9,7 @@ import java.time.Instant
 import scala.concurrent.ExecutionContextExecutor
 import scala.concurrent.Future
 import scala.sys.ShutdownHookThread
+import visdom.adapter.gitlab.queries.swagger.SwaggerConstants
 import visdom.fetchers.gitlab.queries.all.AllDataActor
 import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitActor
@@ -21,14 +22,19 @@ import visdom.fetchers.gitlab.queries.info.InfoService
 
 object GitlabFetcher extends App with SwaggerUiSite
 {
-    val startTime: String = Instant.now().toString()
+    val StartTime: String = Instant.now().toString()
 
-    Routes.storeMetadata()
+    // create or update a metadata document and start periodic updates
+    Routes.startMetadataTask()
 
     implicit val system: ActorSystem = ActorSystem("akka-http-sample")
     val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
-        val termination: Future[Terminated] = system.terminate()
+        val termination: Future[Terminated] = {
+            Routes.stopMetadataTask()
+            system.terminate()
+        }
     })
+
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
 
     val routes = concat(
@@ -37,7 +43,8 @@ object GitlabFetcher extends App with SwaggerUiSite
         new FileService(system.actorOf(Props[FileActor])).route,
         new InfoService(system.actorOf(Props[InfoActor])).route,
         SwaggerDocService.routes,
-        swaggerUiSiteRoute
+        swaggerUiSiteRoute,
+        SwaggerConstants.RootToSwaggerRedirect
     )
 
     val serverBinding: Future[Http.ServerBinding] =

@@ -14,6 +14,7 @@ import visdom.adapter.gitlab.queries.commits.CommitDataService
 import visdom.adapter.gitlab.queries.commits.CommitDataActor
 import visdom.adapter.gitlab.queries.info.InfoActor
 import visdom.adapter.gitlab.queries.info.InfoService
+import visdom.adapter.gitlab.queries.swagger.SwaggerConstants
 import visdom.adapter.gitlab.queries.swagger.SwaggerDocService
 import visdom.adapter.gitlab.queries.swagger.SwaggerUiSite
 import visdom.adapter.gitlab.queries.timestamps.TimestampService
@@ -52,7 +53,8 @@ object Adapter extends App with SwaggerUiSite {
         new TimestampService(system.actorOf(Props[TimestampActor])).route,
         new InfoService(system.actorOf(Props[InfoActor])).route,
         SwaggerDocService.routes,
-        swaggerUiSiteRoute
+        swaggerUiSiteRoute,
+        SwaggerConstants.RootToSwaggerRedirect
     )
 
     val serverBinding: Future[Http.ServerBinding] =

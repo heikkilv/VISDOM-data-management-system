@@ -9,7 +9,7 @@ import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.CommitQuery
 import visdom.adapter.gitlab.TimestampQuery
-
+import visdom.adapter.gitlab.queries.Constants
 
 class InfoActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
@@ -19,11 +19,13 @@ class InfoActor extends Actor with ActorLogging {
         case BaseInfo => {
             log.info("Received info query")
             val response: InfoResponse = InfoResponse(
-                adapterName = Adapter.AdapterName,
+                componentType = GitlabConstants.ComponentType,
+                componentName = Adapter.AdapterName,
                 adapterType = GitlabConstants.AdapterType,
-                adapterVersion = GitlabConstants.AdapterVersion,
+                version = GitlabConstants.AdapterVersion,
                 startTime = Adapter.StartTime,
-                apiAddress = Adapter.ApiAddress
+                apiAddress = Adapter.ApiAddress,
+                swaggerDefinition = Constants.SwaggerLocation
             )
 
             sender() ! response

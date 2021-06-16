@@ -17,12 +17,15 @@ class InfoActor extends Actor with ActorLogging {
         case BaseInfo => {
             log.info("Received info query")
             val response: InfoResponse = InfoResponse(
-                fetcherName = MongoConnection.applicationName,
+                componentName = MongoConnection.applicationName,
+                componentType = GitlabConstants.ComponentType,
                 fetcherType = GitlabConstants.FetcherType,
-                fetcherVersion = GitlabConstants.FetcherVersion,
+                version = GitlabConstants.FetcherVersion,
                 gitlabServer = Routes.server.hostName,
                 mongoDatabase = Routes.databaseName,
-                startTime = GitlabFetcher.startTime
+                startTime = GitlabFetcher.StartTime,
+                apiAddress = visdom.fetchers.gitlab.SwaggerDocService.host,
+                swaggerDefinition = visdom.fetchers.gitlab.Routes.SwaggerLocation
             )
             sender() ! response
         }

@@ -13,9 +13,12 @@ object InfoConstants {
     // the example response for the info endpoint
     final val InfoResponseExampleName = "Example response"
     final val InfoResponseExample = """{
-        "adapterName": "GitLab-adapter",
+        "componentName": "GitLab-adapter",
+        "componentType": "adapter",
         "adapterType": "GitLab",
-        "adapterVersion": "0.2",
-        "startTime": "2021-06-07T09:30:00.000Z"
+        "version": "0.2",
+        "startTime": "2021-06-07T09:30:00.000Z",
+        "apiAddress": "localhost:9876",
+        "swaggerDefinition": "/api-docs/swagger.json"
     }"""
 }

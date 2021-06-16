@@ -2,9 +2,11 @@ package visdom.adapter.gitlab.queries.info
 
 
 final case class InfoResponse(
-    adapterName: String,
+    componentType: String,
+    componentName: String,
     adapterType: String,
-    adapterVersion: String,
+    version: String,
     startTime: String,
-    apiAddress: String
+    apiAddress: String,
+    swaggerDefinition: String
 )
