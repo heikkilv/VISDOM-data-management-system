@@ -16,7 +16,7 @@ object ResponseUtils extends ServerProtocol {
         description: String,
         options: JsObject
     ): response.ResponseAccepted = {
-        response.ResponseAccepted(ServerConstants.QueryInvalidStatus, description, options)
+        response.ResponseAccepted(ServerConstants.QueryAcceptedStatus, description, options)
     }
 
     def getInvalidResponse(description: String): response.ResponseProblem = {
