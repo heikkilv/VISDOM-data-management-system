@@ -1,4 +1,6 @@
-package visdom.adapter.gitlab.queries.commits
+package visdom.http.server.adapter.gitlab
+
+import visdom.http.server.QueryOptionsBase
 
 
 final case class CommitDataQueryOptions(
@@ -6,4 +8,4 @@ final case class CommitDataQueryOptions(
     userName: Option[String],
     startDate: Option[String],
     endDate: Option[String]
-)
+) extends QueryOptionsBase

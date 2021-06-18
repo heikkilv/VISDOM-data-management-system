@@ -24,10 +24,11 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.queries.Constants
-import visdom.adapter.gitlab.queries.GitlabProtocol
-import visdom.adapter.gitlab.queries.GitlabResponse
-import visdom.adapter.gitlab.queries.GitlabResponseOk
-import visdom.adapter.gitlab.queries.GitlabResponseProblem
+import visdom.http.server.ServerProtocol
+import visdom.http.server.response.JsonResponse
+import visdom.http.server.adapter.gitlab.CommitDataQueryOptions
+import visdom.http.server.response.ResponseProblem
+import visdom.http.server.ResponseUtils
 
 
 // scalastyle:off method.length
@@ -35,7 +36,7 @@ import visdom.adapter.gitlab.queries.GitlabResponseProblem
 @Path(CommitDataConstants.CommitDataRootPath)
 class CommitDataService(commitDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with GitlabProtocol {
+with ServerProtocol {
     val route: Route = (
         getCommitDataRoute
     )
@@ -102,7 +103,7 @@ with GitlabProtocol {
                 description = Constants.StatusInvalidDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleInvalidName,
@@ -117,7 +118,7 @@ with GitlabProtocol {
                 description = Constants.StatusNotFoundDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleNotFoundName,
@@ -132,7 +133,7 @@ with GitlabProtocol {
                 description = Constants.StatusErrorDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleErrorName,
@@ -159,35 +160,13 @@ with GitlabProtocol {
             startDate,
             endDate
         ) => get {
-            val response: GitlabResponse = try {
-                Await.result(
-                    (commitDataActor ? CommitDataQueryOptions(
-                        projectName,
-                        userName,
-                        startDate,
-                        endDate
-                    )).mapTo[GitlabResponse],
-                    maxWaitTime
-                )
-            } catch  {
-                case error: TimeoutException => GitlabResponseProblem(
-                    Constants.QueryErrorStatus,
-                    error.getMessage()
-                )
-            }
-
-            response match {
-                case okResponse: GitlabResponseOk =>
-                    complete(StatusCodes.OK, okResponse.data)
-                case problemResponse: GitlabResponseProblem => complete(
-                    problemResponse.status match {
-                        case Constants.QueryInvalidStatus => StatusCodes.BadRequest
-                        case Constants.QueryNotFoundStatus => StatusCodes.NotFound
-                        case Constants.QueryErrorStatus => StatusCodes.InternalServerError
-                    },
-                    problemResponse
-                )
-            }
+            val options: CommitDataQueryOptions = CommitDataQueryOptions(
+                projectName,
+                userName,
+                startDate,
+                endDate
+            )
+            ResponseUtils.getRoute(commitDataActor, options)
         }
     }
 }

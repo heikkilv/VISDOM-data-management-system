@@ -11,11 +11,12 @@ import visdom.adapter.gitlab.Adapter
 import visdom.adapter.gitlab.CommitQuery
 import visdom.adapter.gitlab.queries.CommonHelpers
 import visdom.adapter.gitlab.queries.Constants
-import visdom.adapter.gitlab.queries.GitlabResponse
-import visdom.adapter.gitlab.queries.GitlabResponseOk
-import visdom.adapter.gitlab.queries.GitlabResponseProblem
+import visdom.http.server.response.BaseResponse
+import visdom.http.server.response.JsonResponse
 import java.util.Date
 import java.time.ZonedDateTime
+import visdom.http.server.adapter.gitlab.CommitDataQueryOptions
+import visdom.http.server.ResponseUtils
 
 
 class CommitDataActor extends Actor with ActorLogging {
@@ -28,31 +29,25 @@ class CommitDataActor extends Actor with ActorLogging {
 
             val optionProblem: Option[String] = CommitDataActor.getQueryOptionsProblem(queryOptions)
 
-            val response: GitlabResponse = optionProblem match {
-                case Some(problem: String) => GitlabResponseProblem(Constants.QueryInvalidStatus, problem)
+            val response: BaseResponse = optionProblem match {
+                case Some(problem: String) => ResponseUtils.getInvalidResponse(problem)
                 case None => {
                     // get the response for the query using Spark
-                    val sparkResponse: GitlabResponse = try {
+                    val sparkResponse: BaseResponse = try {
                         Await.result(
                             Future(
-                                GitlabResponseOk(CommitQuery.getResult(Adapter.sparkSession, queryOptions))
+                                JsonResponse(CommitQuery.getResult(Adapter.sparkSession, queryOptions))
                             ),
                             Constants.DefaultWaitDuration
                         )
                     } catch  {
-                        case error: TimeoutException => GitlabResponseProblem(
-                            Constants.QueryErrorStatus,
-                            error.getMessage()
-                        )
+                        case error: TimeoutException => ResponseUtils.getErrorResponse(error.getMessage())
                     }
 
                     // check if the response from Spark is empty
                     sparkResponse match {
-                        case okResponse: GitlabResponseOk => okResponse.data.fields.isEmpty match {
-                            case true => GitlabResponseProblem(
-                                Constants.QueryNotFoundStatus,
-                                Constants.ResponseDefaultNotFound
-                            )
+                        case okResponse: JsonResponse => okResponse.data.fields.isEmpty match {
+                            case true => ResponseUtils.getNotFoundResponse(Constants.ResponseDefaultNotFound)
                             case false => sparkResponse
                         }
                         case _ => sparkResponse

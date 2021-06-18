@@ -23,9 +23,12 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.fetchers.gitlab.queries.GitlabResponse
-import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
-import visdom.fetchers.gitlab.queries.GitlabResponseProblem
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.response.ResponseAccepted
+import visdom.http.server.response.ResponseProblem
+import visdom.http.server.fetcher.gitlab.FileQueryOptions
+import visdom.http.server.ResponseUtils
+import visdom.http.server.ServerProtocol
 
 
 // scalastyle:off method.length
@@ -33,7 +36,7 @@ import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 @Path(FileConstants.FileRootPath)
 class FileService(fileActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with FileProtocol {
+with ServerProtocol {
     val route: Route = (
         getFileRoute
     )
@@ -96,7 +99,7 @@ with FileProtocol {
                 description = FileConstants.FileStatusAcceptedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseAccepted[FileQueryOptions]]),
+                        schema = new Schema(implementation = classOf[ResponseAccepted]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleAcceptedName,
@@ -111,7 +114,7 @@ with FileProtocol {
                 description = Constants.StatusInvalidDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleInvalidName1,
@@ -130,7 +133,7 @@ with FileProtocol {
                 description = Constants.StatusUnauthorizedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleUnauthorizedName,
@@ -145,7 +148,7 @@ with FileProtocol {
                 description = Constants.StatusNotFoundDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleNotFoundName,
@@ -160,7 +163,7 @@ with FileProtocol {
                 description = Constants.StatusErrorDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleErrorName,
@@ -192,40 +195,14 @@ with FileProtocol {
             recursive,
             includeCommitLinks
         ) => get {
-            val response: GitlabResponse = try {
-                Await.result(
-                    (
-                        fileActor ? FileQueryOptions(
-                            projectName,
-                            reference,
-                            path,
-                            recursive,
-                            includeCommitLinks
-                        )
-                    ).mapTo[GitlabResponse],
-                    maxWaitTime
-                )
-            } catch  {
-                case error: TimeoutException => GitlabResponseProblem(
-                    Constants.QueryErrorStatus,
-                    error.getMessage()
-                )
-            }
-
-            response match {
-                case acceptedResponse: GitlabResponseAccepted[FileQueryOptions] @unchecked =>
-                    complete(StatusCodes.Accepted, acceptedResponse)
-                case problemResponse: GitlabResponseProblem => problemResponse.status match {
-                    case Constants.QueryInvalidStatus =>
-                        complete(StatusCodes.BadRequest, problemResponse)
-                    case Constants.QueryUnauthorizedStatus =>
-                        complete(StatusCodes.Unauthorized, problemResponse)
-                    case Constants.QueryNotFoundStatus =>
-                        complete(StatusCodes.NotFound, problemResponse)
-                    case Constants.QueryErrorStatus =>
-                        complete(StatusCodes.InternalServerError, problemResponse)
-                }
-            }
+            val options: FileQueryOptions = FileQueryOptions(
+                projectName,
+                reference,
+                path,
+                recursive,
+                includeCommitLinks
+            )
+            ResponseUtils.getRoute(fileActor, options)
         }
     }
 }

@@ -18,13 +18,17 @@ import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
+import visdom.http.server.response.GitlabFetcherInfoResponse
+import visdom.http.server.ResponseUtils
+import visdom.http.server.ServerProtocol
+import visdom.http.server.BaseOptions
 
 
 @SuppressWarnings(Array("UnusedMethodParameter"))
 @Path(InfoConstants.InfoRootPath)
 class InfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with InfoProtocol {
+with ServerProtocol {
     val route: Route = (
         getInfoRoute
     )
@@ -40,7 +44,7 @@ with InfoProtocol {
                 description = InfoConstants.InfoStatusOkDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[InfoResponse]),
+                        schema = new Schema(implementation = classOf[GitlabFetcherInfoResponse]),
                         examples = Array(
                             new ExampleObject(
                                 name = InfoConstants.InfoResponseExampleName,
@@ -56,9 +60,7 @@ with InfoProtocol {
         path(InfoConstants.InfoPath)
     ) {
         get {
-            complete(
-                (infoActor ? BaseInfo).mapTo[InfoResponse]
-            )
+            ResponseUtils.getRoute(infoActor, BaseOptions)
         }
     }
 }

@@ -1,7 +1,7 @@
-package visdom.fetchers.gitlab.queries.info
+package visdom.http.server.response
 
 
-final case class InfoResponse(
+final case class GitlabFetcherInfoResponse(
     componentName: String,
     componentType: String,
     fetcherType: String,
@@ -11,4 +11,4 @@ final case class InfoResponse(
     startTime: String,
     apiAddress: String,
     swaggerDefinition: String
-)
+) extends FetcherInfoResponse

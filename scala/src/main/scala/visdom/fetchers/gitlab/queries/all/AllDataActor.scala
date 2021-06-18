@@ -14,11 +14,11 @@ import visdom.fetchers.gitlab.FileSpecificFetchParameters
 import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.fetchers.gitlab.queries.GitlabResponse
-import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
-import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.files.FileActor
+import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.ResponseUtils
 
 
 class AllDataActor extends Actor with ActorLogging {
@@ -28,7 +28,7 @@ class AllDataActor extends Actor with ActorLogging {
     def receive: Receive = {
         case queryOptions: AllDataQueryOptions => {
             log.info(s"Received all data query with options: ${queryOptions.toString()}")
-            val response: GitlabResponse = AllDataActor.getFetchOptions(queryOptions) match {
+            val response: StatusResponse = AllDataActor.getFetchOptions(queryOptions) match {
                 case Right(fetchParameters: AllDataSpecificFetchParameters) => {
                     CommonHelpers.checkProjectAvailability(fetchParameters.projectName) match {
                         case GitlabConstants.StatusCodeOk => {
@@ -39,31 +39,21 @@ class AllDataActor extends Actor with ActorLogging {
                                 case Success(_) => AllDataActor.startFileFetching(fetchParameters)
                                 case Failure(error) => log.error(error.getMessage())
                             })
-
-                            GitlabResponseAccepted(
-                                Constants.QueryAcceptedStatus,
+                            ResponseUtils.getAcceptedResponse(
                                 AllDataConstants.AllDataStatusAcceptedDescription,
-                                queryOptions
+                                queryOptions.toJsObject()
                             )
                         }
-                        case GitlabConstants.StatusCodeUnauthorized => GitlabResponseProblem(
-                            Constants.QueryUnauthorizedStatus,
+                        case GitlabConstants.StatusCodeUnauthorized => ResponseUtils.getUnauthorizedResponse(
                             s"Access to project '${fetchParameters.projectName}' not allowed"
                         )
-                        case GitlabConstants.StatusCodeNotFound => GitlabResponseProblem(
-                            Constants.QueryNotFoundStatus,
+                        case GitlabConstants.StatusCodeNotFound => ResponseUtils.getNotFoundResponse(
                             s"Project '${fetchParameters.projectName}' not found"
                         )
-                        case _ => GitlabResponseProblem(
-                            Constants.QueryErrorStatus,
-                            Constants.StatusErrorDescription
-                        )
+                        case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => GitlabResponseProblem(
-                    Constants.QueryInvalidStatus,
-                    errorDescription
-                )
+                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
             }
             sender() ! response
         }

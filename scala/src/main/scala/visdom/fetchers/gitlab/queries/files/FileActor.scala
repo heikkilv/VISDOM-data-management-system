@@ -13,49 +13,41 @@ import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.fetchers.gitlab.queries.GitlabResponse
-import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
-import visdom.fetchers.gitlab.queries.GitlabResponseProblem
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.fetcher.gitlab.FileQueryOptions
+import visdom.http.server.ResponseUtils
+import visdom.http.server.ServerProtocol
 
 
-class FileActor extends Actor with ActorLogging {
+class FileActor extends Actor with ActorLogging with ServerProtocol {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
     @SuppressWarnings(Array("org.wartremover.warts.Any"))
     def receive: Receive = {
         case queryOptions: FileQueryOptions => {
             log.info(s"Received files query with options: ${queryOptions.toString()}")
-            val response: GitlabResponse = FileActor.getFetchOptions(queryOptions) match {
+            val response: StatusResponse = FileActor.getFetchOptions(queryOptions) match {
                 case Right(fetchParameters: FileSpecificFetchParameters) => {
                     CommonHelpers.checkProjectAvailability(fetchParameters.projectName) match {
                         case GitlabConstants.StatusCodeOk => {
                             // start the file data fetching
                             val commitFetching = Future(FileActor.startFileFetching(fetchParameters))
 
-                            GitlabResponseAccepted[FileQueryOptions](
-                                Constants.QueryAcceptedStatus,
+                            ResponseUtils.getAcceptedResponse(
                                 FileConstants.FileStatusAcceptedDescription,
-                                queryOptions
+                                queryOptions.toJsObject()
                             )
                         }
-                        case GitlabConstants.StatusCodeUnauthorized => GitlabResponseProblem(
-                            Constants.QueryUnauthorizedStatus,
+                        case GitlabConstants.StatusCodeUnauthorized => ResponseUtils.getUnauthorizedResponse(
                             s"Access to project '${fetchParameters.projectName}' not allowed"
                         )
-                        case GitlabConstants.StatusCodeNotFound => GitlabResponseProblem(
-                            Constants.QueryNotFoundStatus,
+                        case GitlabConstants.StatusCodeNotFound => ResponseUtils.getNotFoundResponse(
                             s"Project '${fetchParameters.projectName}' not found"
                         )
-                        case _ => GitlabResponseProblem(
-                            Constants.QueryErrorStatus,
-                            Constants.StatusErrorDescription
-                        )
+                        case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => GitlabResponseProblem(
-                    Constants.QueryInvalidStatus,
-                    errorDescription
-                )
+                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
             }
             sender() ! response
         }

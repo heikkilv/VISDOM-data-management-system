@@ -1,7 +1,7 @@
-package visdom.adapter.gitlab.queries.info
+package visdom.http.server.response
 
 
-final case class InfoResponse(
+final case class GitlabAdapterInfoResponse(
     componentType: String,
     componentName: String,
     adapterType: String,
@@ -9,4 +9,4 @@ final case class InfoResponse(
     startTime: String,
     apiAddress: String,
     swaggerDefinition: String
-)
+) extends AdapterInfoResponse

@@ -12,7 +12,7 @@ import spray.json.JsObject
 import visdom.adapter.gitlab.results.CommitResult
 import visdom.adapter.gitlab.utils.JsonUtils
 import visdom.spark.Constants
-import visdom.adapter.gitlab.queries.commits.CommitDataQueryOptions
+import visdom.http.server.adapter.gitlab.CommitDataQueryOptions
 
 
 object CommitQuery {

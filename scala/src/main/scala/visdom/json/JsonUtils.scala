@@ -1,17 +1,20 @@
 package visdom.json
 
 import java.time.ZonedDateTime
-import org.mongodb.scala.bson.Document
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.bson.BsonValue
-import visdom.fetchers.gitlab.GitlabConstants
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
+import spray.json.JsBoolean
+import spray.json.JsNull
+import spray.json.JsNumber
+import spray.json.JsString
+import spray.json.JsValue
 
 
 object JsonUtils {
@@ -45,6 +48,19 @@ object JsonUtils {
                 zonedDateTimeValue.toInstant().toEpochMilli()
             )
             case _ => BsonNull()
+        }
+    }
+
+    def toJsonValue(value: Any): JsValue = {
+        value match {
+            case jsValue: JsValue => jsValue
+            case stringValue: String => JsString(stringValue)
+            case intValue: Int => JsNumber(intValue)
+            case longValue: Long => JsNumber(longValue)
+            case doubleValue: Double => JsNumber(doubleValue)
+            case booleanValue: Boolean => JsBoolean(booleanValue)
+            case Some(optionValue) => toJsonValue(optionValue)
+            case _ => JsNull
         }
     }
 

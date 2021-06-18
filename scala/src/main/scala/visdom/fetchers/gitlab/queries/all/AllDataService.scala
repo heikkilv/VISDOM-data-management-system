@@ -23,9 +23,11 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.fetchers.gitlab.queries.GitlabResponse
-import visdom.fetchers.gitlab.queries.GitlabResponseAccepted
-import visdom.fetchers.gitlab.queries.GitlabResponseProblem
+import visdom.http.server.ServerProtocol
+import visdom.http.server.ResponseUtils
+import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
+import visdom.http.server.response.ResponseProblem
+import visdom.http.server.response.ResponseAccepted
 
 
 // scalastyle:off method.length
@@ -33,7 +35,8 @@ import visdom.fetchers.gitlab.queries.GitlabResponseProblem
 @Path(AllDataConstants.AllDataRootPath)
 class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with AllDataProtocol {
+with ServerProtocol
+{
     val route: Route = (
         getAllDataRoute
     )
@@ -88,7 +91,7 @@ with AllDataProtocol {
                 description = AllDataConstants.AllDataStatusAcceptedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseAccepted[AllDataQueryOptions]]),
+                        schema = new Schema(implementation = classOf[ResponseAccepted]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleAcceptedName,
@@ -103,7 +106,7 @@ with AllDataProtocol {
                 description = Constants.StatusInvalidDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleInvalidName1,
@@ -122,7 +125,7 @@ with AllDataProtocol {
                 description = Constants.StatusUnauthorizedDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleUnauthorizedName,
@@ -137,7 +140,7 @@ with AllDataProtocol {
                 description = Constants.StatusNotFoundDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleNotFoundName,
@@ -152,7 +155,7 @@ with AllDataProtocol {
                 description = Constants.StatusErrorDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabResponseProblem]),
+                        schema = new Schema(implementation = classOf[ResponseProblem]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleErrorName,
@@ -180,39 +183,13 @@ with AllDataProtocol {
             startDate,
             endDate
         ) => get {
-            val response: GitlabResponse = try {
-                Await.result(
-                    (
-                        allDataActor ? AllDataQueryOptions(
-                            projectName,
-                            reference,
-                            startDate,
-                            endDate
-                        )
-                    ).mapTo[GitlabResponse],
-                    maxWaitTime
-                )
-            } catch  {
-                case error: TimeoutException => GitlabResponseProblem(
-                    Constants.QueryErrorStatus,
-                    error.getMessage()
-                )
-            }
-
-            response match {
-                case acceptedResponse: GitlabResponseAccepted[AllDataQueryOptions] @unchecked =>
-                    complete(StatusCodes.Accepted, acceptedResponse)
-                case problemResponse: GitlabResponseProblem => problemResponse.status match {
-                    case Constants.QueryInvalidStatus =>
-                        complete(StatusCodes.BadRequest, problemResponse)
-                    case Constants.QueryUnauthorizedStatus =>
-                        complete(StatusCodes.Unauthorized, problemResponse)
-                    case Constants.QueryNotFoundStatus =>
-                        complete(StatusCodes.NotFound, problemResponse)
-                    case Constants.QueryErrorStatus =>
-                        complete(StatusCodes.InternalServerError, problemResponse)
-                }
-            }
+            val options: AllDataQueryOptions = AllDataQueryOptions(
+                projectName,
+                reference,
+                startDate,
+                endDate
+            )
+            ResponseUtils.getRoute(allDataActor, options)
         }
     }
 }
