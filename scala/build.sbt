@@ -56,6 +56,7 @@ enablePlugins(JavaAppPackaging)
 
 val MainGitlabFetcher: String = "visdom.fetchers.gitlab.GitlabFetcher"
 val MainGitlabAdapter: String = "visdom.adapter.gitlab.Adapter"
+val MainDataBroker: String = "visdom.broker.DataBroker"
 
 Global / excludeLintKeys := Set(stage / mainClass)
 
@@ -69,4 +70,10 @@ lazy val GitlabAdapter = (project in file("."))
     .settings(
         Compile / mainClass := Some(MainGitlabAdapter),
         assembly / mainClass := Some(MainGitlabAdapter)
+    )
+
+lazy val DataBroker = (project in file("."))
+    .settings(
+        Compile / mainClass := Some(MainDataBroker),
+        stage / mainClass := Some(MainDataBroker)
     )

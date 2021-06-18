@@ -12,4 +12,6 @@ object SwaggerConstants {
     final val SwaggerUiPath: String = "swagger"
     final val SwaggerUiResourceFile: String = "swagger-ui/index.html"
     final val SwaggerUiResourceFolder: String = "swagger-ui"
+
+    final val SwaggerLocation: String = "/api-docs/swagger.json"
 }

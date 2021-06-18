@@ -76,6 +76,12 @@ object MongoConnection {
         }).build()
     })
 
+    def getMainMetadataCollection(): MongoCollection[Document] = {
+        mongoClient
+            .getDatabase(MongoConstants.MongoMetadataDatabase)
+            .getCollection(MongoConstants.CollectionMetadata)
+    }
+
     def storeDocument(
         collection: MongoCollection[Document],
         document: Document,
