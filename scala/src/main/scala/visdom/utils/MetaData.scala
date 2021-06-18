@@ -9,6 +9,7 @@ import org.mongodb.scala.bson.BsonDocument
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.database.mongodb.MongoConnection
+import visdom.http.server.response.ComponentInfoResponse
 
 
 trait Metadata {
@@ -16,6 +17,7 @@ trait Metadata {
 
     def getMetadataDocument(): BsonDocument
     def getIdentifyingAttributes(): Array[String]
+    def getInfoResponse(): ComponentInfoResponse
 
     def metadataDocumentWithTimestamp(): Document = {
         Document(
