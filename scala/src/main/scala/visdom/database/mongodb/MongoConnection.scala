@@ -19,6 +19,8 @@ import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
+import visdom.utils.EnvironmentVariables.EnvironmentMetadataDatabase
+import visdom.utils.EnvironmentVariables.getEnvironmentVariable
 
 
 object MongoConnection {
@@ -29,15 +31,14 @@ object MongoConnection {
         MongoConstants.DefaultApplicationName
     )
 
+    val metadataDatabaseName: String = getEnvironmentVariable(EnvironmentMetadataDatabase)
+
     private val mongoCredentials: MongoCredential = MongoCredential.createCredential(
         userName = environmentVariables.getOrElse(
             MongoConstants.MongoUserName,
             MongoConstants.DefaultMongoUserName
         ),
-        database = environmentVariables.getOrElse(
-            MongoConstants.MongoMetadataDatabase,
-            MongoConstants.DefaultMongoMetadataDatabase
-        ),
+        database = metadataDatabaseName,
         password = environmentVariables.getOrElse[String](
             MongoConstants.MongoPassword,
             MongoConstants.DefaultMongoPassword
@@ -79,7 +80,7 @@ object MongoConnection {
 
     def getMainMetadataCollection(): MongoCollection[Document] = {
         mongoClient
-            .getDatabase(MongoConstants.MongoMetadataDatabase)
+            .getDatabase(metadataDatabaseName)
             .getCollection(MongoConstants.CollectionMetadata)
     }
 

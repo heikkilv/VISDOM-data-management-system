@@ -50,6 +50,8 @@ object ResponseUtils extends ServerProtocol {
                 Directives.complete(StatusCodes.OK, jsonResponse.data)
             case acceptedResponse: response.ResponseAccepted =>
                 Directives.complete(StatusCodes.Accepted, acceptedResponse)
+            case brokerInfoResponse: response.BrokerInfoResponse =>
+                Directives.complete(StatusCodes.OK, brokerInfoResponse)
             case gitlabFetcherInfoResponse: response.GitlabFetcherInfoResponse =>
                 Directives.complete(StatusCodes.OK, gitlabFetcherInfoResponse)
             case gitlabAdapterInfoResponse: response.GitlabAdapterInfoResponse =>

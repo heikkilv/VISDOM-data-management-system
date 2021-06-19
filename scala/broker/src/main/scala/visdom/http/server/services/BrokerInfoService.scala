@@ -21,7 +21,7 @@ import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerConstants
 import visdom.http.server.ServerProtocol
-import visdom.http.server.response.GitlabFetcherInfoResponse
+import visdom.http.server.response.BrokerInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
@@ -47,7 +47,7 @@ with ServerProtocol {
                 description = Descriptions.InfoStatusOkDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[GitlabFetcherInfoResponse]),
+                        schema = new Schema(implementation = classOf[BrokerInfoResponse]),
                         examples = Array(
                             new ExampleObject(
                                 name = Examples.InfoResponseExampleName,

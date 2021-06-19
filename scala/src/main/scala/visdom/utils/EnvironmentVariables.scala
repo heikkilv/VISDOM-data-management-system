@@ -8,18 +8,21 @@ object EnvironmentVariables {
     val EnvironmentApplicationName: String = "APPLICATION_NAME"
     val EnvironmentHostName: String = "HOST_NAME"
     val EnvironmentHostPort: String = "HOST_PORT"
+    val EnvironmentMetadataDatabase: String = "MONGODB_METADATA_DATABASE"
 
     // the default values for the environment variables
     val DefaultApplicationName: String = "component-name"
     val DefaultHostName: String = "localhost"
     val DefaultHostPort: String = "8765"
+    val DefaultMetadataDatabase: String = "metadata"
 
     val DefaultEnvironmentValue: String = EMPTY
 
     val VariableMap: Map[String, String] = Map(
         EnvironmentApplicationName -> DefaultApplicationName,
         EnvironmentHostName -> DefaultHostName,
-        EnvironmentHostPort -> DefaultHostPort
+        EnvironmentHostPort -> DefaultHostPort,
+        EnvironmentMetadataDatabase -> DefaultMetadataDatabase
     )
 
     def getEnvironmentVariable(variableName: String): String = {
