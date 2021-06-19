@@ -6,7 +6,6 @@ import akka.http.scaladsl.server.Directives
 import java.time.Instant
 import scala.concurrent.ExecutionContextExecutor
 import visdom.http.server.ServerConstants
-import visdom.http.server.actors.BrokerInfoActor
 import visdom.http.server.services.BrokerInfoService
 import visdom.http.server.swagger.SwaggerConstants
 import visdom.http.server.swagger.SwaggerRoutes

@@ -13,6 +13,13 @@ object HttpConstants {
     val StatusCodeInternalServerError: Int = 500
     val StatusCodeUnknown: Int = 0
 
+    final val StatusOkCode = "200"
+    final val StatusAcceptedCode = "202"
+    final val StatusInvalidCode = "400"
+    final val StatusUnauthorizedCode = "401"
+    final val StatusNotFoundCode = "404"
+    final val StatusErrorCode = "500"
+
     val CharacterSlash: String = "/"
 
     // constants for constructing query paths

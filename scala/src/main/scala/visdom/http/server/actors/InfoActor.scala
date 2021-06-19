@@ -4,14 +4,11 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import scala.concurrent.ExecutionContext
 import visdom.database.mongodb.MongoConnection
-import visdom.fetchers.gitlab.GitlabConstants
-import visdom.fetchers.gitlab.GitlabFetcher
-import visdom.fetchers.gitlab.Routes
 import visdom.http.server.BaseOptions
-import visdom.http.server.response.GitlabFetcherInfoResponse
-import visdom.utils.WartRemoverConstants
-import visdom.http.server.response.ComponentInfoResponse
 import visdom.http.server.ServerConstants
+import visdom.http.server.response.GitlabFetcherInfoResponse
+import visdom.http.server.response.ComponentInfoResponse
+import visdom.utils.WartRemoverConstants
 
 
 trait InfoActor extends Actor with ActorLogging {

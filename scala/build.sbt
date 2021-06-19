@@ -40,8 +40,6 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
 
-scalacOptions ++= Seq("-deprecation", "-feature")
-
 // to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
 ThisBuild / assemblyMergeStrategy := {
     case PathList("module-info.class") => MergeStrategy.discard
@@ -52,28 +50,38 @@ ThisBuild / assemblyMergeStrategy := {
     }
 }
 
-enablePlugins(JavaAppPackaging)
-
 val MainGitlabFetcher: String = "visdom.fetchers.gitlab.GitlabFetcher"
 val MainGitlabAdapter: String = "visdom.adapter.gitlab.Adapter"
 val MainDataBroker: String = "visdom.broker.DataBroker"
 
-Global / excludeLintKeys := Set(stage / mainClass)
+lazy val core = project.in(file("."))
 
-lazy val GitlabFetcher = (project in file("."))
+lazy val gitlabFetcher = project.in(file("gitlab-fetcher"))
+    .dependsOn(core)
     .settings(
+        name := "gitlab-fetcher",
+        version := "0.2",
         Compile / mainClass := Some(MainGitlabFetcher),
-        stage / mainClass := Some(MainGitlabFetcher)
+        assembly / mainClass := Some(MainGitlabFetcher),
+        assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
     )
 
-lazy val GitlabAdapter = (project in file("."))
+lazy val gitlabAdapter = project.in(file("gitlab-adapter"))
+    .dependsOn(core)
     .settings(
+        name := "gitlab-adapter",
+        version := "0.2",
         Compile / mainClass := Some(MainGitlabAdapter),
-        assembly / mainClass := Some(MainGitlabAdapter)
+        assembly / mainClass := Some(MainGitlabAdapter),
+        assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
     )
 
-lazy val DataBroker = (project in file("."))
+lazy val dataBroker = project.in(file("broker"))
+    .dependsOn(core)
     .settings(
+        name := "broker",
+        version := "0.1",
         Compile / mainClass := Some(MainDataBroker),
-        stage / mainClass := Some(MainDataBroker)
+        assembly / mainClass := Some(MainDataBroker),
+        assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
     )

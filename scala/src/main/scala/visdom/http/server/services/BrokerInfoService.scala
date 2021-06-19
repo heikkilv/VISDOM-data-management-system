@@ -16,7 +16,7 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import visdom.fetchers.gitlab.queries.Constants
+// import visdom.fetchers.gitlab.queries.Constants
 import visdom.http.server.BaseOptions
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerConstants
@@ -25,6 +25,7 @@ import visdom.http.server.response.GitlabFetcherInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
+import visdom.http.HttpConstants
 
 
 @SuppressWarnings(Array(UnusedMethodParameter))
@@ -43,7 +44,7 @@ with ServerProtocol {
         description = Descriptions.BrokerInfoEndpointDescription,
         responses = Array(
             new ApiResponse(
-                responseCode = Constants.StatusOkCode,
+                responseCode = HttpConstants.StatusOkCode,
                 description = Descriptions.InfoStatusOkDescription,
                 content = Array(
                     new Content(

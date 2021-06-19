@@ -6,7 +6,6 @@ import scala.concurrent.duration.Duration
 import scala.concurrent.duration.DurationInt
 import spray.json.DefaultJsonProtocol
 import spray.json.RootJsonFormat
-import visdom.fetchers.gitlab.GitlabConstants
 
 
 trait ServerProtocol

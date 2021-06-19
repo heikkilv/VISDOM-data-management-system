@@ -1,8 +1,11 @@
 stages:
     - Static Analysis
-    - Compile
     - Unit Test
     - Build
+
+image: hseeberger/scala-sbt:8u282_1.5.2_2.12.13
+before_script:
+    - cd scala
 
 .docker_build:
     image: docker:19.03.15
@@ -13,31 +16,37 @@ stages:
 
 scalastyle:
     stage: Static Analysis
-    image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd scala
-        - sbt scalastyle
+        - sbt core/scalastyle
+        - sbt dataBroker/scalastyle
+        - sbt gitlabFetcher/scalastyle
+        - sbt gitlabAdapter/scalastyle
 
 scapegoat:
     stage: Static Analysis
-    image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd scala
-        - sbt scapegoat
-
-compile:
-    stage: Compile
-    image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
-    script:
-        - cd scala
-        - sbt compile
+        - sbt core/scapegoat
+        - sbt dataBroker/scapegoat
+        - sbt gitlabFetcher/scapegoat
+        - sbt gitlabAdapter/scapegoat
 
 unit_test:
     stage: Unit Test
-    image: hseeberger/scala-sbt:8u282_1.5.1_2.12.13
     script:
-        - cd scala
-        - sbt test
+        - sbt core/test
+        - sbt dataBroker/test
+        - sbt gitlabFetcher/test
+        - sbt gitlabAdapter/test
+
+broker:
+    stage: Build
+    extends:
+        - .docker_build
+    script:
+        - docker build
+          --tag visdom-broker:test
+          --file scala/Dockerfile-broker
+          .
 
 fetcher_gitlab:
     stage: Build
@@ -47,7 +56,7 @@ fetcher_gitlab:
         - docker build
           --tag visdom-fetcher-gitlab:test
           --file scala/Dockerfile-fetcher-gitlab
-          scala
+          .
 
 adapter_gitlab:
     stage: Build
@@ -57,4 +66,4 @@ adapter_gitlab:
         - docker build
           --tag visdom-adapter-gitlab:test
           --file scala/Dockerfile-adapter-gitlab
-          scala
+          .

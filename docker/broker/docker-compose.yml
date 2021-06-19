@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+
+    visdom-broker:
+        build:
+            context: ../../scala
+            dockerfile: Dockerfile-broker
+        image: visdom/broker:0.1
+        container_name: ${APPLICATION_NAME}
+        restart: on-failure
+        ports:
+            - ${HOST_PORT}:8080
+        environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
+            - HOST_NAME=${HOST_NAME}
+            - HOST_PORT=${HOST_PORT}
+            - MONGODB_HOST=${MONGODB_HOST}
+            - MONGODB_PORT=${MONGODB_PORT}
+            - MONGODB_USERNAME=${MONGODB_USERNAME}
+            - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+            - MONGODB_METADATA_DATABASE=${MONGODB_METADATA_DATABASE}
+        networks:
+            - visdom-mongodb-network
+
+networks:
+    visdom-mongodb-network:
+        name: ${MONGODB_NETWORK}
+        external: true

@@ -1,9 +1,9 @@
-FROM hseeberger/scala-sbt:8u282_1.5.1_2.12.13
+FROM hseeberger/scala-sbt:8u282_1.5.2_2.12.13
 
 RUN mkdir -p /gitlab-fetcher
 WORKDIR /gitlab-fetcher
 COPY / /gitlab-fetcher/
 
-RUN sbt clean GitlabFetcher/stage
+RUN sbt clean gitlabFetcher/assembly
 
-CMD /gitlab-fetcher/target/universal/stage/bin/data-management-system
+CMD java -jar /gitlab-fetcher/gitlab-fetcher/target/scala-2.12/gitlab-fetcher-0.2.jar
