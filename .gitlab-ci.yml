@@ -45,7 +45,7 @@ broker:
     script:
         - docker build
           --tag visdom-broker:test
-          --file scala/Dockerfile-broker
+          --file Dockerfile-broker
           .
 
 fetcher_gitlab:
@@ -55,7 +55,7 @@ fetcher_gitlab:
     script:
         - docker build
           --tag visdom-fetcher-gitlab:test
-          --file scala/Dockerfile-fetcher-gitlab
+          --file Dockerfile-fetcher-gitlab
           .
 
 adapter_gitlab:
@@ -65,5 +65,5 @@ adapter_gitlab:
     script:
         - docker build
           --tag visdom-adapter-gitlab:test
-          --file scala/Dockerfile-adapter-gitlab
+          --file Dockerfile-adapter-gitlab
           .
