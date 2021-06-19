@@ -18,12 +18,7 @@ ENV PATH /usr/local/sbt/bin:${PATH}
 
 WORKDIR /app
 
-COPY build.sbt /app/
-COPY project /app/project
-COPY gitlab-adapter/build.sbt /app/gitlab-project/
-COPY gitlab-adapter/project /app/gitlab-adapter/project
-
-COPY . /app
+COPY / /app/
 RUN sbt gitlabAdapter/clean gitlabAdapter/assembly
 
 CMD ["/submit.sh"]
