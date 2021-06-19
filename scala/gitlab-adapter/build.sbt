@@ -1,4 +1,3 @@
-scalaVersion := "2.12.13"
 name := "gitlab-adapter"
 version := "0.2"
 

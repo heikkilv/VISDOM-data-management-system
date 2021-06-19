@@ -1,11 +1,5 @@
-name := "gitlab-fetcher"
+name := "data-management-system-core"
 version := "0.2"
-
-val MainGitlabFetcher: String = "visdom.fetchers.gitlab.GitlabFetcher"
-
-Compile / mainClass := Some(MainGitlabFetcher)
-assembly / mainClass := Some(MainGitlabFetcher)
-assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
 
 val AkkaVersion = "2.6.14"
 val AkkaHttpVersion = "10.2.4"
@@ -29,6 +23,8 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
     "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
+    "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
+    "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalaj" %% "scalaj-http" % ScalajVersion,
@@ -41,13 +37,3 @@ libraryDependencies ++= Seq(
 ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
-
-// to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
-ThisBuild / assemblyMergeStrategy := {
-    case PathList("module-info.class") => MergeStrategy.discard
-    case name if name.endsWith("/module-info.class") => MergeStrategy.discard
-    case name => {
-        val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
-        oldStrategy(name)
-    }
-}
