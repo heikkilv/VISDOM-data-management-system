@@ -7,7 +7,7 @@ import visdom.database.mongodb.MongoConnection
 import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.GitlabFetcher
 import visdom.fetchers.gitlab.Routes
-import visdom.http.server.BaseOptions
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.response.GitlabFetcherInfoResponse
 
 
@@ -16,7 +16,7 @@ class InfoActor extends Actor with ActorLogging {
 
     @SuppressWarnings(Array("org.wartremover.warts.Any"))
     def receive: Receive = {
-        case BaseOptions => {
+        case QueryOptionsBaseObject => {
             log.info("Received info query")
             val response: GitlabFetcherInfoResponse = GitlabFetcherInfoResponse(
                 componentName = MongoConnection.applicationName,

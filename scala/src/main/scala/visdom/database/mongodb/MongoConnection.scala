@@ -18,6 +18,7 @@ import org.mongodb.scala.model.UpdateOptions
 import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
 
 
 object MongoConnection {
@@ -61,7 +62,7 @@ object MongoConnection {
         }
     )
 
-    @SuppressWarnings(Array("org.wartremover.warts.NonUnitStatements"))
+    @SuppressWarnings(Array(WartsNonUnitStatements))
     val mongoClient: MongoClient = MongoClient({
         val clientSettingsBuilder: MongoClientSettings.Builder = MongoClientSettings.builder()
             .applicationName(applicationName)

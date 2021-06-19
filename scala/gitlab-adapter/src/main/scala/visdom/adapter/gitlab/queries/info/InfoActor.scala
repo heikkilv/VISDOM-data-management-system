@@ -10,7 +10,7 @@ import spray.json.JsObject
 import visdom.adapter.gitlab.CommitQuery
 import visdom.adapter.gitlab.TimestampQuery
 import visdom.adapter.gitlab.queries.Constants
-import visdom.http.server.BaseOptions
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.response.GitlabAdapterInfoResponse
 
 
@@ -19,7 +19,7 @@ class InfoActor extends Actor with ActorLogging {
 
     @SuppressWarnings(Array("org.wartremover.warts.Any"))
     def receive: Receive = {
-        case BaseOptions => {
+        case QueryOptionsBaseObject => {
             log.info("Received info query")
             val response: GitlabAdapterInfoResponse = GitlabAdapterInfoResponse(
                 componentType = GitlabConstants.ComponentType,

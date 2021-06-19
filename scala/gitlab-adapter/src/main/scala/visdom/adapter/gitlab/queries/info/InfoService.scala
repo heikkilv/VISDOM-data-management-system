@@ -18,7 +18,7 @@ import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.adapter.gitlab.queries.Constants
-import visdom.http.server.BaseOptions
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerProtocol
 import visdom.http.server.response.GitlabAdapterInfoResponse
@@ -59,7 +59,7 @@ with ServerProtocol {
         path(InfoConstants.InfoPath)
     ) {
         get {
-            ResponseUtils.getRoute(infoActor, BaseOptions)
+            ResponseUtils.getRoute(infoActor, QueryOptionsBaseObject)
         }
     }
 }

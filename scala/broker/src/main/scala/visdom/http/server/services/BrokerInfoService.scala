@@ -16,8 +16,8 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-// import visdom.fetchers.gitlab.queries.Constants
-import visdom.http.server.BaseOptions
+import visdom.http.HttpConstants
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerConstants
 import visdom.http.server.ServerProtocol
@@ -25,7 +25,6 @@ import visdom.http.server.response.GitlabFetcherInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
-import visdom.http.HttpConstants
 
 
 @SuppressWarnings(Array(UnusedMethodParameter))
@@ -40,8 +39,8 @@ with ServerProtocol {
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = Descriptions.BrokerInfoEndpointSummary,
-        description = Descriptions.BrokerInfoEndpointDescription,
+        summary = constants.broker.Descriptions.BrokerInfoEndpointSummary,
+        description = constants.broker.Descriptions.BrokerInfoEndpointDescription,
         responses = Array(
             new ApiResponse(
                 responseCode = HttpConstants.StatusOkCode,
@@ -52,7 +51,7 @@ with ServerProtocol {
                         examples = Array(
                             new ExampleObject(
                                 name = Examples.InfoResponseExampleName,
-                                value = Examples.BrokerInfoResponseExample
+                                value = constants.broker.Examples.BrokerInfoResponseExample
                             )
                         )
                     )
@@ -64,7 +63,7 @@ with ServerProtocol {
         path(ServerConstants.InfoPath)
     ) {
         get {
-            ResponseUtils.getRoute(infoActor, BaseOptions)
+            ResponseUtils.getRoute(infoActor, QueryOptionsBaseObject)
         }
     }
 }

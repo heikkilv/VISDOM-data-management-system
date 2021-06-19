@@ -1,6 +1,12 @@
 scalaVersion := "2.12.13"
-name := "data-management-system"
+name := "gitlab-fetcher"
 version := "0.2"
+
+val MainGitlabFetcher: String = "visdom.fetchers.gitlab.GitlabFetcher"
+
+Compile / mainClass := Some(MainGitlabFetcher)
+assembly / mainClass := Some(MainGitlabFetcher)
+assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
 
 val AkkaVersion = "2.6.14"
 val AkkaHttpVersion = "10.2.4"
@@ -24,10 +30,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
     "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
-    "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
-    "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
-    "org.mongodb.spark" %% "mongo-spark-connector" % MongoConnectorVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalaj" %% "scalaj-http" % ScalajVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
@@ -49,22 +52,3 @@ ThisBuild / assemblyMergeStrategy := {
         oldStrategy(name)
     }
 }
-
-val coreDirectory: String = "."
-val brokerDirectory: String = "broker"
-val gitlabFetcherDirectory: String = "gitlab-fetcher"
-val gitlabAdapterDirectory: String = "gitlab-adapter"
-
-lazy val core = project.in(file(coreDirectory))
-
-lazy val dataBroker = project
-    .in(file(brokerDirectory))
-    .dependsOn(core)
-
-lazy val gitlabFetcher = project
-    .in(file(gitlabFetcherDirectory))
-    .dependsOn(core)
-
-lazy val gitlabAdapter = project
-    .in(file(gitlabAdapterDirectory))
-    .dependsOn(core)
