@@ -1,5 +1,29 @@
-FROM bde2020/spark-scala-template:3.1.1-hadoop3.2
+FROM bde2020/spark-submit:3.1.1-hadoop3.2
 
 ENV SBT_VERSION 1.5.2
+
+ENV SPARK_APPLICATION_LOCATION gitlab-adapter
+ENV SPARK_APPLICATION_NAME gitlab-adapter
+ENV SPARK_APPLICATION_VERSION 0.2
+
 ENV SPARK_APPLICATION_MAIN_CLASS visdom.adapter.gitlab.Adapter
 ENV SPARK_APPLICATION_ARGS ""
+
+ENV SPARK_APPLICATION_JAR_NAME ${SPARK_APPLICATION_NAME}-${SPARK_APPLICATION_VERSION}.jar
+ENV SPARK_APPLICATION_JAR_LOCATION /app/${SPARK_APPLICATION_LOCATION}/target/scala-2.12/${SPARK_APPLICATION_JAR_NAME}
+
+RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz | gunzip | tar -x -C /usr/local
+
+ENV PATH /usr/local/sbt/bin:${PATH}
+
+WORKDIR /app
+
+COPY build.sbt /app/
+COPY project /app/project
+COPY gitlab-adapter/build.sbt /app/gitlab-project/
+COPY gitlab-adapter/project /app/gitlab-adapter/project
+
+COPY . /app
+RUN sbt gitlabAdapter/clean gitlabAdapter/assembly
+
+CMD ["/submit.sh"]

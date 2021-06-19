@@ -4,6 +4,6 @@ RUN mkdir -p /broker
 WORKDIR /broker
 COPY / /broker/
 
-RUN sbt clean dataBroker/assembly
+RUN sbt dataBroker/assembly
 
 CMD java -jar /broker/broker/target/scala-2.12/broker-0.1.jar
