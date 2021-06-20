@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.adapter.gitlab.queries.Constants
 import visdom.http.server.QueryOptionsBaseObject
-import visdom.http.server.ResponseUtils
+import visdom.http.server.GitlabAdapterResponseHandler
 import visdom.http.server.ServerProtocol
 import visdom.http.server.response.GitlabAdapterInfoResponse
 
@@ -27,7 +27,7 @@ import visdom.http.server.response.GitlabAdapterInfoResponse
 @Path(InfoConstants.InfoRootPath)
 class InfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with GitlabAdapterResponseHandler {
     val route: Route = (
         getInfoRoute
     )
@@ -59,7 +59,7 @@ with ServerProtocol {
         path(InfoConstants.InfoPath)
     ) {
         get {
-            ResponseUtils.getRoute(infoActor, QueryOptionsBaseObject)
+            getRoute(infoActor, QueryOptionsBaseObject)
         }
     }
 }

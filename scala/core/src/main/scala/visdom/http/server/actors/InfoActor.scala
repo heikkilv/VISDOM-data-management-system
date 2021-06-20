@@ -6,7 +6,6 @@ import scala.concurrent.ExecutionContext
 import visdom.database.mongodb.MongoConnection
 import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ServerConstants
-import visdom.http.server.response.GitlabFetcherInfoResponse
 import visdom.http.server.response.ComponentInfoResponse
 import visdom.utils.WartRemoverConstants
 

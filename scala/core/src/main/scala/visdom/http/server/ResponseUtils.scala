@@ -34,39 +34,4 @@ object ResponseUtils extends ServerProtocol {
     def getErrorResponse(description: String): response.ResponseProblem = {
         response.ResponseProblem(ServerConstants.QueryErrorStatus, description)
     }
-
-    def getRoute(actorReference: ActorRef, queryOptions: QueryOptionsBase): StandardRoute = {
-        val receivedResponse: response.BaseResponse = try {
-            Await.result(
-                (actorReference ? queryOptions).mapTo[response.BaseResponse],
-                ServerConstants.DefaultMaxResponseDelay
-            )
-        } catch  {
-            case error: TimeoutException => getErrorResponse(error.getMessage())
-        }
-
-        receivedResponse match {
-            case jsonResponse: response.JsonResponse =>
-                Directives.complete(StatusCodes.OK, jsonResponse.data)
-            case acceptedResponse: response.ResponseAccepted =>
-                Directives.complete(StatusCodes.Accepted, acceptedResponse)
-            case brokerInfoResponse: response.BrokerInfoResponse =>
-                Directives.complete(StatusCodes.OK, brokerInfoResponse)
-            case gitlabFetcherInfoResponse: response.GitlabFetcherInfoResponse =>
-                Directives.complete(StatusCodes.OK, gitlabFetcherInfoResponse)
-            case gitlabAdapterInfoResponse: response.GitlabAdapterInfoResponse =>
-                Directives.complete(StatusCodes.OK, gitlabAdapterInfoResponse)
-            case problemResponse: response.ResponseProblem =>
-                Directives.complete(getStatusCode(problemResponse), problemResponse)
-        }
-    }
-
-    def getStatusCode(problemResponse: response.ResponseProblem): StatusCode = {
-        problemResponse.status match {
-            case ServerConstants.QueryInvalidStatus => StatusCodes.BadRequest
-            case ServerConstants.QueryUnauthorizedStatus => StatusCodes.Unauthorized
-            case ServerConstants.QueryNotFoundStatus => StatusCodes.NotFound
-            case ServerConstants.QueryErrorStatus => StatusCodes.InternalServerError
-        }
-    }
 }

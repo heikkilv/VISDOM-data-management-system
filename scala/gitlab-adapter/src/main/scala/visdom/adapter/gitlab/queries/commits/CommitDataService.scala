@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.queries.Constants
-import visdom.http.server.ServerProtocol
+import visdom.http.server.GitlabAdapterResponseHandler
 import visdom.http.server.response.JsonResponse
 import visdom.http.server.adapter.gitlab.CommitDataQueryOptions
 import visdom.http.server.response.ResponseProblem
@@ -32,11 +32,11 @@ import visdom.http.server.ResponseUtils
 
 
 // scalastyle:off method.length
-@SuppressWarnings(Array("UnusedMethodParameter"))
+// @SuppressWarnings(Array("UnusedMethodParameter"))
 @Path(CommitDataConstants.CommitDataRootPath)
 class CommitDataService(commitDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with GitlabAdapterResponseHandler {
     val route: Route = (
         getCommitDataRoute
     )
@@ -166,7 +166,7 @@ with ServerProtocol {
                 startDate,
                 endDate
             )
-            ResponseUtils.getRoute(commitDataActor, options)
+            getRoute(commitDataActor, options)
         }
     }
 }

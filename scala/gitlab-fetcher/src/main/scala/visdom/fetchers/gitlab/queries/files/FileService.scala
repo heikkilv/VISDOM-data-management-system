@@ -27,8 +27,7 @@ import visdom.http.server.response.StatusResponse
 import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.FileQueryOptions
-import visdom.http.server.ResponseUtils
-import visdom.http.server.ServerProtocol
+import visdom.http.server.GitlabFetcherResponseHandler
 
 
 // scalastyle:off method.length
@@ -36,7 +35,7 @@ import visdom.http.server.ServerProtocol
 @Path(FileConstants.FileRootPath)
 class FileService(fileActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with GitlabFetcherResponseHandler {
     val route: Route = (
         getFileRoute
     )
@@ -202,7 +201,7 @@ with ServerProtocol {
                 recursive,
                 includeCommitLinks
             )
-            ResponseUtils.getRoute(fileActor, options)
+            getRoute(fileActor, options)
         }
     }
 }

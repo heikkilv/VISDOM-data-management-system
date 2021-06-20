@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
 import visdom.http.server.ServerProtocol
-import visdom.http.server.ResponseUtils
+import visdom.http.server.GitlabFetcherResponseHandler
 import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.response.ResponseAccepted
@@ -35,7 +35,7 @@ import visdom.http.server.response.ResponseAccepted
 @Path(AllDataConstants.AllDataRootPath)
 class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol
+with GitlabFetcherResponseHandler
 {
     val route: Route = (
         getAllDataRoute
@@ -189,7 +189,7 @@ with ServerProtocol
                 startDate,
                 endDate
             )
-            ResponseUtils.getRoute(allDataActor, options)
+            getRoute(allDataActor, options)
         }
     }
 }

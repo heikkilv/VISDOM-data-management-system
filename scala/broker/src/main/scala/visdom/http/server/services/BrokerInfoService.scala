@@ -18,20 +18,20 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.http.HttpConstants
 import visdom.http.server.QueryOptionsBaseObject
-import visdom.http.server.ResponseUtils
+import visdom.http.server.BrokerResponseHandler
 import visdom.http.server.ServerConstants
-import visdom.http.server.ServerProtocol
 import visdom.http.server.response.BrokerInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
+import visdom.http.server.BrokerResponseHandler
 
 
-@SuppressWarnings(Array(UnusedMethodParameter))
+// @SuppressWarnings(Array(UnusedMethodParameter))
 @Path(ServerConstants.InfoRootPath)
 class BrokerInfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with BrokerResponseHandler {
     val route: Route = (
         getInfoRoute
     )
@@ -63,7 +63,7 @@ with ServerProtocol {
         path(ServerConstants.InfoPath)
     ) {
         get {
-            ResponseUtils.getRoute(infoActor, QueryOptionsBaseObject)
+            getRoute(infoActor, QueryOptionsBaseObject)
         }
     }
 }

@@ -28,7 +28,7 @@ import visdom.http.server.response.StatusResponse
 import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.CommitQueryOptions
-import visdom.http.server.ResponseUtils
+import visdom.http.server.GitlabFetcherResponseHandler
 
 
 // scalastyle:off method.length
@@ -36,7 +36,7 @@ import visdom.http.server.ResponseUtils
 @Path(CommitConstants.CommitRootPath)
 class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with GitlabFetcherResponseHandler {
     val route: Route = (
         getCommitRoute
     )
@@ -243,7 +243,7 @@ with ServerProtocol {
                 includeFileLinks,
                 includeReferenceLinks
             )
-            ResponseUtils.getRoute(commitActor, options)
+            getRoute(commitActor, options)
         }
     }
 }

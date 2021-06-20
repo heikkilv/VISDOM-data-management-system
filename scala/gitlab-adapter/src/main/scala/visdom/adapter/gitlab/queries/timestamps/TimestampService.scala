@@ -24,7 +24,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.queries.Constants
-import visdom.http.server.ResponseUtils
+import visdom.http.server.GitlabAdapterResponseHandler
 import visdom.http.server.ServerProtocol
 import visdom.http.server.adapter.gitlab.TimestampQueryOptionsInput
 import visdom.http.server.response.ResponseProblem
@@ -35,7 +35,7 @@ import visdom.http.server.response.ResponseProblem
 @Path(TimestampConstants.TimestampRootPath)
 class TimestampService(timestampActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with ServerProtocol {
+with GitlabAdapterResponseHandler {
     val route: Route = (
         getTimestampRoute
     )
@@ -165,7 +165,7 @@ with ServerProtocol {
                 startDate,
                 endDate
             )
-            ResponseUtils.getRoute(timestampActor, options)
+            getRoute(timestampActor, options)
         }
     }
 }
