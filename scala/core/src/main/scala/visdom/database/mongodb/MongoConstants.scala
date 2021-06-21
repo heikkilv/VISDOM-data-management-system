@@ -1,5 +1,8 @@
 package visdom.database.mongodb
 
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
+
 object MongoConstants {
     val ApplicationName: String = "APPLICATION_NAME"
     val MongoHost: String = "MONGODB_HOST"
@@ -23,4 +26,9 @@ object MongoConstants {
     val CollectionTemp: String = "temp"
 
     val AttributeDefaultId: String = "_id"
+
+    // the default maximum delay until a MongoDB query will be considered failed
+    val DefaultMaxQueryDelaySeconds: Int = 15
+    val DefaultMaxQueryDelay: Duration = Duration(DefaultMaxQueryDelaySeconds, TimeUnit.SECONDS)
+
 }

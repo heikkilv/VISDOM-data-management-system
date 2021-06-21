@@ -15,6 +15,12 @@ object ServerConstants {
     final val InfoRootPath = "/info"
     final val InfoPath = "info"
 
+    final val AdaptersRootPath = "/adapters"
+    final val AdaptersPath = "adapters"
+
+    final val FetchersRootPath = "/fetchers"
+    final val FetchersPath = "fetchers"
+
     // the default maximum delay until a response is sent for HTTP server
     val DefaultMaxResponseDelaySeconds: Int = 30
     val DefaultMaxResponseDelay: Duration = Duration(DefaultMaxResponseDelaySeconds, TimeUnit.SECONDS)

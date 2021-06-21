@@ -1,8 +1,11 @@
 package visdom.http.server
 
+
 object AttributeConstants {
+    final val Database: String = "database"
     final val EndDate: String = "endDate"
     final val FilePath: String = "filePath"
+    final val GitlabServer: String = "gitlabServer"
     final val IncludeCommitLinks: String = "includeCommitLinks"
     final val IncludeFileLinks: String = "includeFileLinks"
     final val IncludeReferenceLinks: String = "includeReferenceLinks"

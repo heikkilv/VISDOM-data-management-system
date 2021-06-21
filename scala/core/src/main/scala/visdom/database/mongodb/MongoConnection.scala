@@ -21,6 +21,10 @@ import scala.collection.JavaConverters.seqAsJavaListConverter
 import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
 import visdom.utils.EnvironmentVariables.EnvironmentMetadataDatabase
 import visdom.utils.EnvironmentVariables.getEnvironmentVariable
+import org.bson.BsonValue
+import scala.concurrent.Await
+import java.util.concurrent.TimeoutException
+import org.mongodb.scala.FindObservable
 
 
 object MongoConnection {
@@ -82,6 +86,38 @@ object MongoConnection {
         mongoClient
             .getDatabase(metadataDatabaseName)
             .getCollection(MongoConstants.CollectionMetadata)
+    }
+
+    def getDocuments(
+        collection: MongoCollection[Document],
+        equalFilters: Map[String, BsonValue]
+    ): Option[Document] = {
+        val queryFilter: Bson = equalFilters.isEmpty match {
+            case true => Document()
+            case false => Filters.and(
+                equalFilters.map(
+                    equalFilter => Filters.equal(equalFilter._1, equalFilter._2)
+                ).toSeq:_*
+            )
+        }
+
+        val a = try {
+            Await.result(
+                collection.find(queryFilter).headOption(),
+                MongoConstants.DefaultMaxQueryDelay
+            )
+        } catch  {
+            case _: TimeoutException => None
+        }
+        a match {
+            case Some(value) => {
+                println("value:")
+                println(value)
+            }
+            case None => println(None)
+        }
+
+        a
     }
 
     def storeDocument(

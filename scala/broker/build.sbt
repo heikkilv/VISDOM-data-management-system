@@ -1,6 +1,6 @@
 scalaVersion := "2.12.13"
 name := "broker"
-version := "0.1"
+version := "0.2"
 
 val MainDataBroker: String = "visdom.broker.DataBroker"
 

@@ -1,6 +1,6 @@
-package visdom.broker
+package visdom.http.server.actors
 
-import visdom.http.server.actors.InfoActor
+import visdom.broker.Metadata
 import visdom.http.server.response.ComponentInfoResponse
 
 

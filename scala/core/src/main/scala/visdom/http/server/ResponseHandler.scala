@@ -29,6 +29,8 @@ trait ResponseHandler extends ServerProtocol {
         receivedResponse match {
             case jsonResponse: response.JsonResponse =>
                 Directives.complete(StatusCodes.OK, jsonResponse.data)
+            case jsonArrayResponse: response.JsonArrayResponse =>
+                Directives.complete(StatusCodes.OK, jsonArrayResponse.array)
             case acceptedResponse: response.ResponseAccepted =>
                 Directives.complete(StatusCodes.Accepted, acceptedResponse)
             case problemResponse: response.ResponseProblem =>

@@ -20,16 +20,18 @@ import visdom.http.HttpConstants
 import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.BrokerResponseHandler
 import visdom.http.server.ServerConstants
-import visdom.http.server.response.BrokerInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
 import visdom.http.server.BrokerResponseHandler
+import visdom.http.server.response.AdaptersResponse
+import visdom.http.server.BrokerQueryOptions
+import visdom.constants.ComponentConstants
+import spray.json.JsArray
 
 
-// @SuppressWarnings(Array(UnusedMethodParameter))
-@Path(ServerConstants.InfoRootPath)
-class BrokerInfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(ServerConstants.AdaptersRootPath)
+class AdaptersService(adaptersActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with BrokerResponseHandler {
     val route: Route = (
@@ -39,19 +41,19 @@ with BrokerResponseHandler {
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = constants.BrokerDescriptions.BrokerInfoEndpointSummary,
-        description = constants.BrokerDescriptions.BrokerInfoEndpointDescription,
+        summary = constants.BrokerDescriptions.AdaptersEndpointSummary,
+        description = constants.BrokerDescriptions.AdaptersEndpointDescription,
         responses = Array(
             new ApiResponse(
                 responseCode = HttpConstants.StatusOkCode,
                 description = Descriptions.InfoStatusOkDescription,
                 content = Array(
                     new Content(
-                        schema = new Schema(implementation = classOf[BrokerInfoResponse]),
+                        schema = new Schema(implementation = classOf[List[AdaptersResponse]]),
                         examples = Array(
                             new ExampleObject(
-                                name = Examples.InfoResponseExampleName,
-                                value = constants.BrokerExamples.BrokerInfoResponseExample
+                                name = constants.BrokerExamples.AdaptersResponseExampleName,
+                                value = constants.BrokerExamples.AdaptersResponseExample
                             )
                         )
                     )
@@ -60,10 +62,10 @@ with BrokerResponseHandler {
         )
     )
     def getInfoRoute: RequestContext => Future[RouteResult] = (
-        path(ServerConstants.InfoPath)
+        path(ServerConstants.AdaptersPath)
     ) {
         get {
-            getRoute(infoActor, QueryOptionsBaseObject)
+            getRoute(adaptersActor, BrokerQueryOptions(ComponentConstants.AdapterComponentType))
         }
     }
 }
