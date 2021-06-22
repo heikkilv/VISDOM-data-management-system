@@ -9,4 +9,6 @@ abstract class ComponentsResponse extends BaseResponse {
     def apiAddress: String
     def swaggerDefinition: String
     def information: JsObject
+
+    def toJsObject(): JsObject
 }

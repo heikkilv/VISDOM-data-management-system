@@ -80,6 +80,7 @@ object Routes {
                 GitlabConstants.AttributeComponentType -> GitlabConstants.ComponentType,
                 GitlabConstants.AttributeFetcherType -> GitlabConstants.FetcherType,
                 GitlabConstants.AttributeVersion -> GitlabConstants.FetcherVersion,
+                GitlabConstants.AttributeGitlabServer -> server.hostName,
                 GitlabConstants.AttributeDatabase -> databaseName,
                 AttributeApiAddress -> SwaggerFetcherDocService.host,
                 AttributeSwaggerDefinition -> SwaggerLocation,

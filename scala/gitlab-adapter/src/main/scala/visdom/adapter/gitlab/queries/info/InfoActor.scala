@@ -9,9 +9,10 @@ import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.CommitQuery
 import visdom.adapter.gitlab.TimestampQuery
-import visdom.adapter.gitlab.queries.Constants
+import visdom.adapter.gitlab.queries.Constants.SwaggerLocation
 import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.response.GitlabAdapterInfoResponse
+import visdom.spark.Constants
 
 
 class InfoActor extends Actor with ActorLogging {
@@ -26,9 +27,10 @@ class InfoActor extends Actor with ActorLogging {
                 componentName = Adapter.AdapterName,
                 adapterType = GitlabConstants.AdapterType,
                 version = GitlabConstants.AdapterVersion,
+                database = Constants.DefaultDatabaseName,
                 startTime = Adapter.StartTime,
                 apiAddress = Adapter.ApiAddress,
-                swaggerDefinition = Constants.SwaggerLocation
+                swaggerDefinition = SwaggerLocation
             )
 
             sender() ! response

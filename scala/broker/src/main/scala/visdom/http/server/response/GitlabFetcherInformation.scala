@@ -4,6 +4,7 @@ import spray.json.JsObject
 import visdom.json.JsonUtils
 import visdom.http.server.AttributeConstants
 import visdom.http.server.QueryOptionsBase
+import visdom.utils.SnakeCaseConstants
 
 
 final case class GitlabFetcherInformation(
@@ -18,4 +19,11 @@ final case class GitlabFetcherInformation(
             )
         )
     }
+}
+
+object GitlabFetcherInformation {
+    def requiredKeys: Set[String] = Set(
+        SnakeCaseConstants.GitlabServer,
+        SnakeCaseConstants.Database
+    )
 }

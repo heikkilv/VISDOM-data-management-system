@@ -55,6 +55,7 @@ object GitlabConstants {
     val AttributeEndDate: String = "end_date"
     val AttributeFilePath: String = "file_path"
     val AttributeFiles: String = "files"
+    val AttributeGitlabServer: String = "gitlab_server"
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeIncludeLinksCommits: String = "include_links_commits"

@@ -88,36 +88,36 @@ object MongoConnection {
             .getCollection(MongoConstants.CollectionMetadata)
     }
 
+    def getEqualFilter(attributeName: String, attributeValue: BsonValue): Bson = {
+        Filters.equal(attributeName, attributeValue)
+    }
+
+    def getGreaterThanFilter(attributeName: String, attributeValue: BsonValue): Bson = {
+        Filters.gt(attributeName, attributeValue)
+    }
+
     def getDocuments(
         collection: MongoCollection[Document],
-        equalFilters: Map[String, BsonValue]
-    ): Option[Document] = {
-        val queryFilter: Bson = equalFilters.isEmpty match {
+        filters: List[Bson]
+    ): List[Document] = {
+        val queryFilter: Bson = filters.isEmpty match {
             case true => Document()
-            case false => Filters.and(
-                equalFilters.map(
-                    equalFilter => Filters.equal(equalFilter._1, equalFilter._2)
-                ).toSeq:_*
-            )
+            case false => Filters.and(filters:_*)
         }
 
-        val a = try {
+        val resultOption: Option[Seq[Document]] = try {
             Await.result(
-                collection.find(queryFilter).headOption(),
+                collection.find(queryFilter).collect().headOption(),
                 MongoConstants.DefaultMaxQueryDelay
             )
-        } catch  {
+        } catch {
             case _: TimeoutException => None
         }
-        a match {
-            case Some(value) => {
-                println("value:")
-                println(value)
-            }
-            case None => println(None)
-        }
 
-        a
+        resultOption match {
+            case Some(results: Seq[Document]) => results.toList
+            case None => List()
+        }
     }
 
     def storeDocument(

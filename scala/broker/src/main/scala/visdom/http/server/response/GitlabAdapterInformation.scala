@@ -4,6 +4,7 @@ import spray.json.JsObject
 import visdom.json.JsonUtils
 import visdom.http.server.AttributeConstants
 import visdom.http.server.QueryOptionsBase
+import visdom.utils.SnakeCaseConstants
 
 
 final case class GitlabAdapterInformation(
@@ -18,3 +19,8 @@ final case class GitlabAdapterInformation(
     }
 }
 
+object GitlabAdapterInformation {
+    def requiredKeys: Set[String] = Set(
+        SnakeCaseConstants.Database
+    )
+}

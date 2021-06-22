@@ -16,4 +16,5 @@ object MetadataConstants {
 
     val MetadataInitialDelay: Long = 0
     val MetadataUpdateInterval: Long = 300000
+    val ComponentActiveInterval: Long = MetadataUpdateInterval * 11 / 10
 }

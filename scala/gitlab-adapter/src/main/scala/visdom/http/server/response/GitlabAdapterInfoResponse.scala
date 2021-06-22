@@ -7,6 +7,7 @@ final case class GitlabAdapterInfoResponse(
     adapterType: String,
     version: String,
     startTime: String,
+    database: String,
     apiAddress: String,
     swaggerDefinition: String
 ) extends AdapterInfoResponse
