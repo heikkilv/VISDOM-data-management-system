@@ -16,20 +16,19 @@ import javax.ws.rs.Produces
 import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
+import visdom.constants.ComponentConstants
 import visdom.http.HttpConstants
-import visdom.http.server.QueryOptionsBaseObject
+import visdom.http.server.BrokerQueryOptions
 import visdom.http.server.BrokerResponseHandler
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ServerConstants
+import visdom.http.server.response.AdaptersResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
-import visdom.http.server.BrokerResponseHandler
-import visdom.http.server.response.AdaptersResponse
-import visdom.http.server.BrokerQueryOptions
-import visdom.constants.ComponentConstants
-import spray.json.JsArray
 
 
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(ServerConstants.AdaptersRootPath)
 class AdaptersService(adaptersActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

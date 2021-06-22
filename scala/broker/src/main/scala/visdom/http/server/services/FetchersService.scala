@@ -25,9 +25,9 @@ import visdom.http.server.response.FetchersResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
-import spray.json.JsArray
 
 
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(ServerConstants.FetchersRootPath)
 class FetchersService(fetchersActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

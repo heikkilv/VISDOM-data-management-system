@@ -24,10 +24,9 @@ import visdom.http.server.response.BrokerInfoResponse
 import visdom.http.server.services.constants.Descriptions
 import visdom.http.server.services.constants.Examples
 import visdom.utils.WarningConstants.UnusedMethodParameter
-import visdom.http.server.BrokerResponseHandler
 
 
-// @SuppressWarnings(Array(UnusedMethodParameter))
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(ServerConstants.InfoRootPath)
 class BrokerInfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
