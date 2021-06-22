@@ -1,8 +1,69 @@
 stages:
-    - "Static Analysis"
-    - "Compile"
-    - "Unit Test"
+    - Static Analysis
+    - Unit Test
+    - Build
 
-include:
-    - "/fetchers/gitlab/.gitlab-ci.yml"
-    - "/adapters/gitlab/.gitlab-ci.yml"
+image: hseeberger/scala-sbt:8u282_1.5.2_2.12.13
+before_script:
+    - cd scala
+
+.docker_build:
+    image: docker:19.03.15
+    services:
+        - docker:19.03.15-dind
+    variables:
+        DOCKER_TLS_CERTDIR: "/certs"
+
+scalastyle:
+    stage: Static Analysis
+    script:
+        - sbt core/scalastyle
+        - sbt dataBroker/scalastyle
+        - sbt gitlabFetcher/scalastyle
+        - sbt gitlabAdapter/scalastyle
+
+scapegoat:
+    stage: Static Analysis
+    script:
+        - sbt core/scapegoat
+        - sbt dataBroker/scapegoat
+        - sbt gitlabFetcher/scapegoat
+        - sbt gitlabAdapter/scapegoat
+
+unit_test:
+    stage: Unit Test
+    script:
+        - sbt core/test
+        - sbt dataBroker/test
+        - sbt gitlabFetcher/test
+        - sbt gitlabAdapter/test
+
+broker:
+    stage: Build
+    extends:
+        - .docker_build
+    script:
+        - docker build
+          --tag visdom-broker:test
+          --file Dockerfile-broker
+          .
+
+fetcher_gitlab:
+    stage: Build
+    extends:
+        - .docker_build
+    script:
+        - docker build
+          --tag visdom-fetcher-gitlab:test
+          --file Dockerfile-fetcher-gitlab
+          .
+
+adapter_gitlab:
+    stage: Build
+    extends:
+        - .docker_build
+    script:
+        - docker build
+          --tag visdom-adapter-gitlab:test
+          --file Dockerfile-adapter-gitlab
+          .

@@ -1,1 +1,0 @@
-# Gitlab data fetcher
