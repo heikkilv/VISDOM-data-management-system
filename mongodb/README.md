@@ -1,6 +1,9 @@
 # MongoDB for the Data Management System
 
-## Installing MongoDB for the data management system
+[MongoDB](https://www.mongodb.com/) is a general purpose document database.
+In the VISDOM data management system it is used to store all the information fetched from the software tools.
+
+## Installing MongoDB
 
 ### Requirements
 
@@ -17,15 +20,25 @@ The environment used in testing:
 
 ### Installation instructions
 
-- Edit file [`.env`](.env) (port numbers, admin username and password, etc.). By default no authentication is used with MongoDB.
-    - the environment file contains explanations about the available setting variables
-- Run command: `./start_mongo.sh`
+It is possible to use MongoDB without any access control by leaving the root user name and password empty (the default values).
+
+The start script will also deploy Mongo Express that can be used for browsing the stored Mongo data using a web browser.
+
+Installation steps:
+
+1. Edit the environmental variable file [`.env`](.env) (port numbers, admin username and password, etc.). By default no authentication is used with MongoDB.
+    - the environment file contains explanations about the available variables
+2. Run the command: `./start_mongo.sh`
+
+The MongoDB will be available at the port defined by `MONGODB_PORT` (by default: `27017`) in the Docker network defined by `MONGODB_NETWORK` (default name: `visdom-network`).
+
+The Mongo express will be available at the port defined by `MONGO_EXPRESS_PORT` (by default: `8801`) on the host server.
 
 ## Uninstalling MongoDB
 
-- Run command: `./stop_mongo.sh`
+- Run the command: `./stop_mongo.sh`
 
 ## Removing the Mongo data
 
-- Run command: `./remove_data.sh`
+- Run the command: `./remove_data.sh`
     - works only if MongoDB is not running
