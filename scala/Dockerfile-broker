@@ -6,7 +6,7 @@ ENV PATH /usr/local/sbt/bin:${PATH}
 
 RUN mkdir -p /builder/project
 RUN mkdir -p /builder/core
-RUN mkdir -p /builder/gitlab-fetcher
+RUN mkdir -p /builder/broker
 WORKDIR /builder
 
 COPY build.sbt /builder/build.sbt
@@ -16,17 +16,17 @@ COPY project/plugins.sbt /builder/project/plugins.sbt
 COPY core/build.sbt /builder/core/build.sbt
 RUN sbt core/update
 
-COPY gitlab-fetcher/build.sbt /builder/gitlab-fetcher/build.sbt
-RUN sbt gitlabFetcher/update
+COPY broker/build.sbt /builder/broker/build.sbt
+RUN sbt dataBroker/update
 
 COPY core/ /builder/core/
 RUN sbt core/compile
 
-COPY gitlab-fetcher/ /builder/gitlab-fetcher/
-RUN sbt gitlabFetcher/compile
-RUN sbt gitlabFetcher/assembly
+COPY broker/ /builder/broker/
+RUN sbt dataBroker/compile
+RUN sbt dataBroker/assembly
 
 
 FROM openjdk:8u282-jre-slim
-COPY --from=builder /builder/gitlab-fetcher/target/scala-2.12/gitlab-fetcher-0.2.jar /gitlab-fetcher-0.2.jar
-CMD [ "java", "-jar", "/gitlab-fetcher-0.2.jar" ]
+COPY --from=builder /builder/broker/target/scala-2.12/broker-0.2.jar /broker-0.2.jar
+CMD [ "java", "-jar", "/broker-0.2.jar" ]
