@@ -6,7 +6,7 @@ services:
         build:
             context: ../../scala
             dockerfile: Dockerfile-broker
-        image: visdom/broker:0.1
+        image: visdom/broker:0.2
         container_name: ${APPLICATION_NAME}
         restart: on-failure
         ports:
