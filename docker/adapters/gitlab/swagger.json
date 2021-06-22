@@ -1,0 +1,398 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.2"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:9876"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/commits": {
+            "get": {
+                "summary": "Return the number of commits per day per user per project.",
+                "description": "Return the number of commits for each day grouped by GitLab project and the committer.",
+                "operationId": "getCommitDataRoute",
+                "parameters": [
+                    {
+                        "name": "projectName",
+                        "in": "query",
+                        "description": "the GitLab project name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "group/my-project-name"
+                    },
+                    {
+                        "name": "userName",
+                        "in": "query",
+                        "description": "the user name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "Example Developer"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "the earliest date for the results given in ISO 8601 format",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "the latest date for the results given in ISO 8601 format",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The data successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "project-name-1": {
+                                                "user-a": {
+                                                    "2021-05-11": 3,
+                                                    "2021-05-13": 5,
+                                                    "2021-05-17": 3
+                                                },
+                                                "user-b": {
+                                                    "2021-05-16": 2
+                                                }
+                                            },
+                                            "project-name-2": {
+                                                "user-c": {
+                                                    "2021-05-17": 1
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained invalid or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid start time example": {
+                                        "description": "Invalid start time example",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'2020-13-01' is not valid date in ISO 8601 format"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No results found for the query",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "No results found example": {
+                                        "description": "No results found example",
+                                        "value": {
+                                            "status": "NotFound",
+                                            "description": "No results found for the query"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/info": {
+            "get": {
+                "summary": "Returns adapter info.",
+                "description": "Returns information about the data adapter.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information was fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/GitlabAdapterInfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "GitLab-adapter",
+                                            "componentType": "adapter",
+                                            "adapterType": "GitLab",
+                                            "version": "0.2",
+                                            "startTime": "2021-06-07T09:30:00.000Z",
+                                            "apiAddress": "localhost:9876",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/timestamps": {
+            "get": {
+                "summary": "Return the number of commits per day per user per project.",
+                "description": "Return the number of commits for each day grouped by GitLab project and the committer.",
+                "operationId": "getTimestampRoute",
+                "parameters": [
+                    {
+                        "name": "filePaths",
+                        "in": "query",
+                        "description": "a comma-separated list of file names",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "README.md,src/TestCode.scala"
+                    },
+                    {
+                        "name": "projectName",
+                        "in": "query",
+                        "description": "the GitLab project name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "group/my-project-name"
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "the earliest considered timestamp given in ISO 8601 format with timezone",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "the latest considered timestamp given in ISO 8601 format with timezone",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The data successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "project-name-1": {
+                                                "file-a": [
+                                                    "2021-05-11T12:35:59Z",
+                                                    "2021-05-25T13:36:58Z"
+                                                ],
+                                                "file-b": [
+                                                    "2020-06-10T10:57:42Z"
+                                                ]
+                                            },
+                                            "project-name-2": {
+                                                "file-c": [
+                                                    "2020-10-15T11:43:19Z"
+                                                ]
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained invalid or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid start time example": {
+                                        "description": "Invalid start time example",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'2020-13-01' is not valid date in ISO 8601 format"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No results found for the query",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "No results found example": {
+                                        "description": "No results found example",
+                                        "value": {
+                                            "status": "NotFound",
+                                            "description": "No results found for the query"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "GitlabAdapterInfoResponse": {
+                "required": [
+                    "adapterType",
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "database",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "adapterType": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "database": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "JsValue": {
+                "type": "object"
+            },
+            "JsObject": {
+                "required": [
+                    "fields"
+                ],
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "object",
+                        "properties": { },
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/JsValue"
+                        }
+                    }
+                }
+            },
+            "ResponseProblem": {
+                "required": [
+                    "description",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

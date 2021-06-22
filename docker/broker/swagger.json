@@ -1,0 +1,169 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.2"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8765"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/adapters": {
+            "get": {
+                "summary": "Returns active data adapter info.",
+                "description": "Returns information about the active data adapters.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List"
+                                },
+                                "examples": {
+                                    "Example response about adapters": {
+                                        "description": "Example response about adapters",
+                                        "value": [
+                                            {
+                                                "componentName": "gitlab-adapter",
+                                                "adapterType": "GitLab",
+                                                "version": "0.2",
+                                                "apiAddress": "localhost:9701",
+                                                "swaggerDefinition": "/api-docs/swagger.json",
+                                                "information": {
+                                                    "database": "gitlab"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/info": {
+            "get": {
+                "summary": "Returns data broker info.",
+                "description": "Returns information about the data broker.",
+                "operationId": "getInfoRoute_1",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/BrokerInfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "VISDOM-broker",
+                                            "componentType": "broker",
+                                            "version": "0.1",
+                                            "startTime": "2021-06-07T09:30:00.000Z",
+                                            "apiAddress": "localhost:9123",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/fetchers": {
+            "get": {
+                "summary": "Returns active data fetcher info.",
+                "description": "Returns information about the active data fetchers.",
+                "operationId": "getInfoRoute_2",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/List"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "VISDOM-broker",
+                                            "componentType": "broker",
+                                            "version": "0.1",
+                                            "startTime": "2021-06-07T09:30:00.000Z",
+                                            "apiAddress": "localhost:9123",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "BrokerInfoResponse": {
+                "required": [
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "List": {
+                "required": [
+                    "empty"
+                ],
+                "type": "array",
+                "properties": {
+                    "empty": {
+                        "type": "boolean"
+                    },
+                    "traversableAgain": {
+                        "type": "boolean"
+                    }
+                },
+                "items": {
+                    "type": "object"
+                }
+            }
+        }
+    }
+}
