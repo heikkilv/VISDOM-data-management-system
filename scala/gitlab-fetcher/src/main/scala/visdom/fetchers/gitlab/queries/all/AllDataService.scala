@@ -28,10 +28,11 @@ import visdom.http.server.GitlabFetcherResponseHandler
 import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.response.ResponseAccepted
+import visdom.utils.WarningConstants
 
 
 // scalastyle:off method.length
-@SuppressWarnings(Array("UnusedMethodParameter"))
+@SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
 @Path(AllDataConstants.AllDataRootPath)
 class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

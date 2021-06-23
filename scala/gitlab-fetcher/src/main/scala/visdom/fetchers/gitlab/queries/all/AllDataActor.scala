@@ -12,19 +12,22 @@ import visdom.fetchers.gitlab.AllDataSpecificFetchParameters
 import visdom.fetchers.gitlab.CommitSpecificFetchParameters
 import visdom.fetchers.gitlab.FileSpecificFetchParameters
 import visdom.fetchers.gitlab.GitlabConstants
+import visdom.fetchers.gitlab.PipelinesSpecificFetchParameters
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.files.FileActor
+import visdom.fetchers.gitlab.queries.pipelines.PipelinesActor
 import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
+import visdom.utils.WartRemoverConstants
 
 
 class AllDataActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: AllDataQueryOptions => {
             log.info(s"Received all data query with options: ${queryOptions.toString()}")
@@ -32,13 +35,9 @@ class AllDataActor extends Actor with ActorLogging {
                 case Right(fetchParameters: AllDataSpecificFetchParameters) => {
                     CommonHelpers.checkProjectAvailability(fetchParameters.projectName) match {
                         case GitlabConstants.StatusCodeOk => {
-                            // start the commit data fetching
-                            val commitFetching: Future[Unit] = Future(AllDataActor.startCommitFetching(fetchParameters))
-                            // start the file data fetching after the commit data fetching is complete
-                            commitFetching.onComplete({
-                                case Success(_) => AllDataActor.startFileFetching(fetchParameters)
-                                case Failure(error) => log.error(error.getMessage())
-                            })
+                            // start the data fetching
+                            AllDataActor.handleDataFetching(fetchParameters)
+                            // return the accepted response
                             ResponseUtils.getAcceptedResponse(
                                 AllDataConstants.AllDataStatusAcceptedDescription,
                                 queryOptions.toJsObject()
@@ -61,6 +60,8 @@ class AllDataActor extends Actor with ActorLogging {
 }
 
 object AllDataActor {
+    implicit val ec: ExecutionContext = ExecutionContext.global
+
     def getFetchOptions(queryOptions: AllDataQueryOptions): Either[String, AllDataSpecificFetchParameters] = {
         val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
         val endDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.endDate)
@@ -113,5 +114,35 @@ object AllDataActor {
             includeCommitLinks = AllDataConstants.ParameterDefaultIncludeCommitLinks
         )
         FileActor.startFileFetching(fileFetchParameters)
+    }
+
+    def startPipelineFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
+        val pipelineFetchParameters = PipelinesSpecificFetchParameters(
+            projectName = fetchParameters.projectName
+        )
+        PipelinesActor.startPipelineFetching(pipelineFetchParameters)
+    }
+
+    private val dataFetchers: Seq[AllDataSpecificFetchParameters => Unit] = Seq(
+        AllDataActor.startCommitFetching(_),
+        AllDataActor.startFileFetching(_),
+        AllDataActor.startPipelineFetching(_)
+    )
+
+    def handleDataFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
+        def handleDataFetchingInternal(fetchers: Seq[AllDataSpecificFetchParameters => Unit]): Unit = {
+            fetchers.headOption match {
+                case Some(fetcher) => {
+                    val fetcherFuture: Future[Unit] = Future(fetcher(fetchParameters))
+                    fetcherFuture.onComplete({
+                        case Success(_) => handleDataFetchingInternal(fetchers.drop(1))
+                        case Failure(error: Throwable) => println(s"Error: ${error.getMessage()}")
+                    })
+                }
+                case None =>
+            }
+        }
+
+        handleDataFetchingInternal(dataFetchers)
     }
 }
