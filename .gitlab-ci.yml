@@ -3,9 +3,16 @@ stages:
     - Unit Test
     - Build
 
-image: hseeberger/scala-sbt:8u282_1.5.2_2.12.13
-before_script:
-    - cd scala
+.java_with_sbt:
+    image: openjdk:8u292-jdk
+    variables:
+        SBT_VERSION: "1.5.2"
+    before_script:
+        - wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz |
+          gunzip |
+          tar -x -C /usr/local
+        - PATH=/usr/local/sbt/bin:${PATH}
+        - cd scala
 
 .docker_build:
     image: docker:19.03.15
@@ -16,6 +23,8 @@ before_script:
 
 scalastyle:
     stage: Static Analysis
+    extends:
+        - .java_with_sbt
     script:
         - sbt core/scalastyle
         - sbt dataBroker/scalastyle
@@ -24,6 +33,8 @@ scalastyle:
 
 scapegoat:
     stage: Static Analysis
+    extends:
+        - .java_with_sbt
     script:
         - sbt core/scapegoat
         - sbt dataBroker/scapegoat
@@ -32,6 +43,8 @@ scapegoat:
 
 unit_test:
     stage: Unit Test
+    extends:
+        - .java_with_sbt
     script:
         - sbt core/test
         - sbt dataBroker/test
