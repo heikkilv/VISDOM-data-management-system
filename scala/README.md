@@ -7,4 +7,4 @@ The source code is divided into separate subprojects:
 - [GitLab adapter](gitlab-adapter) contains code for a data adapter capable of handling GitLab data
 - [Data broker](broker) contains code for a simple data broker
 
-The installation instructions and the component descriptions can be found at the [docker](../docker) folder.
+The installation instructions and the component descriptions can be found at the [documentation](../documentation) folder.
