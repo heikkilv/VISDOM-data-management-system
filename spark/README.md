@@ -28,11 +28,9 @@ The environment used in testing:
 1. Edit the environmental variable file: [.env](.env) (the number of Spark workers, used port numbers, etc.)
     - the environment file contains explanations about the available variables
 2. Run the command: `./start_spark.sh`
-    - This will first create `docker-compose.yml` file with the number of worker components corresponding to the value defined by `SPARK_WORKERS` (by default: `1`) and the start all the containers defined in the created file.
+    - This will first create `docker-compose.yml` file with the number of worker components corresponding to the value defined by `SPARK_WORKERS` (by default: `1`) and then start all the containers defined in the created file.
 
 The web UI for the Spark master will be available at the port defined by `SPARK_MASTER_UI_PORT` (by default: `8100`) on the host server. The web UI for the Spark workers will be available at the following ports (`8101`, `8102`, ...).
-
-The Mongo express will be available at the port defined by `MONGO_EXPRESS_PORT` (by default: `8801`) on the host server.
 
 ## Uninstalling Apache Spark
 

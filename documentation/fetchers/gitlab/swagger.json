@@ -403,7 +403,7 @@
                     {
                         "name": "filePath",
                         "in": "query",
-                        "description": "the path for a file or folder to fetch commits for",
+                        "description": "the path inside repository to allow getting content of subdirectories",
                         "schema": {
                             "type": "string"
                         }

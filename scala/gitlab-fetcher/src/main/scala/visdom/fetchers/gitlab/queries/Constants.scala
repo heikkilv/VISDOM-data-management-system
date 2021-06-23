@@ -41,6 +41,7 @@ object Constants {
     final val ParameterDescriptionStartDate = "the earliest timestamp for the fetched commits given in ISO 8601 format with timezone"
     final val ParameterDescriptionEndDate = "the latest timestamp for the fetched commits given in ISO 8601 format with timezone"
     final val ParameterDescriptionFilePath = "the path for a file or folder to fetch commits for"
+    final val ParameterDescriptionFilePathForFiles = "the path inside repository to allow getting content of subdirectories"
     final val ParameterDescriptionIncludeStatistics = "whether statistics information is included or not"
     final val ParameterDescriptionIncludeFileLinks = "whether file links information is included or not"
     final val ParameterDescriptionIncludeReferenceLinks = "whether reference links information is included or not"

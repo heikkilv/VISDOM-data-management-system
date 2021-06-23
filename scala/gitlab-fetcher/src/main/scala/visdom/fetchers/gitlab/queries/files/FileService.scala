@@ -67,7 +67,7 @@ with GitlabFetcherResponseHandler {
                 name = Constants.ParameterFilePath,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = Constants.ParameterDescriptionFilePath
+                description = Constants.ParameterDescriptionFilePathForFiles
             ),
             new Parameter(
                 name = Constants.ParameterRecursive,
