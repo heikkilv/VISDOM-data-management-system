@@ -1,6 +1,8 @@
 package visdom.http
 
 import java.util.concurrent.TimeoutException
+import org.bson.BsonDocument
+import org.bson.BSONException
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -48,6 +50,29 @@ object HttpUtils {
             }
         } catch {
              case _: TimeoutException => HttpConstants.StatusCodeUnknown
+        }
+    }
+
+    def getRequestDocument(request: HttpRequest, expectedStatusCode: Int): Option[BsonDocument] = {
+        try {
+            Await.result(
+                makeRequest(request),
+                HttpConstants.DefaultWaitDuration
+            ) match {
+                case Some(response: HttpResponse[String]) => {
+                    response.code match {
+                        case expectedStatusCode => try {
+                            Some(org.bson.BsonDocument.parse(response.body))
+                        }
+                        catch {
+                            case _: BSONException => None
+                        }
+                    }
+                }
+                case None => None
+            }
+        } catch {
+             case _: TimeoutException => None
         }
     }
 }

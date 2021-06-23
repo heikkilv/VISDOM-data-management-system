@@ -25,6 +25,8 @@ object GitlabConstants {
     // constants for constructing query paths
     val PathCommits: String = "commits"
     val PathDiff: String = "diff"
+    val PathJobs: String = "jobs"
+    val PathPipelines: String = "pipelines"
     val PathProjects: String = "projects"
     val PathRefs: String = "refs"
     val PathRepository: String = "repository"
@@ -84,6 +86,9 @@ object GitlabConstants {
     val FetcherTypeCommitDiff: String = "commit_links_files"
     val FetcherTypeCommitRefs: String = "commit_links_refs"
     val FetcherTypeFiles: String = "files"
+    val FetcherTypeJobs: String = "jobs"
+    val FetcherTypePipeline: String = "pipeline"
+    val FetcherTypePipelines: String = "pipelines"
 
     // constants for default values
     val DefaultPerPage: Int = 100

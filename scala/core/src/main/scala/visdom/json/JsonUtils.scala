@@ -29,6 +29,16 @@ object JsonUtils {
             }
         }
 
+        def getIntOption(key: Any): Option[Int] = {
+            document.containsKey(key) match {
+                case true => document.get(key).isInt32() match {
+                    case true => Some(document.getInt32(key).getValue())
+                    case false => None
+                }
+                case false => None
+            }
+        }
+
         def appendOption(key: String, optionValue: Option[BsonValue]): BsonDocument = {
             optionValue match {
                 case Some(value: BsonValue) => document.append(key, value)

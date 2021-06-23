@@ -20,12 +20,14 @@ import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
+import visdom.utils.CommonConstants
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions) {
     def getFetcherType(): String
     def getCollectionName(): String
     def getRequest(): HttpRequest
+    val createMetadataDocument: Boolean = true
 
     def getOptionsDocument(): BsonDocument = {
         BsonDocument()
@@ -122,11 +124,15 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
     }
 
     final def getCollection(): Option[MongoCollection[Document]] = {
-        options.mongoDatabase match {
-            case Some(database: MongoDatabase) => Some(
-                database.getCollection(getCollectionName())
-            )
-            case None => None
+        val collectionName: String = getCollectionName()
+        collectionName match {
+            case CommonConstants.EmptyString => None
+            case _ => options.mongoDatabase match {
+                case Some(database: MongoDatabase) => Some(
+                    database.getCollection(getCollectionName())
+                )
+                case None => None
+            }
         }
     }
 
@@ -151,6 +157,8 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                 case GitlabFileOptions(_, _, projectName, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
+                    Some(toBsonValue(projectName))
+                case GitlabPipelinesOptions(_, _, projectName) =>
                     Some(toBsonValue(projectName))
                 case _ => None
             }))
@@ -195,13 +203,16 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
         }
 
         // store a metadata document to MongoDB
-        getMetadataCollection() match {
-            case Some(metadataCollection: MongoCollection[Document]) => MongoConnection.storeDocument(
-                metadataCollection,
-                getMetadataDocument(resultsOption),
-                Array()
-            )
-            case None =>
+        createMetadataDocument match {
+            case true => getMetadataCollection() match {
+                case Some(metadataCollection: MongoCollection[Document]) => MongoConnection.storeDocument(
+                    metadataCollection,
+                    getMetadataDocument(resultsOption),
+                    Array()
+                )
+                case None =>
+            }
+            case false =>
         }
 
         resultsOption
