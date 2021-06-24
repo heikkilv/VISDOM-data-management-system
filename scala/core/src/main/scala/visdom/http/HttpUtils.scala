@@ -61,8 +61,8 @@ object HttpUtils {
             ) match {
                 case Some(response: HttpResponse[String]) => {
                     response.code match {
-                        case expectedStatusCode => try {
-                            Some(org.bson.BsonDocument.parse(response.body))
+                        case code: Int if code == expectedStatusCode => try {
+                            Some(BsonDocument.parse(response.body))
                         }
                         catch {
                             case _: BSONException => None

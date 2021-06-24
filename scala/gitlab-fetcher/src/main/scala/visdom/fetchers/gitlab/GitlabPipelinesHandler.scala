@@ -59,7 +59,7 @@ extends GitlabDataHandler(options) {
                 }
             }
             case None => {
-                println(s"Did not find pipeline id from the pipeline document")
+                println("Did not find pipeline id from the pipeline document")
                 document
             }
         }
