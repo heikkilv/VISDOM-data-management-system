@@ -12,7 +12,7 @@ final case class PipelinesQueryOptions(
     startDate: Option[String],
     endDate: Option[String],
     includeJobs: String,
-    includeJobLogs: String,
+    includeJobLogs: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
