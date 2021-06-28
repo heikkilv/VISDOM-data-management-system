@@ -4,25 +4,27 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit.SECONDS
+import org.bson.BsonValue
+import org.mongodb.scala.bson.BsonArray
+import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
+import org.mongodb.scala.bson.collection.immutable.Document
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import visdom.database.mongodb.MongoConstants
-import visdom.json.JsonUtils.EnrichedBsonDocument
-import visdom.utils.CommonConstants
-import org.mongodb.scala.bson.collection.immutable.Document
 import visdom.http.HttpUtils
 import visdom.http.HttpConstants
+import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
+import visdom.utils.CommonConstants
 import visdom.utils.WartRemoverConstants
-import org.mongodb.scala.bson.BsonBoolean
 
 
 class GitlabPipelinesHandler(options: GitlabPipelinesOptions)
@@ -164,12 +166,39 @@ extends GitlabDataHandler(options) {
         HttpUtils.getRequestDocument(singlePipelineRequest, HttpConstants.StatusCodeOk)
     }
 
+    private def getJobIds(pipelineJobs: Option[Array[Document]]): Option[Array[BsonInt32]] = {
+        pipelineJobs match {
+            case Some(jobs: Array[Document]) => {
+                Some(
+                    jobs.map(jobDocument => {
+                        jobDocument.containsKey(GitlabConstants.AttributeId) match {
+                            case true => jobDocument.get(GitlabConstants.AttributeId) match {
+                                case Some(idAttribute: BsonValue) => idAttribute.isInt32() match {
+                                    case true => Some(idAttribute.asInt32())
+                                    case false => None
+                                }
+                                case None => None
+                            }
+                            case false => None
+                        }
+                    }).flatten
+                )
+            }
+            case None => None
+        }
+    }
+
     private def addJobData(pipelineDocument: BsonDocument, pipelineId: Int): BsonDocument = {
         options.includeJobs match {
             case true => {
-                val pipelineJobs: Option[Array[Document]] = fetchJobData(pipelineId)
-                // TODO: add job ids as to the pipelineDocument
-                pipelineDocument
+                val pipelineJobIds: Option[Array[BsonInt32]] = getJobIds(fetchJobData(pipelineId))
+                pipelineJobIds match {
+                    case Some(jobIds: Array[BsonInt32]) => pipelineDocument.append(
+                        GitlabConstants.AttributeLinks,
+                        BsonDocument(GitlabConstants.AttributeJobs -> BsonArray(jobIds))
+                    )
+                    case None => pipelineDocument
+                }
             }
             case false => pipelineDocument
         }

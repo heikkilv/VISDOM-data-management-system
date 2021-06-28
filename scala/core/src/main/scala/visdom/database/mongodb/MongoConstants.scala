@@ -23,6 +23,7 @@ object MongoConstants {
     val CollectionCommits: String = "commits"
     val CollectionFiles: String = "files"
     val CollectionJobs: String = "jobs"
+    val CollectionJobLogs: String = "job_logs"
     val CollectionMetadata: String = "metadata"
     val CollectionPipelines: String = "pipelines"
     val CollectionTemp: String = "temp"

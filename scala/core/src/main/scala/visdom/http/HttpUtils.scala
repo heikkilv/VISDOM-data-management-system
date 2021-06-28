@@ -75,4 +75,27 @@ object HttpUtils {
              case _: TimeoutException => None
         }
     }
+
+    def getRequestBody(request: HttpRequest, expectedStatusCode: Int): Option[String] = {
+        try {
+            Await.result(
+                makeRequest(request),
+                HttpConstants.DefaultWaitDuration
+            ) match {
+                case Some(response: HttpResponse[String]) => {
+                    response.code match {
+                        case code: Int if code == expectedStatusCode => try {
+                            Some(response.body)
+                        }
+                        catch {
+                            case _: BSONException => None
+                        }
+                    }
+                }
+                case None => None
+            }
+        } catch {
+             case _: TimeoutException => None
+        }
+    }
 }
