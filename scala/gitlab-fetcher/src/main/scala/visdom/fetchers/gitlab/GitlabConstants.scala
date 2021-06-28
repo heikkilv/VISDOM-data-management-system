@@ -25,6 +25,8 @@ object GitlabConstants {
     // constants for constructing query paths
     val PathCommits: String = "commits"
     val PathDiff: String = "diff"
+    val PathJobs: String = "jobs"
+    val PathPipelines: String = "pipelines"
     val PathProjects: String = "projects"
     val PathRefs: String = "refs"
     val PathRepository: String = "repository"
@@ -38,7 +40,10 @@ object GitlabConstants {
     val ParamRef: String = "ref"
     val ParamRefName: String = "ref_name"
     val ParamSince: String = "since"
+    val PathTrace: String = "trace"
     val ParamUntil: String = "until"
+    val ParamUpdatedAfter: String = "updated_after"
+    val ParamUpdatedBefore: String = "updated_before"
     val ParamWithStats: String = "with_stats"
 
     // constants for query and response headers
@@ -60,10 +65,16 @@ object GitlabConstants {
     val AttributeId: String = "id"
     val AttributeIncludeLinksCommits: String = "include_links_commits"
     val AttributeIncludeLinksFiles: String = "include_links_files"
+    val AttributeIncludeJobs: String = "include_jobs"
+    val AttributeIncludeJobLogs: String = "include_job_logs"
     val AttributeIncludeLinksRefs: String = "include_links_refs"
     val AttributeIncludeStatistics: String = "include_statistics"
+    val AttributeJobLogIncluded: String = "job_log_fetched"
+    val AttributeJobId: String = "job_id"
+    val AttributeJobs: String = "jobs"
     val AttributeLastModified: String = "last_modified"
     val AttributeLinks: String = "_links"
+    val AttributeLog: String = "log"
     val AttributeMetadata: String = "_metadata"
     val AttributeOptions: String = "options"
     val AttributePath: String = "path"
@@ -84,6 +95,9 @@ object GitlabConstants {
     val FetcherTypeCommitDiff: String = "commit_links_files"
     val FetcherTypeCommitRefs: String = "commit_links_refs"
     val FetcherTypeFiles: String = "files"
+    val FetcherTypeJobs: String = "jobs"
+    val FetcherTypePipeline: String = "pipeline"
+    val FetcherTypePipelines: String = "pipelines"
 
     // constants for default values
     val DefaultPerPage: Int = 100

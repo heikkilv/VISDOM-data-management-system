@@ -1,4 +1,4 @@
-package visdom.fetchers.gitlab.queries.all
+package visdom.fetchers.gitlab.queries.pipelines
 
 import akka.actor.ActorRef
 import akka.http.scaladsl.model.StatusCodes
@@ -23,30 +23,29 @@ import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.http.server.ServerProtocol
-import visdom.http.server.GitlabFetcherResponseHandler
-import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
-import visdom.http.server.response.ResponseProblem
+import visdom.http.server.response.StatusResponse
 import visdom.http.server.response.ResponseAccepted
+import visdom.http.server.response.ResponseProblem
+import visdom.http.server.fetcher.gitlab.PipelinesQueryOptions
+import visdom.http.server.GitlabFetcherResponseHandler
 import visdom.utils.WarningConstants
 
 
 // scalastyle:off method.length
 @SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
-@Path(AllDataConstants.AllDataRootPath)
-class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(PipelinesConstants.PipelinesRootPath)
+class PipelinesService(pipelinesActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with GitlabFetcherResponseHandler
-{
+with GitlabFetcherResponseHandler {
     val route: Route = (
-        getAllDataRoute
+        getFileRoute
     )
 
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = AllDataConstants.AllDataEndpointSummary,
-        description = AllDataConstants.AllDataEndpointDescription,
+        summary = PipelinesConstants.PipelinesEndpointSummary,
+        description = PipelinesConstants.PipelinesEndpointDescription,
         parameters = Array(
             new Parameter(
                 name = Constants.ParameterProjectName,
@@ -84,19 +83,41 @@ with GitlabFetcherResponseHandler
                     implementation = classOf[String],
                     format = Constants.DateTimeFormat
                 )
+            ),
+            new Parameter(
+                name = Constants.ParameterIncludeJobs,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionIncludeJobs,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultIncludeJobsString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = Constants.ParameterIncludeJobLogs,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionIncludeJobLogs,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultIncludeJobLogsString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
             new ApiResponse(
                 responseCode = Constants.StatusAcceptedCode,
-                description = AllDataConstants.AllDataStatusAcceptedDescription,
+                description = PipelinesConstants.PipelinesStatusAcceptedDescription,
                 content = Array(
                     new Content(
                         schema = new Schema(implementation = classOf[ResponseAccepted]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleAcceptedName,
-                                value = AllDataConstants.AllDataResponseExampleAccepted
+                                value = PipelinesConstants.PipelinesResponseExampleAccepted
                             )
                         )
                     )
@@ -168,29 +189,37 @@ with GitlabFetcherResponseHandler
             )
         )
     )
-    def getAllDataRoute: RequestContext => Future[RouteResult] = (
-        path(AllDataConstants.AllDataPath) &
+    def getFileRoute: RequestContext => Future[RouteResult] = (
+        path(PipelinesConstants.PipelinesPath) &
         parameters(
-            Constants.ParameterProjectName.withDefault(""),
+             Constants.ParameterProjectName.withDefault(""),
             Constants.ParameterReference
                 .withDefault(Constants.ParameterDefaultReference),
             Constants.ParameterStartDate.optional,
-            Constants.ParameterEndDate.optional
+            Constants.ParameterEndDate.optional,
+            Constants.ParameterIncludeJobs
+                .withDefault(Constants.ParameterDefaultIncludeJobsString),
+            Constants.ParameterIncludeJobLogs
+                .withDefault(Constants.ParameterDefaultIncludeJobLogsString)
         )
     ) {
         (
             projectName,
             reference,
             startDate,
-            endDate
+            endDate,
+            includeJobs,
+            includeJobLogs
         ) => get {
-            val options: AllDataQueryOptions = AllDataQueryOptions(
+            val options: PipelinesQueryOptions = PipelinesQueryOptions(
                 projectName,
                 reference,
                 startDate,
-                endDate
+                endDate,
+                includeJobs,
+                includeJobLogs
             )
-            getRoute(allDataActor, options)
+            getRoute(pipelinesActor, options)
         }
     }
 }

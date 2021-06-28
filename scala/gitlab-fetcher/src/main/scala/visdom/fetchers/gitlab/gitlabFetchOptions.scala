@@ -91,3 +91,31 @@ final case class AllDataSpecificFetchParameters(
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime]
 ) extends AllDataSpecificFetchOptions
+
+final case class GitlabPipelinesOptions(
+    hostServer: GitlabServer,
+    mongoDatabase: Option[MongoDatabase],
+    projectName: String,
+    reference: String,
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    includeJobs: Boolean,
+    includeJobLogs: Boolean
+) extends GitlabFetchOptions
+
+final case class GitlabPipelineOptions(
+    hostServer: GitlabServer,
+    mongoDatabase: Option[MongoDatabase],
+    projectName: String,
+    pipelineId: Int,
+    includeJobLogs: Boolean
+) extends GitlabFetchOptions
+
+final case class PipelinesSpecificFetchParameters(
+    projectName: String,
+    reference: String,
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    includeJobs: Boolean,
+    includeJobLogs: Boolean
+)
