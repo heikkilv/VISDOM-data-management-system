@@ -17,6 +17,8 @@ object AllDataConstants {
     final val ParameterDefaultIncludeFileLinks: Boolean = true
     final val ParameterDefaultIncludeReferenceLinks: Boolean = true
     final val ParameterDefaultIncludeCommitLinks: Boolean = true
+    final val ParameterDefaultIncludeJobs: Boolean = true
+    final val ParameterDefaultIncludeJobLogs: Boolean = true
     final val ParameterDefaultRecursive: Boolean = true
 
     // the example responses for the all endpoint

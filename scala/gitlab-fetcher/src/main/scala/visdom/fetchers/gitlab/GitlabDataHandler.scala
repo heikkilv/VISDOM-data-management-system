@@ -158,7 +158,7 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                     Some(toBsonValue(projectName))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
                     Some(toBsonValue(projectName))
-                case GitlabPipelinesOptions(_, _, projectName) =>
+                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case _ => None
             }))

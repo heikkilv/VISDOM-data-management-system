@@ -7,12 +7,22 @@ import visdom.json.JsonUtils
 
 
 final case class PipelinesQueryOptions(
-    projectName: String
+    projectName: String,
+    reference: String,
+    startDate: Option[String],
+    endDate: Option[String],
+    includeJobs: String,
+    includeJobLogs: String,
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
             Map(
-                AttributeConstants.ProjectName -> JsonUtils.toJsonValue(projectName)
+                AttributeConstants.ProjectName -> JsonUtils.toJsonValue(projectName),
+                AttributeConstants.Reference -> JsonUtils.toJsonValue(reference),
+                AttributeConstants.StartDate -> JsonUtils.toJsonValue(startDate),
+                AttributeConstants.EndDate -> JsonUtils.toJsonValue(endDate),
+                AttributeConstants.IncludeJobs -> JsonUtils.toJsonValue(includeJobs),
+                AttributeConstants.IncludeJobLogs -> JsonUtils.toJsonValue(includeJobLogs)
             )
         )
     }

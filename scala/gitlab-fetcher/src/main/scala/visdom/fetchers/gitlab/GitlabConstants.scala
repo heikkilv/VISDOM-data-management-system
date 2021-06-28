@@ -41,6 +41,8 @@ object GitlabConstants {
     val ParamRefName: String = "ref_name"
     val ParamSince: String = "since"
     val ParamUntil: String = "until"
+    val ParamUpdatedAfter: String = "updated_after"
+    val ParamUpdatedBefore: String = "updated_before"
     val ParamWithStats: String = "with_stats"
 
     // constants for query and response headers
@@ -62,6 +64,8 @@ object GitlabConstants {
     val AttributeId: String = "id"
     val AttributeIncludeLinksCommits: String = "include_links_commits"
     val AttributeIncludeLinksFiles: String = "include_links_files"
+    val AttributeIncludeJobs: String = "include_jobs"
+    val AttributeIncludeJobLogs: String = "include_job_logs"
     val AttributeIncludeLinksRefs: String = "include_links_refs"
     val AttributeIncludeStatistics: String = "include_statistics"
     val AttributeLastModified: String = "last_modified"

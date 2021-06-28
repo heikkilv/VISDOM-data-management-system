@@ -8,6 +8,8 @@ object AttributeConstants {
     final val GitlabServer: String = "gitlabServer"
     final val IncludeCommitLinks: String = "includeCommitLinks"
     final val IncludeFileLinks: String = "includeFileLinks"
+    final val IncludeJobs: String = "includeJobs"
+    final val IncludeJobLogs: String = "includeJobLogs"
     final val IncludeReferenceLinks: String = "includeReferenceLinks"
     final val IncludeStatistics: String = "includeStatistics"
     final val ProjectName: String = "projectName"

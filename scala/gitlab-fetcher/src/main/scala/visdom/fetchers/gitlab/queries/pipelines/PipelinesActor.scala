@@ -2,6 +2,7 @@ package visdom.fetchers.gitlab.queries.pipelines
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
+import java.time.ZonedDateTime
 import org.mongodb.scala.bson.collection.immutable.Document
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -13,16 +14,17 @@ import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerProtocol
 import visdom.http.server.fetcher.gitlab.PipelinesQueryOptions
+import visdom.http.server.response.StatusResponse
+import visdom.utils.WartRemoverConstants
 
 
 class PipelinesActor extends Actor with ActorLogging with ServerProtocol {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: PipelinesQueryOptions => {
             log.info(s"Received pipelines query with options: ${queryOptions.toString()}")
@@ -56,12 +58,32 @@ class PipelinesActor extends Actor with ActorLogging with ServerProtocol {
 
 object PipelinesActor {
     def getFetchOptions(queryOptions: PipelinesQueryOptions): Either[String, PipelinesSpecificFetchParameters] = {
+        val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.endDate)
+
         if (!CommonHelpers.isProjectName(queryOptions.projectName)) {
             Left(s"'${queryOptions.projectName}' is not a valid project name")
         }
+        else if (!CommonHelpers.isReference(queryOptions.reference)) {
+            Left(s"'${queryOptions.reference}' is not a valid reference for a project")
+        }
+        else if (queryOptions.startDate.isDefined && !startDate.isDefined) {
+            Left(s"'${queryOptions.startDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
+        }
+        else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
+            Left(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
+        }
+        else if (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate)) {
+            Left("the endDate must be later than the startDate")
+        }
         else {
             Right(PipelinesSpecificFetchParameters(
-                projectName = queryOptions.projectName
+                projectName = queryOptions.projectName,
+                reference = queryOptions.reference,
+                startDate = startDate,
+                endDate = endDate,
+                includeJobs = queryOptions.includeJobs.toBoolean,
+                includeJobLogs = queryOptions.includeJobLogs.toBoolean
             ))
         }
     }
@@ -70,7 +92,12 @@ object PipelinesActor {
         val pipelineFetcherOptions: GitlabPipelinesOptions = GitlabPipelinesOptions(
             hostServer = server,
             mongoDatabase = Some(targetDatabase),
-            projectName = fetchParameters.projectName
+            projectName = fetchParameters.projectName,
+            reference = fetchParameters.reference,
+            startDate = fetchParameters.startDate,
+            endDate = fetchParameters.endDate,
+            includeJobs = fetchParameters.includeJobs,
+            includeJobLogs = fetchParameters.includeJobLogs
         )
         val pipelineFetcher = new GitlabPipelinesHandler(pipelineFetcherOptions)
         val pipelineCount = pipelineFetcher.process() match {

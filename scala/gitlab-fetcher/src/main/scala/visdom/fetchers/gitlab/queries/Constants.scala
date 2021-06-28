@@ -34,6 +34,8 @@ object Constants {
     final val ParameterIncludeFileLinks = "includeFileLinks"
     final val ParameterIncludeReferenceLinks = "includeReferenceLinks"
     final val ParameterIncludeCommitLinks = "includeCommitLinks"
+    final val ParameterIncludeJobs = "includeJobs"
+    final val ParameterIncludeJobLogs = "includeJobLogs"
     final val ParameterRecursive = "recursive"
 
     final val ParameterDescriptionProjectName = "the GitLab project name"
@@ -46,6 +48,8 @@ object Constants {
     final val ParameterDescriptionIncludeFileLinks = "whether file links information is included or not"
     final val ParameterDescriptionIncludeReferenceLinks = "whether reference links information is included or not"
     final val ParameterDescriptionIncludeCommitLinks = "whether commit links information is included or not"
+    final val ParameterDescriptionIncludeJobs = "whether to fetch related job data or not"
+    final val ParameterDescriptionIncludeJobLogs = "whether job logs are included or not (only applicable when includeJobs is true)"
     final val ParameterDescriptionRecursive = "whether to use recursive search or not"
 
     final val ParameterDefaultReference = "master"
@@ -53,8 +57,9 @@ object Constants {
     final val ParameterDefaultIncludeFileLinksString = FalseString
     final val ParameterDefaultIncludeReferenceLinksString = FalseString
     final val ParameterDefaultIncludeCommitLinksString = FalseString
+    final val ParameterDefaultIncludeJobsString = TrueString
+    final val ParameterDefaultIncludeJobLogsString = FalseString
     final val ParameterDefaultRecursiveString = TrueString
-
     final val ParameterExampleProjectName = "group/my-project-name"
 
     // the example responses and their names for that can common for the various endpoints

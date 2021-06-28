@@ -53,6 +53,58 @@ with GitlabFetcherResponseHandler {
                 required = true,
                 description = Constants.ParameterDescriptionProjectName,
                 example = Constants.ParameterExampleProjectName
+            ),
+            new Parameter(
+                name = Constants.ParameterReference,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionReference,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultReference
+                )
+            ),
+            new Parameter(
+                name = Constants.ParameterStartDate,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionStartDate,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    format = Constants.DateTimeFormat
+                )
+            ),
+            new Parameter(
+                name = Constants.ParameterEndDate,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionEndDate,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    format = Constants.DateTimeFormat
+                )
+            ),
+            new Parameter(
+                name = Constants.ParameterIncludeJobs,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionIncludeJobs,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultIncludeJobsString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = Constants.ParameterIncludeJobLogs,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionIncludeJobLogs,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultIncludeJobLogsString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -140,14 +192,32 @@ with GitlabFetcherResponseHandler {
     def getFileRoute: RequestContext => Future[RouteResult] = (
         path(PipelinesConstants.PipelinesPath) &
         parameters(
-            Constants.ParameterProjectName.withDefault("")
+             Constants.ParameterProjectName.withDefault(""),
+            Constants.ParameterReference
+                .withDefault(Constants.ParameterDefaultReference),
+            Constants.ParameterStartDate.optional,
+            Constants.ParameterEndDate.optional,
+            Constants.ParameterIncludeJobs
+                .withDefault(Constants.ParameterDefaultIncludeJobsString),
+            Constants.ParameterIncludeJobLogs
+                .withDefault(Constants.ParameterDefaultIncludeJobLogsString)
         )
     ) {
         (
-            projectName
+            projectName,
+            reference,
+            startDate,
+            endDate,
+            includeJobs,
+            includeJobLogs
         ) => get {
             val options: PipelinesQueryOptions = PipelinesQueryOptions(
-                projectName
+                projectName,
+                reference,
+                startDate,
+                endDate,
+                includeJobs,
+                includeJobLogs
             )
             getRoute(pipelinesActor, options)
         }

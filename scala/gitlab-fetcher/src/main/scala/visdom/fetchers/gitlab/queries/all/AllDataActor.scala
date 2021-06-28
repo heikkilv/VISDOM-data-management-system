@@ -118,7 +118,12 @@ object AllDataActor {
 
     def startPipelineFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
         val pipelineFetchParameters = PipelinesSpecificFetchParameters(
-            projectName = fetchParameters.projectName
+            projectName = fetchParameters.projectName,
+            reference = fetchParameters.reference,
+            startDate = fetchParameters.startDate,
+            endDate = fetchParameters.endDate,
+            includeJobs = AllDataConstants.ParameterDefaultIncludeJobs,
+            includeJobLogs = AllDataConstants.ParameterDefaultIncludeJobLogs
         )
         PipelinesActor.startPipelineFetching(pipelineFetchParameters)
     }
