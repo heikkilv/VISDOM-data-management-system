@@ -16,6 +16,7 @@
     - [`/info` endpoint](#info-endpoint)
     - [`/swagger` endpoint](#swagger-endpoint)
 - [Notes about using GitLab data fetcher](#notes-about-using-gitlab-data-fetcher)
+- [Uninstalling GitLab data fetcher](#uninstalling-gitlab-data-fetcher)
 
 The GitLab data fetcher can be used to fetch raw data from a GitLab server.
 
@@ -100,8 +101,8 @@ The Swagger UI interface will be available at the address: `http://HOST_NAME:HOS
 
 Starts a fetching process for commit, file and pipeline data from a GitLab repository. All additional metadata and link data will be included, i.e. true used for all the boolean parameters for commits, files and pipelines endpoints. The actual data fetching is done in sequence: first commit data, then file data and finally pipeline data.
 
-| Query parameter | Type     | Description |
-| --------------- | -------- | ----------- |
+| Query parameter | Type     | Description             |
+| --------------- | -------- | ----------------------- |
 | `projectName`   | required | the GitLab project name |
 | `reference`     | optional | the reference (branch or tag) for the project, default: master |
 | `startDate`     | optional | the earliest timestamp for the fetched data given in ISO 8601 format with timezone, default: no limit |
@@ -113,8 +114,8 @@ Successful query returns a response with a status code 202 which indicates that 
 
 Starts a fetching process for commit data from a GitLab repository.
 
-| Query parameter         | Type     | Description |
-| ----------------------- | -------- | ----------- |
+| Query parameter         | Type     | Description             |
+| ----------------------- | -------- | ----------------------- |
 | `projectName`           | required | the GitLab project name |
 | `reference`             | optional | the reference (branch or tag) for the project, default: master |
 | `startDate`             | optional | the earliest timestamp for the fetched commits given in ISO 8601 format with timezone, default: no limit |
@@ -132,15 +133,15 @@ The fetched commit data will be added to the collection `commits` in the MongoDB
 
 Starts a fetching process for file data from a GitLab repository.
 
-| Query parameter      | Type     | Description |
-| -------------------- | -------- | ----------- |
+| Query parameter      | Type     | Description             |
+| -------------------- | -------- | ----------------------- |
 | `projectName`        | required | the GitLab project name |
 | `reference`          | optional | the reference (branch or tag) for the project, default: master |
 | `filePath`           | optional | the path inside repository to allow getting content of subdirectories, default fetch all files |
 | `recursive`          | optional | whether to use recursive search or not (true/false, default: true) |
 | `includeCommitLinks` | optional | whether commit links information is included or not (true/false, default: false) |
 
-Successful query returns a response with a status code 202 which indicates that the data fetching process for the commit data has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
+Successful query returns a response with a status code 202 which indicates that the data fetching process for the file data has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
 The fetched file data will be added to the collection `files` in the MongoDB.
 
@@ -148,14 +149,16 @@ The fetched file data will be added to the collection `files` in the MongoDB.
 
 Starts a fetching process for pipeline and job data from a GitLab repository.
 
-| Query parameter  | Type     | Description |
-| ---------------- | -------- | ----------- |
+| Query parameter  | Type     | Description             |
+| ---------------- | -------- | ----------------------- |
 | `projectName`    | required | the GitLab project name |
 | `reference`      | optional | the reference (branch or tag) for the project, default: master |
 | `startDate`      | optional | the earliest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
 | `endDate`        | optional | the latest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
 | `includeJobs`    | optional | whether to fetch related job data or not (true/false, default: true) |
 | `includeJobLogs` | optional | whether job logs are included or not (only applicable when includeJobs is true) (true/false, default: false) |
+
+Successful query returns a response with a status code 202 which indicates that the data fetching process for the pipeline data (and possible job data) has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
 The fetched pipeline data will be added to the collection `pipelines` in the MongoDB.
 If the includeJobs option is used, the fetched job data will be added to the collection `jobs`.
@@ -172,16 +175,25 @@ The GitLab data fetcher provides a Swagger UI interface to test the GitLab data 
 ## Notes about using GitLab data fetcher
 
 - The response (status code: 202) from the API is given at the same time that the actual data fetching process is started. Depending on how much data the fetch results in, it might take a long while until the actual data fetching process is completed.
-- No limits on how many data fetching can be start concurrently have been implemented.
+- No limits on how many data fetching can be start concurrently have been implemented. It is advisable to not to start dozens or hundreds queries at the same time.
 - No access control for GitLab data fetcher has been implemented.
     - Any project that can be accessed with the access token given at startup will be available for data fetching without any tokens from the user.
-- When the data fetching query results in new data, that data is stored as documents in the appropriate collection.
-- When the data fetching query results in previously stored data, the stored document will be replaced by the new data fetch result.
-    - This means that if the new query result did not include link data any possible link data in the previously stored document will be lost.
+- No anonymization options for the fetched data has been implemented. This means that the fetched data will contain user information (at least names emails) in plain text. The anonymization option will be implemented in the future.
+- Projects in GitLab have both an id number and a name. Both of these can be used as the `project_name` attribute when using the API. However, it is recommended that only the name is used, since this is the assumption the GitLab data fetcher makes about the input.
+- No proper input checking has been implemented for the API.
+- When the data fetching query results in new data, that data is stored as new documents in the appropriate collection.
+- When the data fetching query results matches previously stored data, the stored document will be replaced by the new data fetch result.
+    - This means that if the new query result did not include link data, any possible link data in the previously stored document will be lost.
     - Documents stored in the database are identified by the combination of the following:
-        - GitLab project name (attribute: `project_name`)
-        - GitLab host server name (attribute: `host_name`)
-        - Data specific identifying attribute (attribute: `path` for file data and `id` for other data)
+        - GitLab project name (attribute `project_name`)
+        - GitLab host server name (attribute `host_name`)
+        - Data specific identifying attribute (attribute `path` for file data and `id` for other data)
 - The `_metadata` attribute in the stored documents contains a timestamp for the latest update for that document.
 - A new document will be added to the collection `metadata` after each completed data fetch query. This document will contain the number of added/updated documents.
     - Note that for the pipelines endpoint, the number of documents refer only to the number of pipeline related documents and does not include the affected job or job log related documents.
+- A metadata document will be added/updated by the GitLab data fetcher at startup and every 5 minutes. This metadata document is located at the metadata collection in the metadata database in MongoDB.
+- For developers, no proper unit tests have been implemented for the GitLab data fetcher.
+
+## Uninstalling GitLab data fetcher
+
+Run the command: `docker-compose down`
