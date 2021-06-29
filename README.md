@@ -1,5 +1,11 @@
 # Data Management System
 
+<!-- no toc -->
+- [Documentation](#documentation)
+- [Background components](#background-components)
+- [Source code](#source-code)
+- [License](#license)
+
 A developing implementation of the Data Management System for the [VISDOM](https://iteavisdom.org/) project.
 
 ## Documentation

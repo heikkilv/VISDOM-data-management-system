@@ -1,5 +1,12 @@
 # Apache Spark for the Data Management System
 
+<!-- no toc -->
+- [Overall description](#overall-description)
+- [Installing Apache Spark](#installing-apache-spark)
+    - [Requirements](#requirements)
+    - [Installation instructions](#installation-instructions)
+- [Uninstalling Apache Spark](#uninstalling-apache-spark)
+
 [Apache Spark](https://spark.apache.org/) is a analytics engine for large-scale data processing. In the VISDOM data management system it is used to adapt the raw data stored in MongoDB to something the visualizations can use.
 
 ## Overall description

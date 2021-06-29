@@ -1,5 +1,12 @@
 # MongoDB for the Data Management System
 
+<!-- no toc -->
+- [Installing MongoDB](#installing-mongodb)
+    - [Requirements](#requirements)
+    - [Installation instructions](#installation-instructions)
+- [Uninstalling MongoDB](#uninstalling-mongodb)
+- [Removing the Mongo data](#removing-the-mongo-data)
+
 [MongoDB](https://www.mongodb.com/) is a general purpose document database.
 In the VISDOM data management system it is used to store all the information fetched from the software tools.
 

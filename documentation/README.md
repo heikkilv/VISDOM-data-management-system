@@ -1,5 +1,11 @@
 # Components for the Data Management System
 
+<!-- no toc -->
+- [Architecture](#architecture)
+- [Data broker](#data-broker)
+- [Data fetchers](#data-fetchers)
+- [Data adapters](#data-adapters)
+
 This folder contains the installation instructions and the component descriptions for the implemented components of the Data Management System in the [VISDOM](https://iteavisdom.org/) project.
 
 ## Architecture
