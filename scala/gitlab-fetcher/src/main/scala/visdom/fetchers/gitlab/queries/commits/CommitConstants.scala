@@ -10,6 +10,9 @@ object CommitConstants {
 
     final val CommitStatusAcceptedDescription = "The fetching of the commit data has been started"
 
+    final val ParameterDescriptionStartDate = "the earliest timestamp for the fetched commits given in ISO 8601 format with timezone"
+    final val ParameterDescriptionEndDate = "the latest timestamp for the fetched commits given in ISO 8601 format with timezone"
+
     // the example responses for the commits endpoint
     final val CommitResponseExampleAccepted = """{
         "status": "Accepted",

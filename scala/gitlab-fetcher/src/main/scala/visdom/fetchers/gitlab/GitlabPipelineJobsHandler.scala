@@ -112,7 +112,7 @@ extends GitlabDataHandler(options) {
         addIdentifierAttributes(
             BsonDocument(
                 Map(
-                    GitlabConstants.AttributeJobId -> BsonInt32(jobId),
+                    GitlabConstants.AttributeId -> BsonInt32(jobId),
                     GitlabConstants.AttributeLog -> BsonString(log)
                 )
             )
@@ -132,7 +132,7 @@ extends GitlabDataHandler(options) {
                 collection = collection,
                 document = Document(jobLogBsonDocument),
                 identifierAttributes = Array(
-                    GitlabConstants.AttributeJobId,
+                    GitlabConstants.AttributeId,
                     GitlabConstants.AttributeProjectName,
                     GitlabConstants.AttributeHostName
                 )

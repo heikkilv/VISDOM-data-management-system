@@ -10,6 +10,9 @@ object PipelinesConstants {
     final val PipelinesEndpointDescription = "Starts a fetching process for pipeline data from a GitLab repository."
     final val PipelinesEndpointSummary = "Fetch pipeline data from a GitLab repository."
 
+    final val ParameterDescriptionStartDate = "the earliest timestamp for the fetched pipelines given in ISO 8601 format with timezone"
+    final val ParameterDescriptionEndDate = "the latest timestamp for the fetched pipelines given in ISO 8601 format with timezone"
+
     // the example responses for the pipeline endpoint
     final val PipelinesResponseExampleAccepted = """{
         "status": "Accepted",

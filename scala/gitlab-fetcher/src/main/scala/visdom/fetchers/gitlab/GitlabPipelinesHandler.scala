@@ -154,6 +154,7 @@ extends GitlabDataHandler(options) {
     }
 
     private def fetchSinglePipelineData(pipelineId: Int): Option[BsonDocument] = {
+        // https://docs.gitlab.com/ee/api/pipelines.html#get-a-single-pipeline
         val singlePipelineUri: String = List(
             options.hostServer.baseAddress,
             GitlabConstants.PathProjects,

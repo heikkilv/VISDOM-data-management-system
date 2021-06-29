@@ -70,7 +70,6 @@ object GitlabConstants {
     val AttributeIncludeLinksRefs: String = "include_links_refs"
     val AttributeIncludeStatistics: String = "include_statistics"
     val AttributeJobLogIncluded: String = "job_log_fetched"
-    val AttributeJobId: String = "job_id"
     val AttributeJobs: String = "jobs"
     val AttributeLastModified: String = "last_modified"
     val AttributeLinks: String = "_links"

@@ -12,6 +12,9 @@ object AllDataConstants {
 
     final val AllDataStatusAcceptedDescription = "The fetching of the data has started"
 
+    final val ParameterDescriptionStartDate = "the earliest timestamp for the fetched data given in ISO 8601 format with timezone"
+    final val ParameterDescriptionEndDate = "the latest timestamp for the fetched data given in ISO 8601 format with timezone"
+
     final val ParameterDefaultFilePath: Option[String] = None
     final val ParameterDefaultIncludeStatistics: Boolean = true
     final val ParameterDefaultIncludeFileLinks: Boolean = true

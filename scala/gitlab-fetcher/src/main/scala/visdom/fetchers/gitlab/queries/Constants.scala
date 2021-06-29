@@ -40,8 +40,6 @@ object Constants {
 
     final val ParameterDescriptionProjectName = "the GitLab project name"
     final val ParameterDescriptionReference = "the reference (branch or tag) for the project"
-    final val ParameterDescriptionStartDate = "the earliest timestamp for the fetched commits given in ISO 8601 format with timezone"
-    final val ParameterDescriptionEndDate = "the latest timestamp for the fetched commits given in ISO 8601 format with timezone"
     final val ParameterDescriptionFilePath = "the path for a file or folder to fetch commits for"
     final val ParameterDescriptionFilePathForFiles = "the path inside repository to allow getting content of subdirectories"
     final val ParameterDescriptionIncludeStatistics = "whether statistics information is included or not"

@@ -69,7 +69,7 @@ with GitlabFetcherResponseHandler
                 name = Constants.ParameterStartDate,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = Constants.ParameterDescriptionStartDate,
+                description = AllDataConstants.ParameterDescriptionStartDate,
                 schema = new Schema(
                     implementation = classOf[String],
                     format = Constants.DateTimeFormat
@@ -79,7 +79,7 @@ with GitlabFetcherResponseHandler
                 name = Constants.ParameterEndDate,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = Constants.ParameterDescriptionEndDate,
+                description = AllDataConstants.ParameterDescriptionEndDate,
                 schema = new Schema(
                     implementation = classOf[String],
                     format = Constants.DateTimeFormat
