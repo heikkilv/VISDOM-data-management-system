@@ -27,7 +27,7 @@ Currently implemented data endpoints are:
 - file data
     - [https://docs.gitlab.com/ee/api/repositories.html](https://docs.gitlab.com/ee/api/repositories.html) and [https://docs.gitlab.com/ee/api/repository_files.html](https://docs.gitlab.com/ee/api/repository_files.html)
 - pipeline and job data
-    - [https://docs.gitlab.com/ee/api/pipelines.html] and [https://docs.gitlab.com/ee/api/jobs.html](https://docs.gitlab.com/ee/api/jobs.html)
+    - [https://docs.gitlab.com/ee/api/pipelines.html](https://docs.gitlab.com/ee/api/pipelines.html) and [https://docs.gitlab.com/ee/api/jobs.html](https://docs.gitlab.com/ee/api/jobs.html)
 
 ## Environment variables for the GitLab data fetcher
 
