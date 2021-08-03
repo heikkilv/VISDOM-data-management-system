@@ -65,6 +65,8 @@ The API for the GitLab data adapter will be available at the port defined by `HO
 
 The Swagger UI interface will be available at the address: `http://HOST_NAME:HOST_PORT/swagger`
 
+The web page that can be used to see the running and completed Spark jobs will be available at the port defined by `SPARK_PORT` on the host machine.
+
 ## API for the GitLab data adapter
 
 | Endpoint      | Description                                                               |
