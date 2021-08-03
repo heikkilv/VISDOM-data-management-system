@@ -184,8 +184,8 @@
         },
         "/timestamps": {
             "get": {
-                "summary": "Return the number of commits per day per user per project.",
-                "description": "Return the number of commits for each day grouped by GitLab project and the committer.",
+                "summary": "Return the commit timestamps for the asked files.",
+                "description": "Return the commit timestamps for the files specified in the query for each project.",
                 "operationId": "getTimestampRoute",
                 "parameters": [
                     {

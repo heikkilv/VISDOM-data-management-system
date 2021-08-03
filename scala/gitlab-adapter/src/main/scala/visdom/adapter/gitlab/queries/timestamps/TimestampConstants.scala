@@ -6,8 +6,8 @@ object TimestampConstants {
     final val TimestampPath = "timestamps"
 
     final val TimestampEndpointDescription =
-        """Return the number of commits for each day grouped by GitLab project and the committer."""
-    final val TimestampEndpointSummary = "Return the number of commits per day per user per project."
+        """Return the commit timestamps for the files specified in the query for each project."""
+    final val TimestampEndpointSummary = "Return the commit timestamps for the asked files."
 
     final val TimestampStatusOkDescription = "The data successfully fetched"
 
