@@ -1,5 +1,21 @@
 # GitLab data adapter
 
+<!-- no toc -->
+- [Environment variables for the GitLab data adapter](#environment-variables-for-the-gitlab-data-adapter)
+    - [Variables related to the MongoDB connection](#variables-related-to-the-mongodb-connection)
+    - [Variables related to the Apache Spark connection](#variables-related-to-the-apache-spark-connection)
+    - [Variables related to the deployment of the GitLab data adapter](#variables-related-to-the-deployment-of-the-gitlab-data-adapter)
+- [Installing GitLab data adapter](#installing-gitlab-data-adapter)
+    - [Requirements](#requirements)
+    - [Installation instructions](#installation-instructions)
+- [API for the GitLab data adapter](#api-for-the-gitlab-data-adapter)
+    - [`/commits` endpoint](#commits-endpoint)
+    - [`/timestamps` endpoint](#timestamps-endpoint)
+    - [`/info` endpoint](#info-endpoint)
+    - [`/swagger` endpoint](#swagger-endpoint)
+- [Notes about using GitLab data adapter](#notes-about-using-gitlab-data-adapter)
+- [Uninstalling GitLab data adapter](#uninstalling-gitlab-data-adapter)
+
 The GitLab data adapter can be used to receive structured data based on the raw GitLab data stored in MongoDB. The adapter uses [Apache Spark](https://spark.apache.org/) to handle the raw data.
 
 ## Environment variables for the GitLab data adapter
