@@ -24,7 +24,6 @@ the username and the password can be left empty if the used MongoDB instance doe
 | ------------------- | ------------------- | --------------------------------------------------------------------------- |
 | `SPARK_MASTER_HOST` | visdom-spark-master | The host name for the Spark master (the port number is expected to be 7077) |
 | `SPARK_PORT`        | 4140                | Port number for the Spark client API                                        |
-| `HOST_PORT`         | 9876                | The host server port number for the GitLab adapter API                      |
 
 ### Variables related to the deployment of the GitLab data adapter
 
