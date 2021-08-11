@@ -12,7 +12,8 @@ final case class PipelinesQueryOptions(
     startDate: Option[String],
     endDate: Option[String],
     includeJobs: String,
-    includeJobLogs: String
+    includeJobLogs: String,
+    useAnonymization: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
@@ -22,7 +23,8 @@ final case class PipelinesQueryOptions(
                 AttributeConstants.StartDate -> JsonUtils.toJsonValue(startDate),
                 AttributeConstants.EndDate -> JsonUtils.toJsonValue(endDate),
                 AttributeConstants.IncludeJobs -> JsonUtils.toJsonValue(includeJobs),
-                AttributeConstants.IncludeJobLogs -> JsonUtils.toJsonValue(includeJobLogs)
+                AttributeConstants.IncludeJobLogs -> JsonUtils.toJsonValue(includeJobLogs),
+                AttributeConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization)
             )
         )
     }

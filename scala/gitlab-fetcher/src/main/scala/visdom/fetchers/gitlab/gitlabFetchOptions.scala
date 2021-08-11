@@ -18,6 +18,7 @@ abstract class CommitSpecificFetchOptions {
     val includeStatistics: Boolean
     val includeFileLinks: Boolean
     val includeReferenceLinks: Boolean
+    val useAnonymization: Boolean
 }
 
 final case class CommitSpecificFetchParameters(
@@ -28,7 +29,8 @@ final case class CommitSpecificFetchParameters(
     filePath: Option[String],
     includeStatistics: Boolean,
     includeFileLinks: Boolean,
-    includeReferenceLinks: Boolean
+    includeReferenceLinks: Boolean,
+    useAnonymization: Boolean
 ) extends CommitSpecificFetchOptions
 
 final case class GitlabCommitOptions(
@@ -41,7 +43,8 @@ final case class GitlabCommitOptions(
     filePath: Option[String],
     includeStatistics: Boolean,
     includeFileLinks: Boolean,
-    includeReferenceLinks: Boolean
+    includeReferenceLinks: Boolean,
+    useAnonymization: Boolean
 ) extends GitlabFetchOptions
 
 
@@ -83,13 +86,15 @@ abstract class AllDataSpecificFetchOptions {
     val reference: String
     val startDate: Option[ZonedDateTime]
     val endDate: Option[ZonedDateTime]
+    val useAnonymization: Boolean
 }
 
 final case class AllDataSpecificFetchParameters(
     projectName: String,
     reference: String,
     startDate: Option[ZonedDateTime],
-    endDate: Option[ZonedDateTime]
+    endDate: Option[ZonedDateTime],
+    useAnonymization: Boolean
 ) extends AllDataSpecificFetchOptions
 
 final case class GitlabPipelinesOptions(
@@ -100,7 +105,8 @@ final case class GitlabPipelinesOptions(
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     includeJobs: Boolean,
-    includeJobLogs: Boolean
+    includeJobLogs: Boolean,
+    useAnonymization: Boolean
 ) extends GitlabFetchOptions
 
 final case class GitlabPipelineOptions(
@@ -108,7 +114,8 @@ final case class GitlabPipelineOptions(
     mongoDatabase: Option[MongoDatabase],
     projectName: String,
     pipelineId: Int,
-    includeJobLogs: Boolean
+    includeJobLogs: Boolean,
+    useAnonymization: Boolean
 ) extends GitlabFetchOptions
 
 final case class PipelinesSpecificFetchParameters(
@@ -117,5 +124,6 @@ final case class PipelinesSpecificFetchParameters(
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     includeJobs: Boolean,
-    includeJobLogs: Boolean
+    includeJobLogs: Boolean,
+    useAnonymization: Boolean
 )

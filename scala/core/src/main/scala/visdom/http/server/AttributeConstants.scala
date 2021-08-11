@@ -16,4 +16,5 @@ object AttributeConstants {
     final val Recursive: String = "recursive"
     final val Reference: String = "reference"
     final val StartDate: String = "startDate"
+    final val UseAnonymization: String = "useAnonymization"
 }

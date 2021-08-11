@@ -62,6 +62,7 @@ class AllDataActor extends Actor with ActorLogging {
 object AllDataActor {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
+    // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: AllDataQueryOptions): Either[String, AllDataSpecificFetchParameters] = {
         val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
         val endDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.endDate)
@@ -81,15 +82,20 @@ object AllDataActor {
         else if (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
+        else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
+            Left(s"'${queryOptions.useAnonymization}' is not valid value for useAnonymization")
+        }
         else {
             Right(AllDataSpecificFetchParameters(
                 projectName = queryOptions.projectName,
                 reference = queryOptions.reference,
                 startDate = startDate,
-                endDate = endDate
+                endDate = endDate,
+                useAnonymization = queryOptions.useAnonymization.toBoolean
             ))
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def startCommitFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
         val commitFetchParameters = CommitSpecificFetchParameters(
@@ -100,7 +106,8 @@ object AllDataActor {
             filePath = AllDataConstants.ParameterDefaultFilePath,
             includeStatistics = AllDataConstants.ParameterDefaultIncludeStatistics,
             includeFileLinks = AllDataConstants.ParameterDefaultIncludeFileLinks,
-            includeReferenceLinks = AllDataConstants.ParameterDefaultIncludeReferenceLinks
+            includeReferenceLinks = AllDataConstants.ParameterDefaultIncludeReferenceLinks,
+            useAnonymization = fetchParameters.useAnonymization
         )
         CommitActor.startCommitFetching(commitFetchParameters)
     }
@@ -123,7 +130,8 @@ object AllDataActor {
             startDate = fetchParameters.startDate,
             endDate = fetchParameters.endDate,
             includeJobs = AllDataConstants.ParameterDefaultIncludeJobs,
-            includeJobLogs = AllDataConstants.ParameterDefaultIncludeJobLogs
+            includeJobLogs = AllDataConstants.ParameterDefaultIncludeJobLogs,
+            useAnonymization = fetchParameters.useAnonymization
         )
         PipelinesActor.startPipelineFetching(pipelineFetchParameters)
     }

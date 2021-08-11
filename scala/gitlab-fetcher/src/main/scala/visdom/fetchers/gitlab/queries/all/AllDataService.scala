@@ -84,6 +84,17 @@ with GitlabFetcherResponseHandler
                     implementation = classOf[String],
                     format = Constants.DateTimeFormat
                 )
+            ),
+            new Parameter(
+                name = Constants.ParameterUseAnonymization,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionUseAnonymization,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultUseAnonymization,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -175,20 +186,24 @@ with GitlabFetcherResponseHandler
             Constants.ParameterReference
                 .withDefault(Constants.ParameterDefaultReference),
             Constants.ParameterStartDate.optional,
-            Constants.ParameterEndDate.optional
+            Constants.ParameterEndDate.optional,
+            Constants.ParameterUseAnonymization
+                .withDefault(Constants.ParameterDefaultUseAnonymization)
         )
     ) {
         (
             projectName,
             reference,
             startDate,
-            endDate
+            endDate,
+            useAnonymization
         ) => get {
             val options: AllDataQueryOptions = AllDataQueryOptions(
                 projectName,
                 reference,
                 startDate,
-                endDate
+                endDate,
+                useAnonymization
             )
             getRoute(allDataActor, options)
         }

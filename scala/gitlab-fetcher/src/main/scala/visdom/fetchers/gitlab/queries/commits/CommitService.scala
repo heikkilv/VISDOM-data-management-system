@@ -122,6 +122,17 @@ with GitlabFetcherResponseHandler {
                     defaultValue = Constants.ParameterDefaultIncludeReferenceLinksString,
                     allowableValues = Array(Constants.FalseString, Constants.TrueString)
                 )
+            ),
+            new Parameter(
+                name = Constants.ParameterUseAnonymization,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionUseAnonymization,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultUseAnonymization,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -220,7 +231,9 @@ with GitlabFetcherResponseHandler {
             Constants.ParameterIncludeFileLinks
                 .withDefault(Constants.ParameterDefaultIncludeFileLinksString),
             Constants.ParameterIncludeReferenceLinks
-                .withDefault(Constants.ParameterDefaultIncludeReferenceLinksString)
+                .withDefault(Constants.ParameterDefaultIncludeReferenceLinksString),
+            Constants.ParameterUseAnonymization
+                .withDefault(Constants.ParameterDefaultUseAnonymization)
         )
     ) {
         (
@@ -231,7 +244,8 @@ with GitlabFetcherResponseHandler {
             path,
             includeStatistics,
             includeFileLinks,
-            includeReferenceLinks
+            includeReferenceLinks,
+            useAnonymization
         ) => get {
             val options: CommitQueryOptions = CommitQueryOptions(
                 projectName,
@@ -241,7 +255,8 @@ with GitlabFetcherResponseHandler {
                 path,
                 includeStatistics,
                 includeFileLinks,
-                includeReferenceLinks
+                includeReferenceLinks,
+                useAnonymization
             )
             getRoute(commitActor, options)
         }

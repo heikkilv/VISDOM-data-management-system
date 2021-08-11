@@ -105,6 +105,17 @@ with GitlabFetcherResponseHandler {
                     defaultValue = Constants.ParameterDefaultIncludeJobLogsString,
                     allowableValues = Array(Constants.FalseString, Constants.TrueString)
                 )
+            ),
+            new Parameter(
+                name = Constants.ParameterUseAnonymization,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionUseAnonymization,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultUseAnonymization,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -200,7 +211,9 @@ with GitlabFetcherResponseHandler {
             Constants.ParameterIncludeJobs
                 .withDefault(Constants.ParameterDefaultIncludeJobsString),
             Constants.ParameterIncludeJobLogs
-                .withDefault(Constants.ParameterDefaultIncludeJobLogsString)
+                .withDefault(Constants.ParameterDefaultIncludeJobLogsString),
+            Constants.ParameterUseAnonymization
+                .withDefault(Constants.ParameterDefaultUseAnonymization)
         )
     ) {
         (
@@ -209,7 +222,8 @@ with GitlabFetcherResponseHandler {
             startDate,
             endDate,
             includeJobs,
-            includeJobLogs
+            includeJobLogs,
+            useAnonymization
         ) => get {
             val options: PipelinesQueryOptions = PipelinesQueryOptions(
                 projectName,
@@ -217,7 +231,8 @@ with GitlabFetcherResponseHandler {
                 startDate,
                 endDate,
                 includeJobs,
-                includeJobLogs
+                includeJobLogs,
+                useAnonymization
             )
             getRoute(pipelinesActor, options)
         }

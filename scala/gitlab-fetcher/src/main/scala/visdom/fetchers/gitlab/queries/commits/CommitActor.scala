@@ -88,6 +88,9 @@ object CommitActor {
         else if (!Constants.BooleanStrings.contains(queryOptions.includeReferenceLinks)) {
             Left(s"'${queryOptions.includeReferenceLinks}' is not valid value for includeReferenceLinks")
         }
+        else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
+            Left(s"'${queryOptions.useAnonymization}' is not valid value for useAnonymization")
+        }
         else {
             Right(CommitSpecificFetchParameters(
                 projectName = queryOptions.projectName,
@@ -97,7 +100,8 @@ object CommitActor {
                 filePath = filePath,
                 includeStatistics = queryOptions.includeStatistics.toBoolean,
                 includeFileLinks = queryOptions.includeFileLinks.toBoolean,
-                includeReferenceLinks = queryOptions.includeReferenceLinks.toBoolean
+                includeReferenceLinks = queryOptions.includeReferenceLinks.toBoolean,
+                useAnonymization = queryOptions.useAnonymization.toBoolean
             ))
         }
     }
@@ -114,7 +118,8 @@ object CommitActor {
             filePath = fetchParameters.filePath,
             includeStatistics = fetchParameters.includeStatistics,
             includeFileLinks = fetchParameters.includeFileLinks,
-            includeReferenceLinks = fetchParameters.includeReferenceLinks
+            includeReferenceLinks = fetchParameters.includeReferenceLinks,
+            useAnonymization = fetchParameters.useAnonymization
         )
         val commitFetcher = new GitlabCommitHandler(commitFetcherOptions)
         val commitCount = commitFetcher.process() match {

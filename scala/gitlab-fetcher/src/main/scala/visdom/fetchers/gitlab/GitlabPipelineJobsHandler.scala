@@ -53,29 +53,35 @@ extends GitlabDataHandler(options) {
     }
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
-        Some(
-            Seq(
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeBio),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeBioHtml),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeLocation),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributePublicEmail),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeSkype),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeLinkedin),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeTwitter),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebsiteUrl),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeOrganization),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeJobTitle),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWorkInformation),
-                Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeAuthorName),
-                Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeAuthorEmail),
-                Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeCommitterName),
-                Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeCommitterEmail)
+        options.useAnonymization match {
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeBio),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeBioHtml),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeLocation),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributePublicEmail),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeSkype),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeLinkedin),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeTwitter),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebsiteUrl),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeOrganization),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeJobTitle),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWorkInformation),
+                    Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeAuthorName),
+                    Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeAuthorEmail),
+                    Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeCommitterName),
+                    Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeCommitterEmail),
+                    Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributePipeline, GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeWebUrl)
+                )
             )
-        )
+            case false => None
+        }
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
@@ -108,6 +114,10 @@ extends GitlabDataHandler(options) {
                 new BsonElement(
                     GitlabConstants.AttributeApiVersion,
                     new BsonInt32(GitlabConstants.GitlabApiVersion)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
         )

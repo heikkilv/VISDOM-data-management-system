@@ -10,7 +10,8 @@ final case class AllDataQueryOptions(
     projectName: String,
     reference: String,
     startDate: Option[String],
-    endDate: Option[String]
+    endDate: Option[String],
+    useAnonymization: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
@@ -18,7 +19,8 @@ final case class AllDataQueryOptions(
                 AttributeConstants.ProjectName -> JsonUtils.toJsonValue(projectName),
                 AttributeConstants.Reference -> JsonUtils.toJsonValue(reference),
                 AttributeConstants.StartDate -> JsonUtils.toJsonValue(startDate),
-                AttributeConstants.EndDate -> JsonUtils.toJsonValue(endDate)
+                AttributeConstants.EndDate -> JsonUtils.toJsonValue(endDate),
+                AttributeConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization)
             )
         )
     }

@@ -14,7 +14,8 @@ final case class CommitQueryOptions(
     filePath: Option[String],
     includeStatistics: String,
     includeFileLinks: String,
-    includeReferenceLinks: String
+    includeReferenceLinks: String,
+    useAnonymization: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
@@ -26,7 +27,8 @@ final case class CommitQueryOptions(
                 AttributeConstants.FilePath -> JsonUtils.toJsonValue(filePath),
                 AttributeConstants.IncludeStatistics -> JsonUtils.toJsonValue(includeStatistics),
                 AttributeConstants.IncludeFileLinks -> JsonUtils.toJsonValue(includeFileLinks),
-                AttributeConstants.IncludeReferenceLinks -> JsonUtils.toJsonValue(includeReferenceLinks)
+                AttributeConstants.IncludeReferenceLinks -> JsonUtils.toJsonValue(includeReferenceLinks),
+                AttributeConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization)
             )
         )
     }

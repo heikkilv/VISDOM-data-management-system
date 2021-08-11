@@ -156,13 +156,13 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                 GitlabConstants.AttributeHostName -> BsonString(options.hostServer.hostName)
             )
             .appendOption(GitlabConstants.AttributeProjectName, (options match {
-                case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _) =>
+                case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case GitlabFileOptions(_, _, projectName, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
                     Some(toBsonValue(projectName))
-                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _) =>
+                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case _ => None
             }))

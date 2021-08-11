@@ -35,7 +35,8 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             GitlabConstants.AttributeReference -> options.reference,
             GitlabConstants.AttributeIncludeStatistics -> options.includeStatistics,
             GitlabConstants.AttributeIncludeLinksFiles -> options.includeFileLinks,
-            GitlabConstants.AttributeIncludeLinksRefs -> options.includeReferenceLinks
+            GitlabConstants.AttributeIncludeLinksRefs -> options.includeReferenceLinks,
+            GitlabConstants.AttributeUseAnonymization -> options.useAnonymization
         )
         .appendOption(
             GitlabConstants.AttributeStartDate,
@@ -78,14 +79,17 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
     }
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
-        Some(
-            Seq(
-                Seq(GitlabConstants.AttributeAuthorName),
-                Seq(GitlabConstants.AttributeAuthorEmail),
-                Seq(GitlabConstants.AttributeCommitterName),
-                Seq(GitlabConstants.AttributeCommitterEmail)
+        options.useAnonymization match {
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeAuthorName),
+                    Seq(GitlabConstants.AttributeAuthorEmail),
+                    Seq(GitlabConstants.AttributeCommitterName),
+                    Seq(GitlabConstants.AttributeCommitterEmail)
+                )
             )
-        )
+            case false => None
+        }
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
@@ -128,6 +132,10 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                 new BsonElement(
                     GitlabConstants.AttributeIncludeLinksRefs,
                     new BsonBoolean(options.includeReferenceLinks)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
         )

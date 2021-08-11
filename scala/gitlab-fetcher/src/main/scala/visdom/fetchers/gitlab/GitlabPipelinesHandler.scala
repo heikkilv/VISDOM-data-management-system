@@ -36,7 +36,8 @@ extends GitlabDataHandler(options) {
         BsonDocument(
             GitlabConstants.AttributeReference -> options.reference,
             GitlabConstants.AttributeIncludeJobs -> options.includeJobs,
-            GitlabConstants.AttributeIncludeJobLogs -> options.includeJobLogs
+            GitlabConstants.AttributeIncludeJobLogs -> options.includeJobLogs,
+            GitlabConstants.AttributeUseAnonymization -> options.useAnonymization
         )
         .appendOption(
             GitlabConstants.AttributeStartDate,
@@ -74,14 +75,17 @@ extends GitlabDataHandler(options) {
     }
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
-        Some(
-            Seq(
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
-                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl)
+        options.useAnonymization match {
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl)
+                )
             )
-        )
+            case false => None
+        }
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
@@ -132,6 +136,10 @@ extends GitlabDataHandler(options) {
                 new BsonElement(
                     GitlabConstants.AttributeIncludeJobLogs,
                     new BsonBoolean(options.includeJobLogs)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
         )
@@ -222,7 +230,8 @@ extends GitlabDataHandler(options) {
             mongoDatabase = options.mongoDatabase,
             projectName = options.projectName,
             pipelineId = pipelineId,
-            includeJobLogs = options.includeJobLogs
+            includeJobLogs = options.includeJobLogs,
+            useAnonymization = options.useAnonymization
         )
 
         (new GitlabPipelineJobsHandler(jobsOptions)).process()

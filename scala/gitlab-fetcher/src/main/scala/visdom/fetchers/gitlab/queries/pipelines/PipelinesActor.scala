@@ -57,6 +57,7 @@ class PipelinesActor extends Actor with ActorLogging with ServerProtocol {
 }
 
 object PipelinesActor {
+    // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: PipelinesQueryOptions): Either[String, PipelinesSpecificFetchParameters] = {
         val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
         val endDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.endDate)
@@ -76,6 +77,9 @@ object PipelinesActor {
         else if (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
+        else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
+            Left(s"'${queryOptions.useAnonymization}' is not valid value for useAnonymization")
+        }
         else {
             Right(PipelinesSpecificFetchParameters(
                 projectName = queryOptions.projectName,
@@ -83,10 +87,12 @@ object PipelinesActor {
                 startDate = startDate,
                 endDate = endDate,
                 includeJobs = queryOptions.includeJobs.toBoolean,
-                includeJobLogs = queryOptions.includeJobLogs.toBoolean
+                includeJobLogs = queryOptions.includeJobLogs.toBoolean,
+                useAnonymization = queryOptions.useAnonymization.toBoolean
             ))
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def startPipelineFetching(fetchParameters: PipelinesSpecificFetchParameters): Unit = {
         val pipelineFetcherOptions: GitlabPipelinesOptions = GitlabPipelinesOptions(
@@ -97,7 +103,8 @@ object PipelinesActor {
             startDate = fetchParameters.startDate,
             endDate = fetchParameters.endDate,
             includeJobs = fetchParameters.includeJobs,
-            includeJobLogs = fetchParameters.includeJobLogs
+            includeJobLogs = fetchParameters.includeJobLogs,
+            useAnonymization = fetchParameters.useAnonymization
         )
         val pipelineFetcher = new GitlabPipelinesHandler(pipelineFetcherOptions)
         val pipelineCount = pipelineFetcher.process() match {
