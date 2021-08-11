@@ -11,7 +11,8 @@ final case class FileQueryOptions(
     reference: String,
     filePath: Option[String],
     recursive: String,
-    includeCommitLinks: String
+    includeCommitLinks: String,
+    useAnonymization: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
@@ -20,7 +21,8 @@ final case class FileQueryOptions(
                 AttributeConstants.Reference -> JsonUtils.toJsonValue(reference),
                 AttributeConstants.FilePath -> JsonUtils.toJsonValue(filePath),
                 AttributeConstants.Recursive -> JsonUtils.toJsonValue(recursive),
-                AttributeConstants.IncludeCommitLinks -> JsonUtils.toJsonValue(includeCommitLinks)
+                AttributeConstants.IncludeCommitLinks -> JsonUtils.toJsonValue(includeCommitLinks),
+                AttributeConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization)
             )
         )
     }

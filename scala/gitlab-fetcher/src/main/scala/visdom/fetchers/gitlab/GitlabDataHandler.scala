@@ -158,7 +158,7 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
             .appendOption(GitlabConstants.AttributeProjectName, (options match {
                 case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, _) =>
                     Some(toBsonValue(projectName))
-                case GitlabFileOptions(_, _, projectName, _, _, _, _) =>
+                case GitlabFileOptions(_, _, projectName, _, _, _, _, _) =>
                     Some(toBsonValue(projectName))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
                     Some(toBsonValue(projectName))

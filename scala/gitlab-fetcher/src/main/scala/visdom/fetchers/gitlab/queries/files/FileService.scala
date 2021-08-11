@@ -90,6 +90,17 @@ with GitlabFetcherResponseHandler {
                     defaultValue = Constants.ParameterDefaultIncludeCommitLinksString,
                     allowableValues = Array(Constants.FalseString, Constants.TrueString)
                 )
+            ),
+            new Parameter(
+                name = Constants.ParameterUseAnonymization,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionUseAnonymization,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultUseAnonymization,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -184,7 +195,9 @@ with GitlabFetcherResponseHandler {
             Constants.ParameterRecursive
                 .withDefault(Constants.ParameterDefaultRecursiveString),
             Constants.ParameterIncludeCommitLinks
-                .withDefault(Constants.ParameterDefaultIncludeCommitLinksString)
+                .withDefault(Constants.ParameterDefaultIncludeCommitLinksString),
+            Constants.ParameterUseAnonymization
+                .withDefault(Constants.ParameterDefaultUseAnonymization)
         )
     ) {
         (
@@ -192,14 +205,16 @@ with GitlabFetcherResponseHandler {
             reference,
             path,
             recursive,
-            includeCommitLinks
+            includeCommitLinks,
+            useAnonymization
         ) => get {
             val options: FileQueryOptions = FileQueryOptions(
                 projectName,
                 reference,
                 path,
                 recursive,
-                includeCommitLinks
+                includeCommitLinks,
+                useAnonymization
             )
             getRoute(fileActor, options)
         }

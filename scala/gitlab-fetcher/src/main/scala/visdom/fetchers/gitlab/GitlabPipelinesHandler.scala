@@ -81,7 +81,10 @@ extends GitlabDataHandler(options) {
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
-                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl)
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeDetailedStatus, GitlabConstants.AttributeDetailsPath),
+                    Seq(GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeProjectName)
                 )
             )
             case false => None

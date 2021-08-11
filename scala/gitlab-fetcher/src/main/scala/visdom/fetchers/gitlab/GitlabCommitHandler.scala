@@ -85,7 +85,9 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                     Seq(GitlabConstants.AttributeAuthorName),
                     Seq(GitlabConstants.AttributeAuthorEmail),
                     Seq(GitlabConstants.AttributeCommitterName),
-                    Seq(GitlabConstants.AttributeCommitterEmail)
+                    Seq(GitlabConstants.AttributeCommitterEmail),
+                    Seq(GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeProjectName)
                 )
             )
             case false => None

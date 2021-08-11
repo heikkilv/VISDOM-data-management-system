@@ -31,7 +31,8 @@ class GitlabFileHandler(options: GitlabFileOptions)
         BsonDocument(
             GitlabConstants.AttributeReference -> options.reference,
             GitlabConstants.AttributeRecursive -> options.recursive,
-            GitlabConstants.AttributeIncludeLinksCommits -> options.includeCommitLinks
+            GitlabConstants.AttributeIncludeLinksCommits -> options.includeCommitLinks,
+            GitlabConstants.AttributeUseAnonymization -> options.useAnonymization
         )
         .appendOption(
             GitlabConstants.AttributeFilePath,
@@ -63,6 +64,13 @@ class GitlabFileHandler(options: GitlabFileOptions)
             GitlabConstants.AttributeProjectName,
             GitlabConstants.AttributeHostName
         )
+    }
+
+    override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
+        options.useAnonymization match {
+            case true => Some(Seq(Seq(GitlabConstants.AttributeProjectName)))
+            case false => None
+        }
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
@@ -122,6 +130,10 @@ class GitlabFileHandler(options: GitlabFileOptions)
                 new BsonElement(
                     GitlabConstants.AttributeIncludeLinksCommits,
                     new BsonBoolean(options.includeCommitLinks)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
         )

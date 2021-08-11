@@ -77,7 +77,8 @@ extends GitlabDataHandler(options) {
                     Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeCommitterEmail),
                     Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributePipeline, GitlabConstants.AttributeWebUrl),
-                    Seq(GitlabConstants.AttributeWebUrl)
+                    Seq(GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeProjectName)
                 )
             )
             case false => None
@@ -152,8 +153,9 @@ extends GitlabDataHandler(options) {
                     GitlabConstants.AttributeLog -> BsonString(log)
                 )
             )
-        ).append(GitlabConstants.AttributeMetadata, getMetadata())
-
+        )
+            .append(GitlabConstants.AttributeMetadata, getMetadata())
+            .anonymize(getHashableAttributes())
     }
 
     private def saveJobLog(jobLogBsonDocument: BsonDocument): Unit = {

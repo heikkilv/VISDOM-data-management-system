@@ -118,7 +118,8 @@ object AllDataActor {
             reference = fetchParameters.reference,
             filePath = AllDataConstants.ParameterDefaultFilePath,
             recursive = AllDataConstants.ParameterDefaultRecursive,
-            includeCommitLinks = AllDataConstants.ParameterDefaultIncludeCommitLinks
+            includeCommitLinks = AllDataConstants.ParameterDefaultIncludeCommitLinks,
+            useAnonymization = fetchParameters.useAnonymization
         )
         FileActor.startFileFetching(fileFetchParameters)
     }

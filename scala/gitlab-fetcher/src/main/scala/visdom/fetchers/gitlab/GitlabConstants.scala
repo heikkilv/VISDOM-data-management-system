@@ -64,6 +64,8 @@ object GitlabConstants {
     val AttributeCommitterName: String = "committer_name"
     val AttributeComponentType: String = "component_type"
     val AttributeDatabase: String = "database"
+    val AttributeDetailedStatus: String = "detailed_status"
+    val AttributeDetailsPath: String = "details_path"
     val AttributeDiff: String = "diff"
     val AttributeDocumentUpdatedCount: String = "documents_updated_count"
     val AttributeEndDate: String = "end_date"

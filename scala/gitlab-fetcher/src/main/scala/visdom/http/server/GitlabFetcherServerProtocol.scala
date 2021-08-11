@@ -13,5 +13,5 @@ extends ServerProtocol {
     implicit lazy val commitQueryOptionsFormat: RootJsonFormat[fetcher.gitlab.CommitQueryOptions] =
         jsonFormat9(fetcher.gitlab.CommitQueryOptions)
     implicit lazy val fileOptionsFormat: RootJsonFormat[fetcher.gitlab.FileQueryOptions] =
-        jsonFormat5(fetcher.gitlab.FileQueryOptions)
+        jsonFormat6(fetcher.gitlab.FileQueryOptions)
 }

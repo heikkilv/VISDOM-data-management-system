@@ -54,6 +54,7 @@ abstract class FileSpecificFetchOptions {
     val filePath: Option[String]
     val recursive: Boolean
     val includeCommitLinks: Boolean
+    val useAnonymization: Boolean
 }
 
 final case class FileSpecificFetchParameters(
@@ -61,7 +62,8 @@ final case class FileSpecificFetchParameters(
     reference: String,
     filePath: Option[String],
     recursive: Boolean,
-    includeCommitLinks: Boolean
+    includeCommitLinks: Boolean,
+    useAnonymization: Boolean
 ) extends FileSpecificFetchOptions
 
 final case class GitlabFileOptions(
@@ -71,7 +73,8 @@ final case class GitlabFileOptions(
     reference: String,
     filePath: Option[String],
     recursive: Boolean,
-    includeCommitLinks: Boolean
+    includeCommitLinks: Boolean,
+    useAnonymization: Boolean
 ) extends GitlabFetchOptions
 
 final case class GitlabCommitLinkOptions(
