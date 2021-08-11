@@ -101,12 +101,13 @@ The Swagger UI interface will be available at the address: `http://HOST_NAME:HOS
 
 Starts a fetching process for commit, file and pipeline data from a GitLab repository. All additional metadata and link data will be included, i.e. true used for all the boolean parameters for commits, files and pipelines endpoints. The actual data fetching is done in sequence: first commit data, then file data and finally pipeline data.
 
-| Query parameter | Type     | Description             |
-| --------------- | -------- | ----------------------- |
-| `projectName`   | required | the GitLab project name |
-| `reference`     | optional | the reference (branch or tag) for the project, default: master |
-| `startDate`     | optional | the earliest timestamp for the fetched data given in ISO 8601 format with timezone, default: no limit |
-| `endDate`       | optional | the latest timestamp for the fetched data given in ISO 8601 format with timezone, default: no limit |
+| Query parameter    | Type     | Description             |
+| ------------------ | -------- | ----------------------- |
+| `projectName`      | required | the GitLab project name |
+| `reference`        | optional | the reference (branch or tag) for the project, default: master |
+| `startDate`        | optional | the earliest timestamp for the fetched data given in ISO 8601 format with timezone, default: no limit |
+| `endDate`          | optional | the latest timestamp for the fetched data given in ISO 8601 format with timezone, default: no limit |
+| `useAnonymization` | optional | whether to anonymize the user information (true/false, default: true) |
 
 Successful query returns a response with a status code 202 which indicates that the data fetching process has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
@@ -124,6 +125,7 @@ Starts a fetching process for commit data from a GitLab repository.
 | `includeStatistics`     | optional | whether statistics information is included or not (true/false, default: false) |
 | `includeFileLinks`      | optional | whether file links information is included or not (true/false, default: false) |
 | `includeReferenceLinks` | optional | whether reference links information is included or not (true/false, default: false) |
+| `useAnonymization`      | optional | whether to anonymize the user information (true/false, default: true) |
 
 Successful query returns a response with a status code 202 which indicates that the data fetching process for the commit data has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
@@ -140,6 +142,7 @@ Starts a fetching process for file data from a GitLab repository.
 | `filePath`           | optional | the path inside repository to allow getting content of subdirectories, default fetch all files |
 | `recursive`          | optional | whether to use recursive search or not (true/false, default: true) |
 | `includeCommitLinks` | optional | whether commit links information is included or not (true/false, default: false) |
+| `useAnonymization`   | optional | whether to anonymize the user information (true/false, default: true) |
 
 Successful query returns a response with a status code 202 which indicates that the data fetching process for the file data has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
@@ -149,14 +152,15 @@ The fetched file data will be added to the collection `files` in the MongoDB.
 
 Starts a fetching process for pipeline and job data from a GitLab repository.
 
-| Query parameter  | Type     | Description             |
-| ---------------- | -------- | ----------------------- |
-| `projectName`    | required | the GitLab project name |
-| `reference`      | optional | the reference (branch or tag) for the project, default: master |
-| `startDate`      | optional | the earliest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
-| `endDate`        | optional | the latest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
-| `includeJobs`    | optional | whether to fetch related job data or not (true/false, default: true) |
-| `includeJobLogs` | optional | whether job logs are included or not (only applicable when includeJobs is true) (true/false, default: false) |
+| Query parameter    | Type     | Description             |
+| ------------------ | -------- | ----------------------- |
+| `projectName`      | required | the GitLab project name |
+| `reference`        | optional | the reference (branch or tag) for the project, default: master |
+| `startDate`        | optional | the earliest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
+| `endDate`          | optional | the latest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
+| `includeJobs`      | optional | whether to fetch related job data or not (true/false, default: true) |
+| `includeJobLogs`   | optional | whether job logs are included or not (only applicable when includeJobs is true) (true/false, default: false) |
+| `useAnonymization` | optional | whether to anonymize the user information (true/false, default: true) |
 
 Successful query returns a response with a status code 202 which indicates that the data fetching process for the pipeline data (and possible job data) has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
@@ -178,7 +182,9 @@ The GitLab data fetcher provides a Swagger UI interface to test the GitLab data 
 - No limits on how many data fetching can be start concurrently have been implemented. It is advisable to not to start dozens or hundreds queries at the same time.
 - No access control for GitLab data fetcher has been implemented.
     - Any project that can be accessed with the access token given at startup will be available for data fetching without any tokens from the user.
-- No anonymization options for the fetched data has been implemented. This means that the fetched data will contain user information (at least names emails) in plain text. The anonymization option will be implemented in the future.
+- An anonymization option for the fetched data has been implemented and it is set to true by default.
+    - When the option is set to true, all attributes that contain strings that might include names, emails or other identifying parts are stored as SHA-512/256 hashes instead. Note, that this also includes the project names. Possible options for either including or excluding the project name to the anonymization might be implemented later.
+    - If the option is set to false, the fetched data will contain user information (at least names and emails) in plain text.
 - Projects in GitLab have both an id number and a name. Both of these can be used as the `project_name` attribute when using the API. However, it is recommended that only the name is used, since this is the assumption the GitLab data fetcher makes about the input.
 - No proper input checking has been implemented for the API.
 - When the data fetching query results in new data, that data is stored as new documents in the appropriate collection.

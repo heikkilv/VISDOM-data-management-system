@@ -55,6 +55,19 @@
                             "type": "string",
                             "format": "date-time"
                         }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
                     }
                 ],
                 "responses": {
@@ -258,6 +271,19 @@
                             ],
                             "default": "false"
                         }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
                     }
                 ],
                 "responses": {
@@ -432,6 +458,19 @@
                                 "true"
                             ],
                             "default": "false"
+                        }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
                         }
                     }
                 ],
@@ -649,6 +688,19 @@
                                 "true"
                             ],
                             "default": "false"
+                        }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
                         }
                     }
                 ],
