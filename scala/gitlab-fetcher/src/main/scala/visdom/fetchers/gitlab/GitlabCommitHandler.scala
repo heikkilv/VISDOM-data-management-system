@@ -77,6 +77,17 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
         )
     }
 
+    override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
+        Some(
+            Seq(
+                Seq(GitlabConstants.AttributeAuthorName),
+                Seq(GitlabConstants.AttributeAuthorEmail),
+                Seq(GitlabConstants.AttributeCommitterName),
+                Seq(GitlabConstants.AttributeCommitterEmail)
+            )
+        )
+    }
+
     override def processDocument(document: BsonDocument): BsonDocument = {
         val documentWithMetadata: BsonDocument = addIdentifierAttributes(document).append(
             GitlabConstants.AttributeMetadata, getMetadata()

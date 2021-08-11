@@ -41,6 +41,8 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
         Array(GitlabConstants.AttributeId)
     }
 
+    def getHashableAttributes(): Option[Seq[Seq[String]]] = None
+
     def processResponse(response: HttpResponse[String]): Array[Document] = {
         try {
             // all valid responses from GitLab API should be JSON arrays containing JSON objects
@@ -54,7 +56,9 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                 })
                 .flatten
                 .map(document => {
-                    val finalDocument: Document = Document(processDocument(document))
+                    val finalDocument: Document = Document(
+                        processDocument(document).anonymize(getHashableAttributes())
+                    )
 
                     // store the fetched documents to MongoDB
                     getCollection() match {

@@ -73,6 +73,17 @@ extends GitlabDataHandler(options) {
         )
     }
 
+    override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
+        Some(
+            Seq(
+                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
+                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
+                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
+                Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl)
+            )
+        )
+    }
+
     override def processDocument(document: BsonDocument): BsonDocument = {
         val detailedDocument: BsonDocument = document.getIntOption(GitlabConstants.AttributeId) match {
             case Some(pipelineId: Int) => {
