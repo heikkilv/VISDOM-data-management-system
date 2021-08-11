@@ -21,6 +21,7 @@ import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions) {
@@ -156,14 +157,23 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                 GitlabConstants.AttributeHostName -> BsonString(options.hostServer.hostName)
             )
             .appendOption(GitlabConstants.AttributeProjectName, (options match {
-                case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, _) =>
-                    Some(toBsonValue(projectName))
-                case GitlabFileOptions(_, _, projectName, _, _, _, _, _) =>
-                    Some(toBsonValue(projectName))
+                case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, useAnonymization) =>
+                    Some(toBsonValue(useAnonymization match {
+                        case true => GeneralUtils.getHash(projectName)
+                        case false => projectName
+                    }))
+                case GitlabFileOptions(_, _, projectName, _, _, _, _, useAnonymization) =>
+                    Some(toBsonValue(useAnonymization match {
+                        case true => GeneralUtils.getHash(projectName)
+                        case false => projectName
+                    }))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
                     Some(toBsonValue(projectName))
-                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _) =>
-                    Some(toBsonValue(projectName))
+                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, useAnonymization) =>
+                    Some(toBsonValue(useAnonymization match {
+                        case true => GeneralUtils.getHash(projectName)
+                        case false => projectName
+                    }))
                 case _ => None
             }))
             .append(GitlabConstants.AttributeDocumentUpdatedCount, BsonInt32(results match {
