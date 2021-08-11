@@ -15,6 +15,7 @@ import spray.json.JsNull
 import spray.json.JsNumber
 import spray.json.JsString
 import spray.json.JsValue
+import visdom.utils.GeneralUtils
 
 
 object JsonUtils {
@@ -39,9 +40,61 @@ object JsonUtils {
             }
         }
 
+        def getDocumentOption(key: Any): Option[BsonDocument] = {
+            document.containsKey(key) match {
+                case true => document.get(key).isDocument() match {
+                    case true => Some(document.getDocument(key))
+                    case false => None
+                }
+                case false => None
+            }
+        }
+
         def appendOption(key: String, optionValue: Option[BsonValue]): BsonDocument = {
             optionValue match {
                 case Some(value: BsonValue) => document.append(key, value)
+                case None => document
+            }
+        }
+
+        def anonymizeAttribute(key: String): BsonDocument = {
+            document.getStringOption(key) match {
+                case Some(stringValue: String) => stringValue.isEmpty() match {
+                    case false => document.append(key, BsonString(GeneralUtils.getHash(stringValue)))
+                    case true => document
+                }
+                case None => document
+            }
+        }
+
+        def anonymizeAttribute(keySequence: Seq[String]): BsonDocument = {
+            keySequence.headOption match {
+                case Some(key: String) => {
+                    val tailKeys: Seq[String] = keySequence.drop(1)
+                    tailKeys.isEmpty match {
+                        case false => {
+                            document.getDocumentOption(key) match {
+                                case Some(subDocument: BsonDocument) =>
+                                    document.append(key, subDocument.anonymizeAttribute(tailKeys))
+                                case None => document
+                            }
+                        }
+                        case true => document.anonymizeAttribute(key)
+                    }
+                }
+                case None => document
+            }
+        }
+
+        def anonymize(hashableAttributes: Option[Seq[Seq[String]]]): BsonDocument = {
+            hashableAttributes match {
+                case Some(attributes: Seq[Seq[String]]) => attributes.headOption match {
+                    case Some(attributeSequence: Seq[String]) =>
+                        document
+                            .anonymizeAttribute(attributeSequence)
+                            .anonymize(Some(attributes.drop(1)))
+                    case None => document
+                }
                 case None => document
             }
         }
