@@ -8,3 +8,6 @@
 **/metals.sbt
 **/project/project/**
 **/.bsp/*
+
+.DS_Store
+**/.env
