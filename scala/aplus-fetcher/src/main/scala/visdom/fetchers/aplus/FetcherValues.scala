@@ -36,7 +36,7 @@ object FetcherValues {
     val sourceServer: String = getEnvironmentVariable(EnvironmentAPlusHost, APlusVariableMap)
     val mongoDatabase: String = getEnvironmentVariable(EnvironmentDataDatabase, APlusVariableMap)
 
-    val FetcherType: String = "APlus"
+    val FetcherType: String = ComponentConstants.APlusFetcherType
     val FetcherVersion: String = "0.1"
 
     implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
