@@ -8,6 +8,7 @@ object AttributeConstants {
     val AttributeDatabase: String = "database"
     val AttributeFetcherType: String = "fetcherType"
     val AttributeGitlabServer: String = "gitlabServer"
+    val AttributeId: String = "id"
     val AttributeInformation: String = "information"
     val AttributeSwaggerDefinition: String = "swaggerDefinition"
     val AttributeVersion: String = "version"

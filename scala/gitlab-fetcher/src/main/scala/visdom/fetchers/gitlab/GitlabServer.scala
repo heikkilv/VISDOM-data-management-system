@@ -3,10 +3,11 @@ package visdom.fetchers.gitlab
 import scalaj.http.Http
 import scalaj.http.HttpOptions
 import scalaj.http.HttpRequest
+import visdom.fetchers.HostServer
 
 
-class GitlabServer(hostAddress: String, apiToken: Option[String], allowUnsafeSSL: Option[Boolean]) {
-    val hostName: String = hostAddress
+class GitlabServer(hostAddress: String, apiToken: Option[String], allowUnsafeSSL: Option[Boolean])
+extends HostServer(hostAddress, apiToken, allowUnsafeSSL) {
     val baseAddress: String = List(hostAddress, GitlabConstants.PathBase).mkString("/")
 
     def modifyRequest(request: HttpRequest): HttpRequest = {
