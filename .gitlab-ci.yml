@@ -31,6 +31,7 @@ scalastyle:
         - sbt core/scalastyle
         - sbt dataBroker/scalastyle
         - sbt gitlabFetcher/scalastyle
+        - sbt aPlusFetcher/scalastyle
         - sbt gitlabAdapter/scalastyle
 
 scapegoat:
@@ -41,6 +42,7 @@ scapegoat:
         - sbt core/scapegoat
         - sbt dataBroker/scapegoat
         - sbt gitlabFetcher/scapegoat
+        - sbt aPlusFetcher/scapegoat
         - sbt gitlabAdapter/scapegoat
 
 unit_test:
@@ -51,6 +53,7 @@ unit_test:
         - sbt core/test
         - sbt dataBroker/test
         - sbt gitlabFetcher/test
+        - sbt aPlusFetcher/test
         - sbt gitlabAdapter/test
 
 broker:
@@ -71,6 +74,16 @@ fetcher_gitlab:
         - docker build
           --tag visdom-fetcher-gitlab:test
           --file Dockerfile-fetcher-gitlab
+          .
+
+fetcher_aplus:
+    stage: Build
+    extends:
+        - .docker_build
+    script:
+        - docker build
+          --tag visdom-fetcher-aplus:test
+          --file Dockerfile-fetcher-aplus
           .
 
 adapter_gitlab:
