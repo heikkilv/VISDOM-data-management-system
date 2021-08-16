@@ -1,0 +1,99 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8751"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/info": {
+            "get": {
+                "summary": "Returns A+ data fetcher info.",
+                "description": "Returns information about the A+ data fetcher.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APlusFetcherInfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "aplus-fetcher",
+                                            "componentType": "fetcher",
+                                            "fetcherType": "APlus",
+                                            "version": "0.1",
+                                            "sourceServer": "https://plus.fi",
+                                            "mongoDatabase": "aplus",
+                                            "startTime": "2021-08-16T12:00:00.000Z",
+                                            "apiAddress": "localhost:8751",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "APlusFetcherInfoResponse": {
+                "required": [
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "fetcherType",
+                    "mongoDatabase",
+                    "sourceServer",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "fetcherType": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "sourceServer": {
+                        "type": "string"
+                    },
+                    "mongoDatabase": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
