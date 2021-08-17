@@ -25,6 +25,7 @@ abstract class DataHandler(options: FetchOptions) {
     def getCollectionName(): String
     def getRequest(): HttpRequest
     def handleRequests(firstRequest: HttpRequest): Option[Array[Document]]
+    def responseToDocumentArray(response: HttpResponse[String]): Array[BsonDocument]
 
     val createMetadataDocument: Boolean = true
 
@@ -46,16 +47,7 @@ abstract class DataHandler(options: FetchOptions) {
 
     def processResponse(response: HttpResponse[String]): Array[Document] = {
         try {
-            // all valid responses from GitLab API should be JSON arrays containing JSON objects
-            BsonArray.parse(response.body)
-                .getValues()
-                .asScala
-                .toArray
-                .map(bsonValue => bsonValue.isDocument match {
-                    case true => Some(bsonValue.asDocument())
-                    case false => None
-                })
-                .flatten
+            responseToDocumentArray(response)
                 .map(document => {
                     val finalDocument: Document = Document(
                         processDocument(document).anonymize(getHashableAttributes())
@@ -88,7 +80,7 @@ abstract class DataHandler(options: FetchOptions) {
             case CommonConstants.EmptyString => None
             case _ => options.mongoDatabase match {
                 case Some(database: MongoDatabase) => Some(
-                    database.getCollection(getCollectionName())
+                    database.getCollection(collectionName)
                 )
                 case None => None
             }

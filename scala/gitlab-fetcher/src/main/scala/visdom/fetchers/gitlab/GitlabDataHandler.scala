@@ -1,17 +1,24 @@
 package visdom.fetchers.gitlab
 
 import java.util.concurrent.TimeoutException
+import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
 import scala.concurrent.Await
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.fetchers.DataHandler
 import visdom.http.HttpConstants
+import visdom.http.HttpUtils
 import visdom.utils.GeneralUtils
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions)
 extends DataHandler(options) {
+    def responseToDocumentArray(response: HttpResponse[String]): Array[BsonDocument] = {
+        // all valid responses from GitLab API should be JSON arrays containing JSON objects
+        HttpUtils.responseToDocumentArrayCaseArray(response)
+    }
+
     def handleRequests(firstRequest: HttpRequest): Option[Array[Document]] = {
         def handleRequestInternal(
             requestInternal: HttpRequest,

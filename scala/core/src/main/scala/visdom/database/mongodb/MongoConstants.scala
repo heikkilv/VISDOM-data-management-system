@@ -21,6 +21,7 @@ object MongoConstants {
     val DefaultMongoTargetDatabase: String = "gitlab"
 
     val CollectionCommits: String = "commits"
+    val CollectionCourses: String = "courses"
     val CollectionFiles: String = "files"
     val CollectionJobs: String = "jobs"
     val CollectionJobLogs: String = "job_logs"
