@@ -13,4 +13,17 @@ object APlusFetcherExamples {
         "apiAddress": "localhost:8751",
         "swaggerDefinition": "/api-docs/swagger.json"
     }"""
+
+    final val CourseDataResponseExampleAccepted = """{
+        "status": "Accepted",
+        "description": "The fetching of the data has been started",
+        "options": {
+            "courseId": 123
+        }
+    }"""
+
+    final val CourseResponseExampleInvalid= """{
+        "status": "BadRequest",
+        "description": "'-5'' is not a valid course id"
+    }"""
 }

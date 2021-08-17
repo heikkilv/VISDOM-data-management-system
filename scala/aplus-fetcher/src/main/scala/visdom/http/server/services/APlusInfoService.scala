@@ -17,8 +17,8 @@ import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.http.HttpConstants
-import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.APlusFetcherResponseHandler
+import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.ServerConstants
 import visdom.http.server.response.APlusFetcherInfoResponse
 import visdom.http.server.services.constants.Descriptions
@@ -28,7 +28,7 @@ import visdom.utils.WarningConstants.UnusedMethodParameter
 
 @SuppressWarnings(Array(UnusedMethodParameter))
 @Path(ServerConstants.InfoRootPath)
-class APlusFetcherInfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
+class APlusInfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with APlusFetcherResponseHandler {
     val route: Route = (

@@ -15,6 +15,8 @@ import visdom.json.JsonUtils.EnrichedBsonDocument
 
 abstract class APlusDataHandler(options: APlusFetchOptions)
 extends DataHandler(options) {
+    def usePagination(): Boolean
+
     def handleRequests(firstRequest: HttpRequest): Option[Array[Document]] = {
         def handleRequestInternal(
             requestInternal: HttpRequest,
@@ -28,10 +30,13 @@ extends DataHandler(options) {
                     case Some(response: HttpResponse[String]) => response.code match {
                         case HttpConstants.StatusCodeOk => {
                             val receivedResults: Array[Document] = resultDocuments ++ processResponse(response)
-                            getNextRequest(requestInternal, response) match {
-                                case Some(nextRequest: HttpRequest) =>
-                                    handleRequestInternal(nextRequest, receivedResults)
-                                case None => receivedResults
+                            usePagination() match {
+                                case true => getNextRequest(requestInternal, response) match {
+                                    case Some(nextRequest: HttpRequest) =>
+                                        handleRequestInternal(nextRequest, receivedResults)
+                                    case None => receivedResults
+                                }
+                                case false => receivedResults
                             }
                         }
                         case _ => resultDocuments

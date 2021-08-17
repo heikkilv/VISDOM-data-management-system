@@ -24,6 +24,7 @@ class CoursesFetcher(options: APlusCourseOptions)
 
     def getFetcherType(): String = APlusConstants.FetcherTypeCourses
     def getCollectionName(): String = MongoConstants.CollectionCourses
+    def usePagination(): Boolean = true
 
     override def getOptionsDocument(): BsonDocument = {
         BsonDocument().appendOption(

@@ -14,7 +14,7 @@ object Metadata extends visdom.utils.Metadata {
             MetadataConstants.AttributeFetcherType -> FetcherValues.FetcherType,
             MetadataConstants.AttributeVersion -> FetcherValues.FetcherVersion,
             MetadataConstants.AttributeSourceServer -> FetcherValues.sourceServer,
-            MetadataConstants.AttributeDatabase -> FetcherValues.mongoDatabase,
+            MetadataConstants.AttributeDatabase -> FetcherValues.targetDatabaseName,
             MetadataConstants.AttributeApiAddress -> FetcherValues.apiAddress,
             MetadataConstants.AttributeSwaggerDefinition -> FetcherValues.swaggerDefinition,
             MetadataConstants.AttributeStartTime -> FetcherValues.startTime
@@ -36,7 +36,7 @@ object Metadata extends visdom.utils.Metadata {
             fetcherType = FetcherValues.FetcherType,
             version = FetcherValues.FetcherVersion,
             sourceServer = FetcherValues.sourceServer,
-            mongoDatabase = FetcherValues.mongoDatabase,
+            mongoDatabase = FetcherValues.targetDatabaseName,
             apiAddress = FetcherValues.apiAddress,
             swaggerDefinition = FetcherValues.swaggerDefinition,
             startTime = FetcherValues.startTime
