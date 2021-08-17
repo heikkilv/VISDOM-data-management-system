@@ -113,6 +113,15 @@ object HttpUtils {
             .flatten
     }
 
+    def responseToDocument(response: HttpResponse[String]): Option[BsonDocument] = {
+        try {
+            Some(BsonDocument.parse(response.body))
+        }
+        catch {
+            case _: JsonParseException => None
+        }
+    }
+
     def responseToDocumentArrayCaseArray(response: HttpResponse[String]): Array[BsonDocument] = {
         bsonArrayToDocumentArray(
             try {

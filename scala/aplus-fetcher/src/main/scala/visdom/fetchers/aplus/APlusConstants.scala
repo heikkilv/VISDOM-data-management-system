@@ -25,6 +25,7 @@ object APlusConstants {
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeLastModified: String = "last_modified"
+    val AttributeNext: String = "next"
     val AttributeResults: String = "results"
 
     // the default wait time for HTTP queries to the A+ API
