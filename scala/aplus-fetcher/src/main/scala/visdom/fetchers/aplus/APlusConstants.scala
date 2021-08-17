@@ -22,6 +22,7 @@ object APlusConstants {
     val FetcherTypeCourses: String = "courses"
 
     val AttributeApiVersion: String = "api_version"
+    val AttributeCourseId: String = "course_id"
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeLastModified: String = "last_modified"

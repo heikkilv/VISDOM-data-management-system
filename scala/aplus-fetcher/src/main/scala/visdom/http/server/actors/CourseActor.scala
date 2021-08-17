@@ -67,6 +67,6 @@ object CourseActor {
             case Some(documents: Array[Document]) => documents.size
             case None => 0
         }
-        println(s"Found ${courseCount} courses from project A+")
+        println(s"Found ${courseCount} courses from A+ instance at ${FetcherValues.targetServer.hostName}")
     }
 }

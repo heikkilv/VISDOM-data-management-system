@@ -28,7 +28,7 @@ class CoursesFetcher(options: APlusCourseOptions)
 
     override def getOptionsDocument(): BsonDocument = {
         BsonDocument().appendOption(
-            APlusConstants.AttributeId,
+            APlusConstants.AttributeCourseId,
             options.courseId.map(idValue => toBsonValue(idValue))
         )
     }
@@ -82,7 +82,11 @@ class CoursesFetcher(options: APlusCourseOptions)
                         getRequest(Some(courseId)),
                         HttpConstants.StatusCodeOk
                     ) match {
-                        case Some(courseDocument: BsonDocument) => courseDocument
+                        case Some(courseDocument: BsonDocument) =>
+                            courseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                                case Some(_) => courseDocument
+                                case None => document
+                            }
                         case None => document
                     }
                 }
