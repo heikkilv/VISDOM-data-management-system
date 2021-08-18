@@ -6,7 +6,7 @@ services:
         image: visdom/graphql-gitlab-adapter:1.0
         container_name: ${APPLICATION_NAME}
         ports:
-            - ${HOST_PORT}:8080
+            - ${HOST_PORT}:4000
         environment:
             - APPLICATION_NAME=${APPLICATION_NAME}
             - HOST_NAME=${HOST_NAME}
