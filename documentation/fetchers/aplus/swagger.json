@@ -47,10 +47,356 @@
                     }
                 }
             }
+        },
+        "/courses": {
+            "get": {
+                "summary": "Fetch course metadata from A+.",
+                "description": "Starts a fetching process for course metadata from an A+ instance.",
+                "operationId": "getCourseDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/exercises": {
+            "get": {
+                "summary": "Fetch exercise data for a course from A+.",
+                "description": "Starts a fetching process for exercise data for a module in a course from an A+ instance.",
+                "operationId": "getExerciseDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "moduleId",
+                        "in": "query",
+                        "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "exerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise in the chosen course module. Must be a positive integer.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "parseNames",
+                        "in": "query",
+                        "description": "Whether to parse the module or exercise names.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123,
+                                                "moduleId": 765,
+                                                "exerciseId": 5555,
+                                                "parseNames": "true"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/modules": {
+            "get": {
+                "summary": "Fetch module data for a course from A+.",
+                "description": "Starts a fetching process for module data for a course from an A+ instance.",
+                "operationId": "getModuleDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "moduleId",
+                        "in": "query",
+                        "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "parseNames",
+                        "in": "query",
+                        "description": "Whether to parse the module or exercise names.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "includeExercises",
+                        "in": "query",
+                        "description": "Whether to also fetch detailed exercise metadata.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123,
+                                                "moduleId": 765,
+                                                "parseNames": "true",
+                                                "includeExercises": "true"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
         "schemas": {
+            "JsValue": {
+                "type": "object"
+            },
+            "JsObject": {
+                "required": [
+                    "fields"
+                ],
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "object",
+                        "properties": { },
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/JsValue"
+                        }
+                    }
+                }
+            },
+            "ResponseAccepted": {
+                "required": [
+                    "description",
+                    "options",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "$ref": "#/components/schemas/JsObject"
+                    }
+                }
+            },
             "APlusFetcherInfoResponse": {
                 "required": [
                     "apiAddress",
@@ -90,6 +436,21 @@
                         "type": "string"
                     },
                     "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ResponseProblem": {
+                "required": [
+                    "description",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
                         "type": "string"
                     }
                 }
