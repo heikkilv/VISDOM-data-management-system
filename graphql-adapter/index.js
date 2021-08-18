@@ -1,12 +1,9 @@
 require('dotenv').config();
 const { ApolloServer, gql } = require('apollo-server')
 const { GraphQLScalarType, Kind } = require('graphql');
-// const express = require("express");
-// const app = express();
 const connectDb = require("./src/connection");
 const Commit = require("./src/schema/commit");
 
-// const PORT = process.env.HOST_PORT || 8080;
 
 connectDb().then(() => {
   console.log("MongoDb connected");
@@ -14,55 +11,37 @@ connectDb().then(() => {
   console.log(err)
 });
 
-// app.get("/", function (req, res) {
-//   res.send("hey")
-// })
-
-// app.get("/commits", async function (req, res) {
-//   const commits = await Commit.find({});
-//   res.json(commits);
-// })
-
-// app.listen(PORT, function() {
-//   console.log(`Listening on ${PORT}`);
-//   connectDb().then(() => {
-//     console.log("MongoDb connected");
-//   }).catch((err) => {
-//     console.log(err)
-//   });
-// });
-
 const typeDefs = gql`
   scalar Date
 
   type Stats {
-    additions: Int!
-    deletions: Int!
-    total: Int!
+    additions: Int
+    deletions: Int
+    total: Int
   }
 
   type Metadata {
-    last_modified: Date!
-    api_version: Int!
-    include_statistics: Boolean!
-    include_link_files: Boolean!
-    include_link_refs: Boolean!
-    use_anonymization: Boolean!
+    last_modified: Date
+    api_version: Int
+    include_statistics: Boolean
+    include_link_files: Boolean
+    include_link_refs: Boolean
+    use_anonymization: Boolean
   }
 
   type File {
-    old_path: String!
-    new_path: String!
-    a_mode: String!
-    b_mode: String!
-    new_file: Boolean!
-    renamed_file: Boolean!
-    deleted_file: Boolean!
+    old_path: String
+    new_path: String
+    a_mode: String
+    b_mode: String
+    new_file: Boolean
+    renamed_file: Boolean
+    deleted_file: Boolean
   }
 
   type Ref {
-    type: String!
-    name: String!
+    type: String
+    name: String
   }
 
   type Links {
@@ -72,23 +51,23 @@ const typeDefs = gql`
 
   type Commit {
     id: String!
-    short_id: String!
-    created_at: Date!
-    parent_ids: [String!]!
-    title: String!
-    message: String!
-    author_name: String!
-    author_email: String!
-    author_date: Date!
-    committer_name: String!
-    committer_email: String!
-    committer_date: Date!
-    web_url: String!
-    stats: Stats!
-    project_name: String!
-    host_name: String!
-    _metadata: Metadata!
-    _links: Links!
+    short_id: String
+    created_at: Date
+    parent_ids: [String!]
+    title: String
+    message: String
+    author_name: String
+    author_email: String
+    author_date: Date
+    committer_name: String
+    committer_email: String
+    committer_date: Date
+    web_url: String
+    stats: Stats
+    project_name: String
+    host_name: String
+    _metadata: Metadata
+    _links: Links
   }
 
   type Query {
