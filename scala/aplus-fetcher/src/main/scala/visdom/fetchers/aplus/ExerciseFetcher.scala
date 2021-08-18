@@ -12,6 +12,7 @@ import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
+import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpConstants
@@ -87,7 +88,30 @@ class ExerciseFetcher(options: APlusExerciseOptions)
 
     override def processDocument(document: BsonDocument): BsonDocument = {
         // try to always get the detailed exercise information for each exercise
-        val detailedDocument: BsonDocument = options.exerciseId match {
+        val detailedDocument: BsonDocument = getDetailedDocument(document)
+
+        val parsedDocument: BsonDocument = options.parseNames match {
+            case true => APlusUtils.parseDocument(detailedDocument, getParsableAttributes())
+            case false => detailedDocument
+        }
+
+        // some exercise form definitions contain translations which have incompatible keys for MongoDB documents
+        val cleanedDocument: BsonDocument =
+            parsedDocument.getDocumentOption(APlusConstants.AttributeExerciseInfo) match {
+                case Some(subDocument: BsonDocument) => parsedDocument.append(
+                    APlusConstants.AttributeExerciseInfo,
+                    JsonUtils.removeAttribute(subDocument, APlusConstants.AttributeFormI18n)
+                )
+                case None => parsedDocument
+            }
+
+        addIdentifierAttributes(cleanedDocument)
+            .append(AttributeConstants.AttributeMetadata, getMetadata())
+            .append(AttributeConstants.AttributeLinks, getLinkData())
+    }
+
+    private def getDetailedDocument(document: BsonDocument): BsonDocument = {
+        options.exerciseId match {
             case Some(_) => document
             case None => document.getIntOption(AttributeConstants.AttributeId) match {
                 case Some(exerciseId: Int) => {
@@ -106,15 +130,6 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                 case None => document
             }
         }
-
-        val parsedDocument: BsonDocument = options.parseNames match {
-            case true => APlusUtils.parseDocument(detailedDocument, getParsableAttributes())
-            case false => detailedDocument
-        }
-
-        addIdentifierAttributes(parsedDocument)
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData())
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {

@@ -2,6 +2,7 @@ package visdom.http.server.services.constants
 
 
 object APlusFetcherExamples {
+
     final val APlusFetcherInfoResponseExample = """{
         "componentName": "aplus-fetcher",
         "componentType": "fetcher",
@@ -22,8 +23,20 @@ object APlusFetcherExamples {
         }
     }"""
 
-    final val CourseResponseExampleInvalid= """{
+    final val ResponseExampleInvalidName = "Invalid course id"
+    final val ResponseExampleInvalid= """{
         "status": "BadRequest",
         "description": "'-5'' is not a valid course id"
+    }"""
+
+    final val ModuleDataResponseExampleAccepted = """{
+        "status": "Accepted",
+        "description": "The fetching of the data has been started",
+        "options": {
+            "courseId": 123,
+            "moduleId": 765,
+            "parseNames": "true",
+            "includeExercises": "true"
+        }
     }"""
 }

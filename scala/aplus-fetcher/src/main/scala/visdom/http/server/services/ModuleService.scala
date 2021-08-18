@@ -23,7 +23,7 @@ import scala.concurrent.Future
 import visdom.http.HttpConstants
 import visdom.http.server.APlusFetcherResponseHandler
 import visdom.http.server.ServerConstants
-import visdom.http.server.fetcher.aplus.CourseDataQueryOptions
+import visdom.http.server.fetcher.aplus.ModuleDataQueryOptions
 import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.services.constants.APlusFetcherDescriptions
@@ -34,26 +34,54 @@ import visdom.utils.WarningConstants
 
 // scalastyle:off method.length
 @SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
-@Path(ServerConstants.CoursesRootPath)
-class CourseService(courseDataActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(ServerConstants.ModulesRootPath)
+class ModuleService(moduleDataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with APlusFetcherResponseHandler
 {
     val route: Route = (
-        getCourseDataRoute
+        getModuleDataRoute
     )
 
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = APlusFetcherDescriptions.APlusFetcherCourseEndpointSummary,
-        description = APlusFetcherDescriptions.APlusFetcherCourseEndpointDescription,
+        summary = APlusFetcherDescriptions.APlusFetcherModuleEndpointSummary,
+        description = APlusFetcherDescriptions.APlusFetcherModuleEndpointDescription,
         parameters = Array(
             new Parameter(
                 name = APlusServerConstants.CourseId,
                 in = ParameterIn.QUERY,
-                required = false,
+                required = true,
                 description = APlusServerConstants.ParameterDescriptionCourseId
+            ),
+            new Parameter(
+                name = APlusServerConstants.ModuleId,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionModuleId
+            ),
+            new Parameter(
+                name = APlusServerConstants.ParseNames,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionParseNames,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultParseNames,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.IncludeExercises,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludeExercises,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludeExercises,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -66,7 +94,7 @@ with APlusFetcherResponseHandler
                         examples = Array(
                             new ExampleObject(
                                 name = ServerConstants.ResponseExampleAcceptedName,
-                                value = APlusFetcherExamples.CourseDataResponseExampleAccepted
+                                value = APlusFetcherExamples.ModuleDataResponseExampleAccepted
                             )
                         )
                     )
@@ -104,14 +132,20 @@ with APlusFetcherResponseHandler
             )
         )
     )
-    def getCourseDataRoute: RequestContext => Future[RouteResult] = (
-        path(ServerConstants.CoursesPath) &
+    def getModuleDataRoute: RequestContext => Future[RouteResult] = (
+        path(ServerConstants.ModulesPath) &
         parameters(
-            APlusServerConstants.CourseId.optional
+            APlusServerConstants.CourseId,
+            APlusServerConstants.ModuleId.optional,
+            APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames),
+            APlusServerConstants.IncludeExercises.withDefault(APlusServerConstants.DefaultIncludeExercises)
         )
     ) {
-        (courseId) => get {
-            getRoute(courseDataActor, CourseDataQueryOptions(courseId))
+        (courseId, moduleId, parseNames, includeExercises) => get {
+            getRoute(
+                moduleDataActor,
+                ModuleDataQueryOptions(courseId, moduleId, parseNames, includeExercises)
+            )
         }
     }
 }

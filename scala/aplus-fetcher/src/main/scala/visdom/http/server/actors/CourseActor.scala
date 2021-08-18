@@ -30,7 +30,7 @@ class CourseActor extends Actor with ActorLogging {
                     val courseFetching = Future(CourseActor.startCourseFetching(fetchParameters))
 
                     ResponseUtils.getAcceptedResponse(
-                        APlusFetcherDescriptions.CourseDataStatusAcceptedDescription,
+                        APlusFetcherDescriptions.StatusAcceptedDescription,
                         queryOptions.toJsObject()
                     )
                 }

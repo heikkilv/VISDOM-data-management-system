@@ -24,6 +24,16 @@ object ServerConstants {
     final val CoursesRootPath = "/courses"
     final val CoursesPath = "courses"
 
+    final val ModulesRootPath = "/modules"
+    final val ModulesPath = "modules"
+
+    final val ExercisesRootPath = "/exercises"
+    final val ExercisesPath = "exercises"
+
+    final val FalseString = "false"
+    final val TrueString = "true"
+    final val BooleanStrings: Set[String] = Set(FalseString, TrueString)
+
     // the default maximum delay until a response is sent for HTTP server
     val DefaultMaxResponseDelaySeconds: Int = 30
     val DefaultMaxResponseDelay: Duration = Duration(DefaultMaxResponseDelaySeconds, TimeUnit.SECONDS)

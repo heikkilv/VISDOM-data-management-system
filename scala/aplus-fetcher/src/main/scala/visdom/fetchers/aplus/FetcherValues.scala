@@ -11,8 +11,10 @@ import visdom.database.mongodb.MongoConnection
 import visdom.http.server.ServerConstants
 import visdom.http.server.actors.APlusInfoActor
 import visdom.http.server.actors.CourseActor
+import visdom.http.server.actors.ModuleActor
 import visdom.http.server.services.APlusInfoService
 import visdom.http.server.services.CourseService
+import visdom.http.server.services.ModuleService
 import visdom.http.server.swagger.SwaggerAPlusFetcherDocService
 import visdom.http.server.swagger.SwaggerConstants
 import visdom.http.server.swagger.SwaggerRoutes
@@ -59,8 +61,9 @@ object FetcherValues {
     implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
     val routes = Directives.concat(
-        new APlusInfoService(system.actorOf(Props[APlusInfoActor])).route,
         new CourseService(system.actorOf(Props[CourseActor])).route,
+        new ModuleService(system.actorOf(Props[ModuleActor])).route,
+        new APlusInfoService(system.actorOf(Props[APlusInfoActor])).route,
         SwaggerRoutes.getSwaggerRouter(SwaggerAPlusFetcherDocService)
     )
 }

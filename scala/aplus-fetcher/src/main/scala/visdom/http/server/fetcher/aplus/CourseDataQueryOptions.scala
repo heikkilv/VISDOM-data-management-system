@@ -12,7 +12,7 @@ final case class CourseDataQueryOptions(
     def toJsObject(): JsObject = {
         JsObject(
             Map(
-                APlusServerConstants.AttributeCourseId -> JsonUtils.toJsonValue(courseId)
+                APlusServerConstants.CourseId -> JsonUtils.toJsonValue(courseId)
             )
         )
     }

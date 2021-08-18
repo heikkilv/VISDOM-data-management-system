@@ -9,8 +9,11 @@ object APlusFetcherDescriptions {
         "Starts a fetching process for course metadata from an A+ instance."
     final val APlusFetcherCourseEndpointSummary = "Fetch course metadata from A+."
 
-    final val CourseDataStatusAcceptedDescription = "The fetching of the data has started"
+    final val APlusFetcherModuleEndpointDescription =
+        "Starts a fetching process for module metadata for a course from an A+ instance."
+    final val APlusFetcherModuleEndpointSummary = "Fetch module metadata for a course from A+."
 
-    final val CourseStatusInvalidDescription = "The request contained an invalid parameter"
-    final val CourseResponseExampleInvalidName = "Invalid course id"
+    final val StatusAcceptedDescription = "The fetching of the data has started"
+
+    final val StatusInvalidDescription = "The request contained an invalid parameter"
 }
