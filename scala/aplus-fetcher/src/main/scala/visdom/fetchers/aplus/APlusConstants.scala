@@ -15,18 +15,30 @@ object APlusConstants {
     val Token: String = "Token"
 
     val PathCourses: String = "courses"
+    val PathExercises: String = "exercises"
 
     val ParamFormat: String = "format"
 
     // constants for the different A+ fetcher types
     val FetcherTypeCourses: String = "courses"
+    val FetcherTypeExercises: String = "exercises"
+    val FetcherTypeModules: String = "modules"
 
     val AttributeApiVersion: String = "api_version"
     val AttributeCourseId: String = "course_id"
+    val AttributeCourses: String = "courses"
+    val AttributeDisplayName: String = "display_name"
+    val AttributeExerciseId: String = "exercise_id"
+    val AttributeExercises: String = "exercises"
+    val AttributeHierarchicalName: String = "hierarchical_name"
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeLastModified: String = "last_modified"
+    val AttributeModuleId: String = "module_id"
+    val AttributeModules: String = "modules"
+    val AttributeName: String = "name"
     val AttributeNext: String = "next"
+    val AttributeParseNames: String = "parse_names"
     val AttributeResults: String = "results"
 
     // the default wait time for HTTP queries to the A+ API

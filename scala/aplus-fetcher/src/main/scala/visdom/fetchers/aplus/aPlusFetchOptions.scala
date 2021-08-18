@@ -13,13 +13,60 @@ abstract class CourseSpecificFetchOptions {
     val courseId: Option[Int]
 }
 
+abstract class ModuleSpecificFetchOptions {
+    val courseId: Int
+    val moduleId: Option[Int]
+    val parseNames: Boolean
+}
+abstract class ExerciseSpecificFetchOptions {
+    val courseId: Int
+    val moduleId: Int
+    val exerciseId: Option[Int]
+    val parseNames: Boolean
+}
+
 final case class CourseSpecificFetchParameters(
     courseId: Option[Int]
 )
 extends CourseSpecificFetchOptions
 
+final case class ModuleSpecificFetchParameters(
+    courseId: Int,
+    moduleId: Option[Int],
+    parseNames: Boolean
+)
+extends ModuleSpecificFetchOptions
+
+final case class ExerciseSpecificFetchParameters(
+    courseId: Int,
+    moduleId: Int,
+    exerciseId: Option[Int],
+    parseNames: Boolean
+)
+extends ExerciseSpecificFetchOptions
+
 final case class APlusCourseOptions(
     hostServer: APlusServer,
     mongoDatabase: Option[MongoDatabase],
     courseId: Option[Int]
-) extends APlusFetchOptions
+)
+extends APlusFetchOptions
+
+final case class APlusModuleOptions(
+    hostServer: APlusServer,
+    mongoDatabase: Option[MongoDatabase],
+    courseId: Int,
+    moduleId: Option[Int],
+    parseNames: Boolean
+)
+extends APlusFetchOptions
+
+final case class APlusExerciseOptions(
+    hostServer: APlusServer,
+    mongoDatabase: Option[MongoDatabase],
+    courseId: Int,
+    moduleId: Int,
+    exerciseId: Option[Int],
+    parseNames: Boolean
+)
+extends APlusFetchOptions

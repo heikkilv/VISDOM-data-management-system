@@ -5,6 +5,7 @@ import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonElement
@@ -13,35 +14,40 @@ import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
-import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CommonConstants
+import visdom.utils.APlusUtils
 
 
-class CoursesFetcher(options: APlusCourseOptions)
+class ModuleFetcher(options: APlusModuleOptions)
     extends APlusDataHandler(options) {
 
-    def getFetcherType(): String = APlusConstants.FetcherTypeCourses
-    def getCollectionName(): String = MongoConstants.CollectionCourses
-    def usePagination(): Boolean = !options.courseId.isDefined
+    def getFetcherType(): String = APlusConstants.FetcherTypeModules
+    def getCollectionName(): String = MongoConstants.CollectionModules
+    def usePagination(): Boolean = !options.moduleId.isDefined
 
     override def getOptionsDocument(): BsonDocument = {
-        BsonDocument().appendOption(
-            APlusConstants.AttributeCourseId,
-            options.courseId.map(idValue => toBsonValue(idValue))
+        BsonDocument(
+            APlusConstants.AttributeCourseId -> options.courseId,
+            APlusConstants.AttributeParseNames -> options.parseNames
+        ).appendOption(
+            APlusConstants.AttributeModuleId,
+            options.moduleId.map(idValue => toBsonValue(idValue))
         )
     }
 
     def getRequest(): HttpRequest = {
-        getRequest(options.courseId)
+        getRequest(options.moduleId)
     }
 
-    private def getRequest(courseId: Option[Int]): HttpRequest = {
+    private def getRequest(moduleId: Option[Int]): HttpRequest = {
         val uri: String = List(
             Some(options.hostServer.baseAddress),
             Some(APlusConstants.PathCourses),
-            courseId match {
+            Some(options.courseId.toString()),
+            Some(APlusConstants.PathExercises),
+            moduleId match {
                 case Some(idNumber: Int) => Some(idNumber.toString())
                 case None => None
             }
@@ -53,19 +59,20 @@ class CoursesFetcher(options: APlusCourseOptions)
     override def getIdentifierAttributes(): Array[String] = {
         Array(
             APlusConstants.AttributeId,
+            APlusConstants.AttributeCourseId,
             APlusConstants.AttributeHostName
         )
     }
 
     def responseToDocumentArray(response: HttpResponse[String]): Array[BsonDocument] = {
-        options.courseId match {
+        options.moduleId match {
             case Some(_) => {
-                // if the response is for one course,
+                // if the response is for one exercise module,
                 // it should contain only one JSON object
                 HttpUtils.responseToDocumentArrayCaseDocument(response)
             }
             case None => {
-                // if the response is for all courses,
+                // if the response is for all exercise modules in a course,
                 // the actual data should be in given as a list of JSON objects under the attribute "results"
                 HttpUtils.responseToDocumentArrayCaseAttributeDocument(response, APlusConstants.AttributeResults)
             }
@@ -73,35 +80,19 @@ class CoursesFetcher(options: APlusCourseOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
-        // try to always get the detailed course information for each course
-        val detailedDocument: BsonDocument = options.courseId match {
-            case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
-                case Some(courseId: Int) => {
-                    HttpUtils.getRequestDocument(
-                        getRequest(Some(courseId)),
-                        HttpConstants.StatusCodeOk
-                    ) match {
-                        case Some(courseDocument: BsonDocument) =>
-                            courseDocument.getIntOption(AttributeConstants.AttributeId) match {
-                                case Some(_) => courseDocument
-                                case None => document
-                            }
-                        case None => document
-                    }
-                }
-                case None => document
-            }
+        val parsedDocument: BsonDocument = options.parseNames match {
+            case true => APlusUtils.parseDocument(document, getParsableAttributes())
+            case false => document
         }
 
-        addIdentifierAttributes(detailedDocument).append(
-            AttributeConstants.AttributeMetadata, getMetadata()
-        )
+        addIdentifierAttributes(parsedDocument)
+            .append(AttributeConstants.AttributeMetadata, getMetadata())
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
             .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+            .append(APlusConstants.AttributeCourseId, new BsonInt32(options.courseId))
     }
 
     private def getMetadata(): BsonDocument = {
@@ -114,8 +105,16 @@ class CoursesFetcher(options: APlusCourseOptions)
                 new BsonElement(
                     APlusConstants.AttributeApiVersion,
                     new BsonInt32(APlusConstants.APlusApiVersion)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeParseNames,
+                    new BsonBoolean(options.parseNames)
                 )
             ).asJava
         )
+    }
+
+    def getParsableAttributes(): Seq[String] = {
+        Seq(APlusConstants.AttributeDisplayName)
     }
 }

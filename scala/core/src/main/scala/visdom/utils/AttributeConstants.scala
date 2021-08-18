@@ -10,6 +10,7 @@ object AttributeConstants {
     val AttributeGitlabServer: String = "gitlabServer"
     val AttributeId: String = "id"
     val AttributeInformation: String = "information"
+    val AttributeLinks: String = "_links"
     val AttributeMetadata: String = "metadata"
     val AttributeSwaggerDefinition: String = "swaggerDefinition"
     val AttributeVersion: String = "version"
