@@ -39,4 +39,15 @@ object APlusFetcherExamples {
             "includeExercises": "true"
         }
     }"""
+
+    final val ExerciseDataResponseExampleAccepted = """{
+        "status": "Accepted",
+        "description": "The fetching of the data has been started",
+        "options": {
+            "courseId": 123,
+            "moduleId": 765,
+            "exerciseId": 5555,
+            "parseNames": "true"
+        }
+    }"""
 }

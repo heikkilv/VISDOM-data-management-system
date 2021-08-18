@@ -10,8 +10,12 @@ object APlusFetcherDescriptions {
     final val APlusFetcherCourseEndpointSummary = "Fetch course metadata from A+."
 
     final val APlusFetcherModuleEndpointDescription =
-        "Starts a fetching process for module metadata for a course from an A+ instance."
-    final val APlusFetcherModuleEndpointSummary = "Fetch module metadata for a course from A+."
+        "Starts a fetching process for module data for a course from an A+ instance."
+    final val APlusFetcherModuleEndpointSummary = "Fetch module data for a course from A+."
+
+    final val APlusFetcherExerciseEndpointDescription =
+        "Starts a fetching process for exercise data for a module in a course from an A+ instance."
+    final val APlusFetcherExerciseEndpointSummary = "Fetch exercise data for a course from A+."
 
     final val StatusAcceptedDescription = "The fetching of the data has started"
 
