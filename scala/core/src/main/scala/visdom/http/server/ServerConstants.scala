@@ -21,6 +21,19 @@ object ServerConstants {
     final val FetchersRootPath = "/fetchers"
     final val FetchersPath = "fetchers"
 
+    final val CoursesRootPath = "/courses"
+    final val CoursesPath = "courses"
+
+    final val ModulesRootPath = "/modules"
+    final val ModulesPath = "modules"
+
+    final val ExercisesRootPath = "/exercises"
+    final val ExercisesPath = "exercises"
+
+    final val FalseString = "false"
+    final val TrueString = "true"
+    final val BooleanStrings: Set[String] = Set(FalseString, TrueString)
+
     // the default maximum delay until a response is sent for HTTP server
     val DefaultMaxResponseDelaySeconds: Int = 30
     val DefaultMaxResponseDelay: Duration = Duration(DefaultMaxResponseDelaySeconds, TimeUnit.SECONDS)
@@ -30,4 +43,13 @@ object ServerConstants {
     val HttpInternalPort: Int = 8080
 
     val DefaultInfoLogText: String = "Received info query"
+
+    final val ResponseExampleAcceptedName = "Successful response example"
+
+    final val StatusErrorDescription = "Internal server error"
+    final val ResponseExampleErrorName = "Timeout response example"
+    final val ResponseExampleError = """{
+        "status": "InternalServerError",
+        "description": "Futures timed out after [30 seconds]"
+    }"""
 }

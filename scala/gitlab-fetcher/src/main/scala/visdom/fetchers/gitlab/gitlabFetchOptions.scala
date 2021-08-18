@@ -2,11 +2,12 @@ package visdom.fetchers.gitlab
 
 import java.time.ZonedDateTime
 import org.mongodb.scala.MongoDatabase
+import visdom.fetchers.FetchOptions
 
 
-abstract class GitlabFetchOptions {
+abstract class GitlabFetchOptions
+extends FetchOptions {
     val hostServer: GitlabServer
-    val mongoDatabase: Option[MongoDatabase]
 }
 
 abstract class CommitSpecificFetchOptions {

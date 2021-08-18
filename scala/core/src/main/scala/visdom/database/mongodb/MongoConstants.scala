@@ -21,14 +21,23 @@ object MongoConstants {
     val DefaultMongoTargetDatabase: String = "gitlab"
 
     val CollectionCommits: String = "commits"
+    val CollectionCourses: String = "courses"
+    val CollectionExercises: String = "exercises"
     val CollectionFiles: String = "files"
     val CollectionJobs: String = "jobs"
     val CollectionJobLogs: String = "job_logs"
     val CollectionMetadata: String = "metadata"
+    val CollectionModules: String = "modules"
     val CollectionPipelines: String = "pipelines"
     val CollectionTemp: String = "temp"
 
     val AttributeDefaultId: String = "_id"
+    val AttributeDocumentUpdatedCount: String = "documents_updated_count"
+    val AttributeHostName: String = "host_name"
+    val AttributeOptions: String = "options"
+    val AttributeProjectName: String = "project_name"
+    val AttributeTimestamp: String = "timestamp"
+    val AttributeType: String = "type"
 
     // the default maximum delay until a MongoDB query will be considered failed
     val DefaultMaxQueryDelaySeconds: Int = 15

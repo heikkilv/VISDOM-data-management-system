@@ -10,6 +10,7 @@ object SnakeCaseConstants {
     val FetcherType: String = "fetcher_type"
     val GitlabServer: String = "gitlab_server"
     val Information: String = "information"
+    val SourceServer: String = "source_server"
     val SwaggerDefinition: String = "swagger_definition"
     val Version: String = "version"
 }

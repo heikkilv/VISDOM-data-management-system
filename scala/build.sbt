@@ -2,7 +2,10 @@ scalaVersion := "2.12.13"
 
 val coreDirectory: String = "core"
 val brokerDirectory: String = "broker"
+
 val gitlabFetcherDirectory: String = "gitlab-fetcher"
+val aPlusFetcherDirectory: String = "aplus-fetcher"
+
 val gitlabAdapterDirectory: String = "gitlab-adapter"
 
 lazy val core = project
@@ -14,6 +17,10 @@ lazy val dataBroker = project
 
 lazy val gitlabFetcher = project
     .in(file(gitlabFetcherDirectory))
+    .dependsOn(core)
+
+lazy val aPlusFetcher = project
+    .in(file(aPlusFetcherDirectory))
     .dependsOn(core)
 
 lazy val gitlabAdapter = project

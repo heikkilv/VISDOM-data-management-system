@@ -9,6 +9,7 @@ object MetadataConstants {
     val AttributeDatabase: String = "database"
     val AttributeFetcherType: String = "fetcher_type"
     val AttributeId: String = "id"
+    val AttributeSourceServer: String = "source_server"
     val AttributeStartTime: String = "start_time"
     val AttributeSwaggerDefinition: String = "swagger_definition"
     val AttributeTimestamp: String = "timestamp"

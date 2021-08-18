@@ -21,4 +21,11 @@ object GeneralUtils {
         val digest = MessageDigester.digest(inputString.getBytes(Encoding))
         String.format(s"%0${digest.length * 2}x", new BigInteger(1, digest))
     }
+
+    def getHash(inputString: String, useHash: Boolean): String = {
+        useHash match {
+            case true => getHash(inputString)
+            case false => inputString
+        }
+    }
 }

@@ -69,6 +69,15 @@ object FetchersResponse {
                                 ).toJsObject()
                             }
                         }
+                        case ComponentConstants.APlusFetcherType => {
+                            documentKeys.intersect(APlusFetcherInformation.requiredKeys).size match {
+                                case n: Int if n < APlusFetcherInformation.requiredKeys.size => JsObject()
+                                case _ => APlusFetcherInformation(
+                                    sourceServer = document.getString(SnakeCaseConstants.SourceServer),
+                                    database = document.getString(SnakeCaseConstants.Database)
+                                ).toJsObject()
+                            }
+                        }
                         case _ => JsObject()
                     }
                 )
