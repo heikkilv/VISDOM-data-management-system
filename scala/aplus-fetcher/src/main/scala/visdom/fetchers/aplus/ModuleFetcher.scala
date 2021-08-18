@@ -85,6 +85,13 @@ class ModuleFetcher(options: APlusModuleOptions)
             case false => document
         }
 
+        if (options.includeExercises) {
+            parsedDocument.getIntOption(APlusConstants.AttributeId) match {
+                case Some(moduleId: Int) => fetchExerciseData(moduleId)
+                case None =>
+            }
+        }
+
         addIdentifierAttributes(parsedDocument)
             .append(AttributeConstants.AttributeMetadata, getMetadata())
     }
@@ -116,5 +123,18 @@ class ModuleFetcher(options: APlusModuleOptions)
 
     def getParsableAttributes(): Seq[String] = {
         Seq(APlusConstants.AttributeDisplayName)
+    }
+
+    private def fetchExerciseData(moduleId: Int): Unit = {
+        val _ = new ExerciseFetcher(
+            APlusExerciseOptions(
+                hostServer = options.hostServer,
+                mongoDatabase = options.mongoDatabase,
+                courseId = options.courseId,
+                moduleId = moduleId,
+                exerciseId = None,
+                parseNames = options.parseNames
+            )
+        ).process()
     }
 }

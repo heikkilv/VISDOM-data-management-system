@@ -17,6 +17,7 @@ abstract class ModuleSpecificFetchOptions {
     val courseId: Int
     val moduleId: Option[Int]
     val parseNames: Boolean
+    val includeExercises: Boolean
 }
 abstract class ExerciseSpecificFetchOptions {
     val courseId: Int
@@ -33,7 +34,8 @@ extends CourseSpecificFetchOptions
 final case class ModuleSpecificFetchParameters(
     courseId: Int,
     moduleId: Option[Int],
-    parseNames: Boolean
+    parseNames: Boolean,
+    includeExercises: Boolean
 )
 extends ModuleSpecificFetchOptions
 
@@ -57,7 +59,8 @@ final case class APlusModuleOptions(
     mongoDatabase: Option[MongoDatabase],
     courseId: Int,
     moduleId: Option[Int],
-    parseNames: Boolean
+    parseNames: Boolean,
+    includeExercises: Boolean
 )
 extends APlusFetchOptions
 
