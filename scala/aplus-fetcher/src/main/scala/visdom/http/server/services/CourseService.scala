@@ -53,7 +53,10 @@ with APlusFetcherResponseHandler
                 name = APlusServerConstants.CourseId,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = APlusServerConstants.ParameterDescriptionCourseId
+                description = APlusServerConstants.ParameterDescriptionCourseId,
+                schema = new Schema(
+                    implementation = classOf[Int]
+                )
             )
         ),
         responses = Array(

@@ -59,7 +59,8 @@
                         "in": "query",
                         "description": "The id number for the course instance. Must be a positive integer.",
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
                         }
                     }
                 ],
@@ -139,7 +140,8 @@
                         "description": "The id number for the course instance. Must be a positive integer.",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
                         }
                     },
                     {
@@ -148,7 +150,18 @@
                         "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "gdprExerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise that contains the GDPR question. Must be -1 if no GDPR question should be checked, otherwise it must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
                         }
                     },
                     {
@@ -156,7 +169,8 @@
                         "in": "query",
                         "description": "The id number for the exercise in the chosen course module. Must be a positive integer.",
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
                         }
                     },
                     {
@@ -170,6 +184,24 @@
                                 "true"
                             ],
                             "default": "true"
+                        }
+                    },
+                    {
+                        "name": "gdprFieldName",
+                        "in": "query",
+                        "description": "The field name for the GDPR question that contains the users answer.",
+                        "schema": {
+                            "type": "string",
+                            "default": "field_0"
+                        }
+                    },
+                    {
+                        "name": "gdprAcceptedAnswer",
+                        "in": "query",
+                        "description": "The only accepted answer for the GDPR question in order to be allowed to handle the users data.",
+                        "schema": {
+                            "type": "string",
+                            "default": "a"
                         }
                     }
                 ],
@@ -191,7 +223,10 @@
                                                 "courseId": 123,
                                                 "moduleId": 765,
                                                 "exerciseId": 5555,
-                                                "parseNames": "true"
+                                                "parseNames": "true",
+                                                "gdprExerciseId": "12345",
+                                                "gdprFieldName": "field_0",
+                                                "gdprAcceptedAnswer": "a"
                                             }
                                         }
                                     }
@@ -252,7 +287,18 @@
                         "description": "The id number for the course instance. Must be a positive integer.",
                         "required": true,
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "gdprExerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise that contains the GDPR question. Must be -1 if no GDPR question should be checked, otherwise it must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
                         }
                     },
                     {
@@ -260,7 +306,8 @@
                         "in": "query",
                         "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
                         "schema": {
-                            "type": "string"
+                            "type": "integer",
+                            "format": "int32"
                         }
                     },
                     {
@@ -288,6 +335,24 @@
                             ],
                             "default": "true"
                         }
+                    },
+                    {
+                        "name": "gdprFieldName",
+                        "in": "query",
+                        "description": "The field name for the GDPR question that contains the users answer.",
+                        "schema": {
+                            "type": "string",
+                            "default": "field_0"
+                        }
+                    },
+                    {
+                        "name": "gdprAcceptedAnswer",
+                        "in": "query",
+                        "description": "The only accepted answer for the GDPR question in order to be allowed to handle the users data.",
+                        "schema": {
+                            "type": "string",
+                            "default": "a"
+                        }
                     }
                 ],
                 "responses": {
@@ -308,7 +373,10 @@
                                                 "courseId": 123,
                                                 "moduleId": 765,
                                                 "parseNames": "true",
-                                                "includeExercises": "true"
+                                                "includeExercises": "true",
+                                                "gdprExerciseId": "12345",
+                                                "gdprFieldName": "field_0",
+                                                "gdprAcceptedAnswer": "a"
                                             }
                                         }
                                     }
