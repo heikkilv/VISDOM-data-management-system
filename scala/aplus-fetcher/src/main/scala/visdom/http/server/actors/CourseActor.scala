@@ -15,12 +15,13 @@ import visdom.fetchers.aplus.APlusCourseOptions
 import visdom.fetchers.aplus.CoursesFetcher
 import visdom.fetchers.aplus.CourseSpecificFetchParameters
 import visdom.fetchers.aplus.FetcherValues
+import visdom.utils.WartRemoverConstants
 
 
 class CourseActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: CourseDataQueryOptions => {
             log.info(s"Received courses query with options: ${queryOptions.toString()}")

@@ -126,9 +126,13 @@ object HttpUtils {
     }
 
     def responseToDocumentArrayCaseArray(response: HttpResponse[String]): Array[BsonDocument] = {
+        responseToDocumentArrayCaseArray(response.body)
+    }
+
+    def responseToDocumentArrayCaseArray(responseString: String): Array[BsonDocument] = {
         bsonArrayToDocumentArray(
             try {
-                BsonArray.parse(response.body)
+                BsonArray.parse(responseString)
             }
             catch {
                 case _: JsonParseException => new BsonArray()

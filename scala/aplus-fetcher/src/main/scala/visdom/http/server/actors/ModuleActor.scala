@@ -16,12 +16,13 @@ import visdom.fetchers.aplus.FetcherValues
 import visdom.fetchers.aplus.ModuleFetcher
 import visdom.fetchers.aplus.ModuleSpecificFetchParameters
 import visdom.http.server.ServerConstants
+import visdom.utils.WartRemoverConstants
 
 
 class ModuleActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: ModuleDataQueryOptions => {
             log.info(s"Received modules query with options: ${queryOptions.toString()}")
