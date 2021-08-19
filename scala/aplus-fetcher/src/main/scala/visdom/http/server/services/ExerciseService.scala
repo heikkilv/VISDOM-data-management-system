@@ -53,19 +53,37 @@ with APlusFetcherResponseHandler
                 name = APlusServerConstants.CourseId,
                 in = ParameterIn.QUERY,
                 required = true,
-                description = APlusServerConstants.ParameterDescriptionCourseId
+                description = APlusServerConstants.ParameterDescriptionCourseId,
+                schema = new Schema(
+                    implementation = classOf[Int]
+                )
             ),
             new Parameter(
                 name = APlusServerConstants.ModuleId,
                 in = ParameterIn.QUERY,
                 required = true,
-                description = APlusServerConstants.ParameterDescriptionModuleId
+                description = APlusServerConstants.ParameterDescriptionModuleId,
+                schema = new Schema(
+                    implementation = classOf[Int]
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.GDPRExerciseId,
+                in = ParameterIn.QUERY,
+                required = true,
+                description = APlusServerConstants.ParameterDescriptionGDPRExerciseId,
+                schema = new Schema(
+                    implementation = classOf[Int]
+                )
             ),
             new Parameter(
                 name = APlusServerConstants.ExerciseId,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = APlusServerConstants.ParameterDescriptionExerciseId
+                description = APlusServerConstants.ParameterDescriptionExerciseId,
+                schema = new Schema(
+                    implementation = classOf[Int]
+                )
             ),
             new Parameter(
                 name = APlusServerConstants.ParseNames,
@@ -76,6 +94,26 @@ with APlusFetcherResponseHandler
                     implementation = classOf[String],
                     defaultValue = APlusServerConstants.DefaultParseNames,
                     allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.GDPRFieldName,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionGDPRFieldName,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultGDPRFieldName
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.GDPRAcceptedAnswer,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionGDPRAcceptedAnswer,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultGDPRAcceptedAnswer
                 )
             )
         ),
@@ -133,13 +171,32 @@ with APlusFetcherResponseHandler
             APlusServerConstants.CourseId,
             APlusServerConstants.ModuleId,
             APlusServerConstants.ExerciseId.optional,
-            APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames)
+            APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames),
+            APlusServerConstants.GDPRExerciseId,
+            APlusServerConstants.GDPRFieldName.withDefault(APlusServerConstants.DefaultGDPRFieldName),
+            APlusServerConstants.GDPRAcceptedAnswer.withDefault(APlusServerConstants.DefaultGDPRAcceptedAnswer)
         )
     ) {
-        (courseId, moduleId, parseNames, includeExercises) => get {
+        (
+            courseId,
+            moduleId,
+            exerciseId,
+            parseNames,
+            gdprExerciseId,
+            gdprFieldName,
+            gdprAcceptedAnswer
+        ) => get {
             getRoute(
                 exerciseDataActor,
-                ExerciseDataQueryOptions(courseId, moduleId, parseNames, includeExercises)
+                ExerciseDataQueryOptions(
+                    courseId = courseId,
+                    moduleId = moduleId,
+                    exerciseId = exerciseId,
+                    parseNames = parseNames,
+                    gdprExerciseId = gdprExerciseId,
+                    gdprFieldName = gdprFieldName,
+                    gdprAcceptedAnswer = gdprAcceptedAnswer
+                )
             )
         }
     }

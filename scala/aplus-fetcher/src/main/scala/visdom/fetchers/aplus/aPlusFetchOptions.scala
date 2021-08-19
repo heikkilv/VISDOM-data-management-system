@@ -51,7 +51,8 @@ final case class ExerciseSpecificFetchParameters(
     courseId: Int,
     moduleId: Int,
     exerciseId: Option[Int],
-    parseNames: Boolean
+    parseNames: Boolean,
+    gdprOptions: GdprOptions
 )
 extends ExerciseSpecificFetchOptions
 
@@ -79,6 +80,7 @@ final case class APlusExerciseOptions(
     courseId: Int,
     moduleId: Int,
     exerciseId: Option[Int],
-    parseNames: Boolean
+    parseNames: Boolean,
+    gdprOptions: GdprOptions
 )
 extends APlusFetchOptions

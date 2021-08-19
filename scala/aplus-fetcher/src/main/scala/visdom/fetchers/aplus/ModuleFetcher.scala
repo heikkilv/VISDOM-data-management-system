@@ -144,7 +144,8 @@ class ModuleFetcher(options: APlusModuleOptions)
                 courseId = options.courseId,
                 moduleId = moduleId,
                 exerciseId = None,
-                parseNames = options.parseNames
+                parseNames = options.parseNames,
+                gdprOptions = options.gdprOptions
             )
         ).process()
     }

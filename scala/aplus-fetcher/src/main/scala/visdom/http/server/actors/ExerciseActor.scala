@@ -15,6 +15,7 @@ import visdom.fetchers.aplus.APlusExerciseOptions
 import visdom.fetchers.aplus.FetcherValues
 import visdom.fetchers.aplus.ExerciseFetcher
 import visdom.fetchers.aplus.ExerciseSpecificFetchParameters
+import visdom.fetchers.aplus.GdprOptions
 import visdom.http.server.ServerConstants
 import visdom.utils.WartRemoverConstants
 
@@ -57,6 +58,16 @@ object ExerciseActor {
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
             Left(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
         }
+        else if (!CommonHelpers.areGdprOptions(
+            queryOptions.gdprExerciseId,
+            queryOptions.gdprFieldName,
+            queryOptions.gdprAcceptedAnswer
+        )) {
+            Left(
+                s"'${queryOptions.gdprExerciseId}', '${queryOptions.gdprFieldName}' " +
+                s"and '${queryOptions.gdprAcceptedAnswer}' are not a valid values for the GDPR parameters"
+            )
+        }
         else {
             Right(ExerciseSpecificFetchParameters(
                 courseId = queryOptions.courseId.toInt,
@@ -65,7 +76,12 @@ object ExerciseActor {
                     case Some(exerciseIdString: String) => Some(exerciseIdString.toInt)
                     case None => None
                 },
-                parseNames = queryOptions.parseNames.toBoolean
+                parseNames = queryOptions.parseNames.toBoolean,
+                gdprOptions = GdprOptions(
+                    exerciseId = queryOptions.gdprExerciseId.toInt,
+                    fieldName = queryOptions.gdprFieldName,
+                    acceptedAnswer = queryOptions.gdprAcceptedAnswer
+                )
             ))
         }
     }
@@ -77,7 +93,8 @@ object ExerciseActor {
             courseId = fetchParameters.courseId,
             moduleId = fetchParameters.moduleId,
             exerciseId = fetchParameters.exerciseId,
-            parseNames = fetchParameters.parseNames
+            parseNames = fetchParameters.parseNames,
+            gdprOptions = fetchParameters.gdprOptions
         )
         val exerciseFetcher = new ExerciseFetcher(exerciseFetcherOptions)
         val exerciseCount = exerciseFetcher.process() match {

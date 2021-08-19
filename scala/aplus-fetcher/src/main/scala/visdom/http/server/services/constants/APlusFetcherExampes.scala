@@ -50,7 +50,10 @@ object APlusFetcherExamples {
             "courseId": 123,
             "moduleId": 765,
             "exerciseId": 5555,
-            "parseNames": "true"
+            "parseNames": "true",
+            "gdprExerciseId": "12345",
+            "gdprFieldName": "field_0",
+            "gdprAcceptedAnswer": "a"
         }
     }"""
 }
