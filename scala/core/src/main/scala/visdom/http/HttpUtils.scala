@@ -90,12 +90,15 @@ object HttpUtils {
             ) match {
                 case Some(response: HttpResponse[String]) => {
                     response.code match {
-                        case code: Int if code == expectedStatusCode => try {
-                            Some(response.body)
+                        case code: Int if code == expectedStatusCode => {
+                            try {
+                                Some(response.body)
+                            }
+                            catch {
+                                case _: BSONException => None
+                            }
                         }
-                        catch {
-                            case _: BSONException => None
-                        }
+                        case _ => None
                     }
                 }
                 case None => None

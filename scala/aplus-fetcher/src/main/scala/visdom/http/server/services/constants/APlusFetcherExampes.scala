@@ -36,7 +36,10 @@ object APlusFetcherExamples {
             "courseId": 123,
             "moduleId": 765,
             "parseNames": "true",
-            "includeExercises": "true"
+            "includeExercises": "true",
+            "gdprExerciseId": "12345",
+            "gdprFieldName": "field_0",
+            "gdprAcceptedAnswer": "a"
         }
     }"""
 

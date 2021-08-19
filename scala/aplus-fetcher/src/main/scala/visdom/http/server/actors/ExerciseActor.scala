@@ -36,7 +36,7 @@ class ExerciseActor extends Actor with ActorLogging {
                         queryOptions.toJsObject()
                     )
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }

@@ -9,6 +9,12 @@ extends FetchOptions {
     val hostServer: APlusServer
 }
 
+final case class GdprOptions(
+    exerciseId: Int,
+    fieldName: String,
+    acceptedAnswer: String
+)
+
 abstract class CourseSpecificFetchOptions {
     val courseId: Option[Int]
 }
@@ -19,6 +25,7 @@ abstract class ModuleSpecificFetchOptions {
     val parseNames: Boolean
     val includeExercises: Boolean
 }
+
 abstract class ExerciseSpecificFetchOptions {
     val courseId: Int
     val moduleId: Int
@@ -35,7 +42,8 @@ final case class ModuleSpecificFetchParameters(
     courseId: Int,
     moduleId: Option[Int],
     parseNames: Boolean,
-    includeExercises: Boolean
+    includeExercises: Boolean,
+    gdprOptions: GdprOptions
 )
 extends ModuleSpecificFetchOptions
 
@@ -60,7 +68,8 @@ final case class APlusModuleOptions(
     courseId: Int,
     moduleId: Option[Int],
     parseNames: Boolean,
-    includeExercises: Boolean
+    includeExercises: Boolean,
+    gdprOptions: GdprOptions
 )
 extends APlusFetchOptions
 

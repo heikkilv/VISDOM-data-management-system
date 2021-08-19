@@ -70,3 +70,7 @@ class CheckQuestionUtils(courseId: Int, exerciseId: Int, fieldName: String, acce
             .toSet
     }
 }
+
+object CheckQuestionUtils {
+    final val ExerciseIdForNoGdpr: Int = -1
+}
