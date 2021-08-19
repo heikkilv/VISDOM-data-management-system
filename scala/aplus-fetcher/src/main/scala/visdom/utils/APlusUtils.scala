@@ -2,7 +2,7 @@ package visdom.utils
 
 import org.mongodb.scala.bson.BsonDocument
 import visdom.json.JsonUtils.EnrichedBsonDocument
-import visdom.json.JsonUtils
+import visdom.json.JsonUtils.toBsonValue
 
 
 object APlusUtils {
@@ -41,7 +41,7 @@ object APlusUtils {
                             attribute,
                             BsonDocument(
                                 parseNameString(attributeValue)
-                                    .mapValues(stringValue => JsonUtils.toBsonValue(stringValue))
+                                    .mapValues(stringValue => toBsonValue(stringValue))
                             )
                         )
                     case None => document

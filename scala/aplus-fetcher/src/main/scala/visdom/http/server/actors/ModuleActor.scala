@@ -13,15 +13,17 @@ import visdom.http.server.response.StatusResponse
 import visdom.http.server.services.constants.APlusFetcherDescriptions
 import visdom.fetchers.aplus.APlusModuleOptions
 import visdom.fetchers.aplus.FetcherValues
+import visdom.fetchers.aplus.GdprOptions
 import visdom.fetchers.aplus.ModuleFetcher
 import visdom.fetchers.aplus.ModuleSpecificFetchParameters
 import visdom.http.server.ServerConstants
+import visdom.utils.WartRemoverConstants
 
 
 class ModuleActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: ModuleDataQueryOptions => {
             log.info(s"Received modules query with options: ${queryOptions.toString()}")
@@ -35,7 +37,7 @@ class ModuleActor extends Actor with ActorLogging {
                         queryOptions.toJsObject()
                     )
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }
@@ -56,6 +58,16 @@ object ModuleActor {
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
             Left(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
         }
+        else if (!CommonHelpers.areGdprOptions(
+            queryOptions.gdprExerciseId,
+            queryOptions.gdprFieldName,
+            queryOptions.gdprAcceptedAnswer
+        )) {
+            Left(
+                s"'${queryOptions.gdprExerciseId}', '${queryOptions.gdprFieldName}' " +
+                s"and '${queryOptions.gdprAcceptedAnswer}' are not a valid values for the GDPR parameters"
+            )
+        }
         else {
             Right(ModuleSpecificFetchParameters(
                 courseId = queryOptions.courseId.toInt,
@@ -64,7 +76,12 @@ object ModuleActor {
                     case None => None
                 },
                 parseNames = queryOptions.parseNames.toBoolean,
-                includeExercises = queryOptions.includeExercises.toBoolean
+                includeExercises = queryOptions.includeExercises.toBoolean,
+                gdprOptions = GdprOptions(
+                    exerciseId = queryOptions.gdprExerciseId.toInt,
+                    fieldName = queryOptions.gdprFieldName,
+                    acceptedAnswer = queryOptions.gdprAcceptedAnswer
+                )
             ))
         }
     }
@@ -76,7 +93,8 @@ object ModuleActor {
             courseId = fetchParameters.courseId,
             moduleId = fetchParameters.moduleId,
             parseNames = fetchParameters.parseNames,
-            includeExercises = fetchParameters.includeExercises
+            includeExercises = fetchParameters.includeExercises,
+            gdprOptions = fetchParameters.gdprOptions
         )
         val moduleFetcher = new ModuleFetcher(moduleFetcherOptions)
         val moduleCount = moduleFetcher.process() match {

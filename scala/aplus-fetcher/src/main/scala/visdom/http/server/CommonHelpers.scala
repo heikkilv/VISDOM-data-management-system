@@ -29,4 +29,8 @@ object CommonHelpers {
     def isExerciseId(exerciseIdOption: Option[String]): Boolean = {
         isIdNumber(exerciseIdOption)
     }
+
+    def areGdprOptions(exerciseId: String, fieldName: String, acceptedAnswer: String): Boolean = {
+        (isExerciseId(Some(exerciseId)) || exerciseId == -1.toString()) && fieldName.size > 0
+    }
 }

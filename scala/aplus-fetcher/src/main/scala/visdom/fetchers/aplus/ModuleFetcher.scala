@@ -15,13 +15,24 @@ import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpUtils
-import visdom.utils.AttributeConstants
-import visdom.utils.CommonConstants
 import visdom.utils.APlusUtils
+import visdom.utils.AttributeConstants
+import visdom.utils.CheckQuestionUtils
+import visdom.utils.CommonConstants
 
 
 class ModuleFetcher(options: APlusModuleOptions)
     extends APlusDataHandler(options) {
+
+    private val checkedUsers: Set[Int] = options.gdprOptions.exerciseId match {
+        case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
+        case _ => new CheckQuestionUtils(
+            courseId = options.courseId,
+            exerciseId = options.gdprOptions.exerciseId,
+            fieldName = options.gdprOptions.fieldName,
+            acceptedAnswer = options.gdprOptions.acceptedAnswer
+        ).checkedUsers
+    }
 
     def getFetcherType(): String = APlusConstants.FetcherTypeModules
     def getCollectionName(): String = MongoConstants.CollectionModules
@@ -133,7 +144,8 @@ class ModuleFetcher(options: APlusModuleOptions)
                 courseId = options.courseId,
                 moduleId = moduleId,
                 exerciseId = None,
-                parseNames = options.parseNames
+                parseNames = options.parseNames,
+                gdprOptions = options.gdprOptions
             )
         ).process()
     }

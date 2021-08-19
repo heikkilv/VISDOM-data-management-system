@@ -16,6 +16,7 @@ object APlusConstants {
 
     val PathCourses: String = "courses"
     val PathExercises: String = "exercises"
+    val PathSubmissionData: String = "submissiondata"
 
     val ParamFormat: String = "format"
 

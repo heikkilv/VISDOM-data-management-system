@@ -19,11 +19,22 @@ import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
+import visdom.utils.CheckQuestionUtils
 import visdom.utils.CommonConstants
 
 
 class ExerciseFetcher(options: APlusExerciseOptions)
     extends APlusDataHandler(options) {
+
+    private val checkedUsers: Set[Int] = options.gdprOptions.exerciseId match {
+        case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
+        case _ => new CheckQuestionUtils(
+            courseId = options.courseId,
+            exerciseId = options.gdprOptions.exerciseId,
+            fieldName = options.gdprOptions.fieldName,
+            acceptedAnswer = options.gdprOptions.acceptedAnswer
+        ).checkedUsers
+    }
 
     def getFetcherType(): String = APlusConstants.FetcherTypeExercises
     def getCollectionName(): String = MongoConstants.CollectionExercises
