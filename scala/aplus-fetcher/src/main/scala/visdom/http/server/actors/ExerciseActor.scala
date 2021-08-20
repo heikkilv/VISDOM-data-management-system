@@ -60,8 +60,7 @@ object ExerciseActor {
         }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
-            queryOptions.gdprFieldName,
-            queryOptions.gdprAcceptedAnswer
+            queryOptions.gdprFieldName
         )) {
             Left(
                 s"'${queryOptions.gdprExerciseId}', '${queryOptions.gdprFieldName}' " +

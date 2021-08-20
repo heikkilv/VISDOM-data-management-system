@@ -45,7 +45,16 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeModuleId -> options.moduleId,
             APlusConstants.AttributeParseNames -> options.parseNames
-        ).appendOption(
+        )
+        .append(
+            APlusConstants.AttributeGdprOptions,
+            BsonDocument(
+                APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
+                APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
+                APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
+            )
+        )
+        .appendOption(
             APlusConstants.AttributeExerciseId,
             options.exerciseId.map(idValue => toBsonValue(idValue))
         )
@@ -162,6 +171,14 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                 new BsonElement(
                     APlusConstants.AttributeParseNames,
                     new BsonBoolean(options.parseNames)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeGdprOptions,
+                    BsonDocument(
+                        APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
+                        APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
+                        APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
+                    )
                 )
             ).asJava
         )

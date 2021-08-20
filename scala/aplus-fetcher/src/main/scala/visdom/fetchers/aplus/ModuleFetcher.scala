@@ -42,7 +42,16 @@ class ModuleFetcher(options: APlusModuleOptions)
         BsonDocument(
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeParseNames -> options.parseNames
-        ).appendOption(
+        )
+        .append(
+            APlusConstants.AttributeGdprOptions,
+            BsonDocument(
+                APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
+                APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
+                APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
+            )
+        )
+        .appendOption(
             APlusConstants.AttributeModuleId,
             options.moduleId.map(idValue => toBsonValue(idValue))
         )
@@ -127,6 +136,14 @@ class ModuleFetcher(options: APlusModuleOptions)
                 new BsonElement(
                     APlusConstants.AttributeParseNames,
                     new BsonBoolean(options.parseNames)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeGdprOptions,
+                    BsonDocument(
+                        APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
+                        APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
+                        APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
+                    )
                 )
             ).asJava
         )
