@@ -1,6 +1,8 @@
 package visdom.json
 
 import java.time.ZonedDateTime
+import org.bson.BsonType
+import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
@@ -10,6 +12,7 @@ import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
+import scala.collection.JavaConverters.asScalaBufferConverter
 import spray.json.JsBoolean
 import spray.json.JsNull
 import spray.json.JsNumber
@@ -20,33 +23,50 @@ import visdom.utils.GeneralUtils
 
 object JsonUtils {
     implicit class EnrichedBsonDocument(document: BsonDocument) {
-        def getStringOption(key: Any): Option[String] = {
+        def getOption(key: Any): Option[BsonValue] = {
             document.containsKey(key) match {
-                case true => document.get(key).isString() match {
-                    case true => Some(document.getString(key).getValue())
+                case true => Some(document.get(key))
+                case false => None
+            }
+        }
+
+        def getStringOption(key: Any): Option[String] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isString() match {
+                    case true => Some(value.asString().getValue())
                     case false => None
                 }
-                case false => None
+                case None => None
             }
         }
 
         def getIntOption(key: Any): Option[Int] = {
-            document.containsKey(key) match {
-                case true => document.get(key).isInt32() match {
-                    case true => Some(document.getInt32(key).getValue())
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isInt32() match {
+                    case true => Some(value.asInt32().getValue())
                     case false => None
                 }
-                case false => None
+                case None => None
             }
         }
 
         def getDocumentOption(key: Any): Option[BsonDocument] = {
-            document.containsKey(key) match {
-                case true => document.get(key).isDocument() match {
-                    case true => Some(document.getDocument(key))
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isDocument() match {
+                    case true => Some(value.asDocument())
                     case false => None
                 }
-                case false => None
+                case None => None
+            }
+        }
+
+        def getArrayOption(key: Any): Option[BsonArray] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isArray() match {
+                    case true => Some(value.asArray())
+                    case false => None
+                }
+                case None => None
             }
         }
 
@@ -68,14 +88,28 @@ object JsonUtils {
         }
 
         def anonymizeAttribute(keySequence: Seq[String]): BsonDocument = {
+            def anonymizeAttributeInternal(value: BsonValue, tailKeys: Seq[String]): BsonValue = {
+                value.getBsonType() match {
+                    case BsonType.DOCUMENT => value.asDocument().anonymizeAttribute(tailKeys)
+                    case BsonType.ARRAY => BsonArray(
+                        value
+                            .asArray()
+                            .getValues()
+                            .asScala
+                            .map(arrayValue => anonymizeAttributeInternal(arrayValue, tailKeys))
+                        )
+                    case _ => value
+                }
+            }
+
             keySequence.headOption match {
                 case Some(key: String) => {
                     val tailKeys: Seq[String] = keySequence.drop(1)
                     tailKeys.isEmpty match {
                         case false => {
-                            document.getDocumentOption(key) match {
-                                case Some(subDocument: BsonDocument) =>
-                                    document.append(key, subDocument.anonymizeAttribute(tailKeys))
+                            document.getOption(key) match {
+                                case Some(value: BsonValue) =>
+                                    document.append(key, anonymizeAttributeInternal(value, tailKeys))
                                 case None => document
                             }
                         }

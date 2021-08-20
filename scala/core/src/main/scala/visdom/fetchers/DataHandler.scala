@@ -53,18 +53,21 @@ abstract class DataHandler(options: FetchOptions) {
                         processDocument(document).anonymize(getHashableAttributes())
                     )
 
-                    // store the fetched documents to MongoDB
-                    getCollection() match {
-                        case Some(collection: MongoCollection[Document]) => MongoConnection.storeDocument(
-                            collection,
-                            finalDocument,
-                            getIdentifierAttributes()
-                        )
-                        case None =>
+                    if (finalDocument.nonEmpty) {
+                        // store the fetched documents to MongoDB
+                        getCollection() match {
+                            case Some(collection: MongoCollection[Document]) => MongoConnection.storeDocument(
+                                collection,
+                                finalDocument,
+                                getIdentifierAttributes()
+                            )
+                            case None =>
+                        }
                     }
 
                     finalDocument
                 })
+            .filter(document => document.nonEmpty)
         }
         catch {
             case error: BSONException => {
