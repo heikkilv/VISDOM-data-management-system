@@ -31,6 +31,7 @@ abstract class ExerciseSpecificFetchOptions {
     val moduleId: Int
     val exerciseId: Option[Int]
     val parseNames: Boolean
+    val includeSubmissions: Boolean
 }
 
 abstract class SubmissionSpecificFetchOptions {
@@ -60,6 +61,7 @@ final case class ExerciseSpecificFetchParameters(
     moduleId: Int,
     exerciseId: Option[Int],
     parseNames: Boolean,
+    includeSubmissions: Boolean,
     gdprOptions: GdprOptions
 )
 extends ExerciseSpecificFetchOptions
@@ -98,6 +100,7 @@ final case class APlusExerciseOptions(
     moduleId: Int,
     exerciseId: Option[Int],
     parseNames: Boolean,
+    includeSubmissions: Boolean,
     gdprOptions: GdprOptions
 )
 extends APlusFetchOptions

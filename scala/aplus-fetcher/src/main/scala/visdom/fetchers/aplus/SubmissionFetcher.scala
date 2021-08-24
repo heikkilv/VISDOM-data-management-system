@@ -38,7 +38,7 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
     }
 
     def getFetcherType(): String = APlusConstants.FetcherTypeSubmissions
-    def getCollectionName(): String = MongoConstants.CollectionSubmission
+    def getCollectionName(): String = MongoConstants.CollectionSubmissions
     def usePagination(): Boolean = options.submissionId.isEmpty
 
     override def getOptionsDocument(): BsonDocument = {
@@ -99,7 +99,9 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeUsername),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeStudentId),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeEmail),
-                    Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeFullName)
+                    Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeFullName),
+                    Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeProjectName),
+                    Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeRaw)
                 )
             )
             case false => None
@@ -123,12 +125,15 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
     override def processDocument(document: BsonDocument): BsonDocument = {
         // try to always get the detailed submission information for each submission
-        val detailedDocument: BsonDocument = getDetailedDocument(document)
+        val detailedDocument: BsonDocument = APlusUtils.parseDoubleArrayAttribute(
+            getDetailedDocument(document),
+            APlusConstants.AttributeSubmissionData
+        )
 
         isDataFetchingAllowed(detailedDocument) match {
             case true => {
                 val parsedDocument: BsonDocument = options.parseGitAnswers match {
-                    case true => APlusUtils.parseGitAnswers(detailedDocument, getGitAnswerAttributes())
+                    case true => APlusUtils.parseGitAnswer(detailedDocument)
                     case false => detailedDocument
                 }
 
@@ -203,12 +208,6 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
         BsonDocument(
             APlusConstants.AttributeCourses -> options.courseId,
             APlusConstants.AttributeExerciseId -> options.exerciseId
-        )
-    }
-
-    def getGitAnswerAttributes(): Seq[String] = {
-        Seq(
-            APlusConstants.AttributeSubmissionData
         )
     }
 

@@ -76,6 +76,7 @@ object ExerciseActor {
                     case None => None
                 },
                 parseNames = queryOptions.parseNames.toBoolean,
+                includeSubmissions = true,
                 gdprOptions = GdprOptions(
                     exerciseId = queryOptions.gdprExerciseId.toInt,
                     fieldName = queryOptions.gdprFieldName,
@@ -93,6 +94,7 @@ object ExerciseActor {
             moduleId = fetchParameters.moduleId,
             exerciseId = fetchParameters.exerciseId,
             parseNames = fetchParameters.parseNames,
+            includeSubmissions = fetchParameters.includeSubmissions,
             gdprOptions = fetchParameters.gdprOptions
         )
         val exerciseFetcher = new ExerciseFetcher(exerciseFetcherOptions)

@@ -162,6 +162,7 @@ class ModuleFetcher(options: APlusModuleOptions)
                 moduleId = moduleId,
                 exerciseId = None,
                 parseNames = options.parseNames,
+                includeSubmissions = true,
                 gdprOptions = options.gdprOptions
             )
         ).process()

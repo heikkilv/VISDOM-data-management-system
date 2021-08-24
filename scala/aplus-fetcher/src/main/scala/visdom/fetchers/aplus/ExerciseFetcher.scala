@@ -11,6 +11,7 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
+import org.mongodb.scala.bson.collection.immutable.Document
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
@@ -44,7 +45,8 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         BsonDocument(
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeModuleId -> options.moduleId,
-            APlusConstants.AttributeParseNames -> options.parseNames
+            APlusConstants.AttributeParseNames -> options.parseNames,
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
         )
         .append(
             APlusConstants.AttributeGdprOptions,
@@ -125,9 +127,14 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                 case None => parsedDocument
             }
 
+        val submissionIds: Seq[Int] = options.includeSubmissions match {
+            case true => fetchSubmissions(cleanedDocument)
+            case false => Seq.empty
+        }
+
         addIdentifierAttributes(cleanedDocument)
             .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData())
+            .append(AttributeConstants.AttributeLinks, getLinkData(submissionIds))
     }
 
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
@@ -173,6 +180,10 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                     new BsonBoolean(options.parseNames)
                 ),
                 new BsonElement(
+                    APlusConstants.AttributeIncludeSubmissions,
+                    new BsonBoolean(options.includeSubmissions)
+                ),
+                new BsonElement(
                     APlusConstants.AttributeGdprOptions,
                     BsonDocument(
                         APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
@@ -184,10 +195,11 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         )
     }
 
-    private def getLinkData(): BsonDocument = {
+    private def getLinkData(submissionIds: Seq[Int]): BsonDocument = {
         BsonDocument(
             APlusConstants.AttributeCourses -> options.courseId,
-            APlusConstants.AttributeModules -> options.moduleId
+            APlusConstants.AttributeModules -> options.moduleId,
+            APlusConstants.AttributeSubmissions -> submissionIds
         )
     }
 
@@ -197,5 +209,43 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             APlusConstants.AttributeHierarchicalName,
             APlusConstants.AttributeName
         )
+    }
+
+    private def fetchSubmissions(document: BsonDocument): Seq[Int] = {
+        val exerciseIdOption: Option[Int] = document.getIntOption(APlusConstants.AttributeId)
+        val submissionIds: Seq[Int] = exerciseIdOption match {
+            case Some(exerciseId: Int) => {
+                val submissionFetcher: SubmissionFetcher = new SubmissionFetcher(
+                    APlusSubmissionOptions(
+                        hostServer = options.hostServer,
+                        mongoDatabase = options.mongoDatabase,
+                        courseId = options.courseId,
+                        exerciseId = exerciseId,
+                        submissionId = None,
+                        parseGitAnswers = true,
+                        useAnonymization = true,
+                        gdprOptions = options.gdprOptions
+                    )
+                )
+
+                submissionFetcher.process() match {
+                    case Some(submissionDocuments: Array[Document]) =>
+                        submissionDocuments.map(
+                            submissionDocument =>
+                                submissionDocument
+                                    .toBsonDocument
+                                    .getIntOption(APlusConstants.AttributeId)
+                        ).flatten
+                    case None => Seq.empty
+                }
+            }
+            case None => Seq.empty
+        }
+
+        println(
+            s"Found ${submissionIds.size} submissions to exercise with id ${exerciseIdOption.getOrElse(-1)}"
+        )
+
+        submissionIds
     }
 }
