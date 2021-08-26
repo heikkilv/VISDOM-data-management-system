@@ -15,6 +15,7 @@ import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
+import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CommonConstants
 
@@ -94,9 +95,8 @@ class CoursesFetcher(options: APlusCourseOptions)
             }
         }
 
-        addIdentifierAttributes(detailedDocument).append(
-            AttributeConstants.AttributeMetadata, getMetadata()
-        )
+        addIdentifierAttributes(APlusUtils.parseCourseDocument(detailedDocument))
+            .append(AttributeConstants.AttributeMetadata, getMetadata())
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {

@@ -7,6 +7,7 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
 import scala.collection.JavaConverters.asScalaBufferConverter
 import visdom.fetchers.aplus.APlusConstants
+import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 
@@ -15,6 +16,10 @@ object APlusUtils {
     final val NameStringSeparator: Char = '|'
     final val NameStringLanguageSeparator: Char = ':'
 
+    final val CourseNameSeparator: Char = '/'
+    final val CodeNameSeparator: Char = ' '
+
+    final val EmptyString: String = ""
     final val GitEndString: String = CommonConstants.Dot + CommonConstants.Git
     final val GitStartString: String = CommonConstants.Git + CommonConstants.AtSign
     final val HostPrefix: String = "://"
@@ -55,6 +60,60 @@ object APlusUtils {
 
     def parseDocument(document: BsonDocument, attributes: Seq[Seq[String]]): BsonDocument = {
         document.transformAttributes(attributes, nameStringTransformer(_))
+    }
+
+    def parseCourseName(fullCourseName: String, languages: Seq[String]): Map[String, BsonValue] = {
+        (
+            languages
+                .zip(
+                    fullCourseName
+                        .split(CourseNameSeparator)
+                        .map(namePart => namePart.trim.split(CodeNameSeparator))
+                        .map(
+                            namePart => {
+                                val codeAndName: (String, Array[String]) = namePart.size match {
+                                    case 1 => (EmptyString, namePart)
+                                    case _ => (namePart.head, namePart.drop(1))
+                                }
+                                 BsonDocument(
+                                    CommonConstants.Code -> codeAndName._1,
+                                    CommonConstants.Name -> codeAndName._2.mkString(CodeNameSeparator.toString())
+                                )
+                            }
+                        )
+                )
+                .toMap
+        ) + (APlusConstants.AttributeRaw -> BsonString(fullCourseName))
+    }
+
+    def getCourseLanguages(courseDocument: BsonDocument): Option[Seq[String]] = {
+        courseDocument.getStringOption(APlusConstants.AttributeLanguage) match {
+            case Some(languageString: String) => Some(
+                languageString
+                    .split(NameStringSeparator)
+                    .map(language => language.trim)
+                    .filter(language => language.size > 0)
+            )
+            case None => None
+        }
+    }
+
+    def courseNameTransformer(value: BsonValue, languages: Seq[String]): BsonValue = {
+        value.isString() match {
+            case true => BsonDocument(parseCourseName(value.asString().getValue(), languages))
+            case false => value
+        }
+    }
+
+    def parseCourseDocument(courseDocument: BsonDocument): BsonDocument = {
+        getCourseLanguages(courseDocument) match {
+            case Some(languages: Seq[String]) =>
+                courseDocument.transformAttributes(
+                    Seq(Seq(APlusConstants.AttributeName)),
+                    courseNameTransformer(_, languages)
+                )
+            case None => courseDocument
+        }
     }
 
     def getParsedGitAnswerCaseHttp(answerParts: Array[String]): Option[(String, String)] = {

@@ -45,6 +45,7 @@ object APlusConstants {
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeIncludeSubmissions: String = "include_submissions"
+    val AttributeLanguage: String = "language"
     val AttributeLastModified: String = "last_modified"
     val AttributeModuleId: String = "module_id"
     val AttributeModules: String = "modules"
