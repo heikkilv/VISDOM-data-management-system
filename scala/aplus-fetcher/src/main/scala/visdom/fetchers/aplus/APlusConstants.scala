@@ -33,6 +33,7 @@ object APlusConstants {
     val AttributeCourses: String = "courses"
     val AttributeDisplayName: String = "display_name"
     val AttributeEmail: String = "email"
+    val AttributeExercise: String = "exercise"
     val AttributeExerciseId: String = "exercise_id"
     val AttributeExerciseInfo: String = "exercise_info"
     val AttributeExercises: String = "exercises"

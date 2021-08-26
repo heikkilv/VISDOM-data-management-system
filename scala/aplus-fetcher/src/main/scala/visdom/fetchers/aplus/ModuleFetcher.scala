@@ -149,8 +149,12 @@ class ModuleFetcher(options: APlusModuleOptions)
         )
     }
 
-    def getParsableAttributes(): Seq[String] = {
-        Seq(APlusConstants.AttributeDisplayName)
+    def getParsableAttributes(): Seq[Seq[String]] = {
+        Seq(
+            Seq(APlusConstants.AttributeDisplayName),
+            Seq(APlusConstants.AttributeExercises, APlusConstants.AttributeDisplayName),
+            Seq(APlusConstants.AttributeExercises, APlusConstants.AttributeHierarchicalName)
+        )
     }
 
     private def fetchExerciseData(moduleId: Int): Unit = {

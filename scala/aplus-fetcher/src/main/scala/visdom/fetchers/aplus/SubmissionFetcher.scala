@@ -46,7 +46,8 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeExerciseId -> options.exerciseId,
             APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
-            APlusConstants.AttributeParseGitAnswers -> options.parseGitAnswers
+            APlusConstants.AttributeParseGitAnswers -> options.parseGitAnswers,
+            APlusConstants.AttributeParseNames -> options.parseNames
         )
         .append(
             APlusConstants.AttributeGdprOptions,
@@ -132,12 +133,16 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
         isDataFetchingAllowed(detailedDocument) match {
             case true => {
-                val parsedDocument: BsonDocument = options.parseGitAnswers match {
+                val parsedDocumentGit: BsonDocument = options.parseGitAnswers match {
                     case true => APlusUtils.parseGitAnswer(detailedDocument)
                     case false => detailedDocument
                 }
+                val parsedDocumentNames: BsonDocument = options.parseNames match {
+                    case true => APlusUtils.parseDocument(parsedDocumentGit, getParsableAttributes())
+                    case false => parsedDocumentGit
+                }
 
-                addIdentifierAttributes(parsedDocument)
+                addIdentifierAttributes(parsedDocumentNames)
                     .append(AttributeConstants.AttributeMetadata, getMetadata())
                     .append(AttributeConstants.AttributeLinks, getLinkData())
             }
@@ -201,6 +206,13 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                     )
                 )
             ).asJava
+        )
+    }
+
+    def getParsableAttributes(): Seq[Seq[String]] = {
+        Seq(
+            Seq(APlusConstants.AttributeExercise, APlusConstants.AttributeDisplayName),
+            Seq(APlusConstants.AttributeExercise, APlusConstants.AttributeHierarchicalName)
         )
     }
 

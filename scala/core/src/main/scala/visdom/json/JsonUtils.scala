@@ -77,26 +77,29 @@ object JsonUtils {
             }
         }
 
-        def anonymizeAttribute(key: String): BsonDocument = {
-            document.getStringOption(key) match {
-                case Some(stringValue: String) => stringValue.isEmpty() match {
-                    case false => document.append(key, BsonString(GeneralUtils.getHash(stringValue)))
-                    case true => document
-                }
+        def transformAttribute(key: String, transformFunction: BsonValue => BsonValue): BsonDocument = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => document.append(key, transformFunction(value))
                 case None => document
             }
         }
 
-        def anonymizeAttribute(keySequence: Seq[String]): BsonDocument = {
-            def anonymizeAttributeInternal(value: BsonValue, tailKeys: Seq[String]): BsonValue = {
+        def transformAttribute(
+            keySequence: Seq[String],
+            transformFunction: BsonValue => BsonValue
+        ): BsonDocument = {
+            def transformAttributeInternal(value: BsonValue, tailKeys: Seq[String]): BsonValue = {
                 value.getBsonType() match {
-                    case BsonType.DOCUMENT => value.asDocument().anonymizeAttribute(tailKeys)
+                    case BsonType.DOCUMENT =>
+                        value
+                            .asDocument()
+                            .transformAttribute(tailKeys, transformFunction)
                     case BsonType.ARRAY => BsonArray(
                         value
                             .asArray()
                             .getValues()
                             .asScala
-                            .map(arrayValue => anonymizeAttributeInternal(arrayValue, tailKeys))
+                            .map(arrayValue => transformAttributeInternal(arrayValue, tailKeys))
                         )
                     case _ => value
                 }
@@ -109,26 +112,34 @@ object JsonUtils {
                         case false => {
                             document.getOption(key) match {
                                 case Some(value: BsonValue) =>
-                                    document.append(key, anonymizeAttributeInternal(value, tailKeys))
+                                    document.append(key, transformAttributeInternal(value, tailKeys))
                                 case None => document
                             }
                         }
-                        case true => document.anonymizeAttribute(key)
+                        case true => document.transformAttribute(key, transformFunction)
                     }
                 }
                 case None => document
             }
         }
 
+        def transformAttributes(
+            targetAttributes: Seq[Seq[String]],
+            transformFunction: BsonValue => BsonValue
+        ): BsonDocument = {
+            targetAttributes.headOption match {
+                case Some(attributeSequence: Seq[String]) =>
+                    document
+                        .transformAttribute(attributeSequence, transformFunction)
+                        .transformAttributes(targetAttributes.drop(1), transformFunction)
+                case None => document
+            }
+        }
+
         def anonymize(hashableAttributes: Option[Seq[Seq[String]]]): BsonDocument = {
             hashableAttributes match {
-                case Some(attributes: Seq[Seq[String]]) => attributes.headOption match {
-                    case Some(attributeSequence: Seq[String]) =>
-                        document
-                            .anonymizeAttribute(attributeSequence)
-                            .anonymize(Some(attributes.drop(1)))
-                    case None => document
-                }
+                case Some(attributes: Seq[Seq[String]]) =>
+                    transformAttributes(attributes, JsonUtils.anonymizeValue(_))
                 case None => document
             }
         }
@@ -169,6 +180,60 @@ object JsonUtils {
                 document
             }
             case false => document
+        }
+    }
+
+    def anonymizeValue(value: BsonValue): BsonValue = {
+        value.isString() match {
+            case true => {
+                val stringValue: String = value.asString().getValue()
+                stringValue.isEmpty() match {
+                    case false => BsonString(GeneralUtils.getHash(stringValue))
+                    case true => value
+                }
+            }
+            case false => value
+        }
+    }
+
+    def arrayToTuple2(bsonArray: BsonArray): Option[(String, BsonValue)] = {
+        bsonArray
+            .getValues()
+            .asScala match {
+                case Seq(key: BsonString, target: BsonValue) => Some(key.getValue(), target)
+                case _ => None
+            }
+    }
+
+    def valueToTuple2(bsonValue: BsonValue): Option[(String, BsonValue)] = {
+        bsonValue match {
+            case bsonArray: BsonArray => arrayToTuple2(bsonArray)
+            case _ => None
+        }
+    }
+
+    def doubleArrayToDocument(value: BsonValue): Option[BsonDocument] = {
+        value match {
+            case valueArray: BsonArray => {
+                    val resultArray: Seq[Option[(String, BsonValue)]] =
+                        valueArray
+                            .getValues()
+                            .asScala
+                            .map(subValue => valueToTuple2(subValue))
+
+                    resultArray.contains(None) match {
+                        case false => Some(BsonDocument(resultArray.flatten.toMap))
+                        case true => None
+                    }
+                }
+            case _ => None
+        }
+    }
+
+    def transformDoubleArray(value: BsonValue): BsonValue = {
+        doubleArrayToDocument(value) match {
+            case Some(document: BsonDocument) => document
+            case None => value
         }
     }
 }

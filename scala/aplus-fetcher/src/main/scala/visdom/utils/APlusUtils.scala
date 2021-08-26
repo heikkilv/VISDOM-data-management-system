@@ -2,13 +2,13 @@ package visdom.utils
 
 import org.bson.BsonType.STRING
 import org.bson.BsonValue
+import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
 import scala.collection.JavaConverters.asScalaBufferConverter
 import visdom.fetchers.aplus.APlusConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
-import org.mongodb.scala.bson.BsonArray
 
 
 object APlusUtils {
@@ -40,24 +40,21 @@ object APlusUtils {
         ).filter(stringElement => stringElement._1 == APlusConstants.AttributeRaw || stringElement._2.size > 0)
     }
 
-    def parseDocument(document: BsonDocument, attributes: Seq[String]): BsonDocument = {
-        attributes.headOption match {
-            case Some(attribute: String) => parseDocument(
-                document.getStringOption(attribute) match {
-                    case Some(attributeValue: String) =>
-                        document.append(
-                            attribute,
-                            BsonDocument(
-                                parseNameString(attributeValue)
-                                    .mapValues(stringValue => toBsonValue(stringValue))
-                            )
-                        )
-                    case None => document
-                },
-                attributes.drop(1)
-            )
-            case None => document
+    def nameStringTransformer(value: BsonValue): BsonValue = {
+        value.isString() match {
+            case true => {
+                BsonDocument(
+                    parseNameString(value.asString().getValue())
+                        .mapValues(stringValue => toBsonValue(stringValue)
+                    )
+                )
+            }
+            case false => value
         }
+    }
+
+    def parseDocument(document: BsonDocument, attributes: Seq[Seq[String]]): BsonDocument = {
+        document.transformAttributes(attributes, nameStringTransformer(_))
     }
 
     def getParsedGitAnswerCaseHttp(answerParts: Array[String]): Option[(String, String)] = {
@@ -137,63 +134,21 @@ object APlusUtils {
         }
     }
 
-    def arrayToTuple2(bsonArray: BsonArray): Option[(String, BsonValue)] = {
-        bsonArray
-            .getValues()
-            .asScala match {
-                case Seq(key: BsonString, target: BsonValue) => Some(key.getValue(), target)
-                case _ => None
-            }
-    }
-
-    def valueToTuple2(bsonValue: BsonValue): Option[(String, BsonValue)] = {
-        bsonValue match {
-            case bsonArray: BsonArray => arrayToTuple2(bsonArray)
-            case _ => None
-        }
-    }
-
-    def doubleArrayToDocument(value: BsonValue): Option[BsonDocument] = {
-        value match {
-            case valueArray: BsonArray => {
-                    val resultArray: Seq[Option[(String, BsonValue)]] =
-                        valueArray
-                            .getValues()
-                            .asScala
-                            .map(subValue => valueToTuple2(subValue))
-
-                    resultArray.contains(None) match {
-                        case false => Some(BsonDocument(resultArray.flatten.toMap))
-                        case true => None
-                    }
-                }
-            case _ => None
+    def getParsedGitAnswer(bsonAnswer: BsonValue): BsonValue = {
+        bsonAnswer.isString() match {
+            case true => getParsedGitAnswer(bsonAnswer.asString().getValue())
+            case false => bsonAnswer
         }
     }
 
     def parseDoubleArrayAttribute(document: BsonDocument, attribute: String): BsonDocument = {
-        document.getOption(attribute) match {
-            case Some(value: BsonValue) => doubleArrayToDocument(value) match {
-                case Some(parsedValue: BsonDocument) => document.append(attribute, parsedValue)
-                case None => document
-            }
-            case None => document
-        }
+        document.transformAttribute(attribute, JsonUtils.transformDoubleArray(_))
     }
 
     def parseGitAnswer(document: BsonDocument): BsonDocument = {
-        document.getDocumentOption(APlusConstants.AttributeSubmissionData) match {
-            case Some(submissionData: BsonDocument) => submissionData.getStringOption(CommonConstants.Git) match {
-                case Some(gitAnswer: String) => document.append(
-                    APlusConstants.AttributeSubmissionData,
-                    submissionData.append(
-                        CommonConstants.Git,
-                        getParsedGitAnswer(gitAnswer)
-                    )
-                )
-                case None => document
-            }
-            case None => document
-        }
+        document.transformAttribute(
+            Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git),
+            getParsedGitAnswer(_)
+        )
     }
 }

@@ -203,11 +203,11 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         )
     }
 
-    def getParsableAttributes(): Seq[String] = {
+    def getParsableAttributes(): Seq[Seq[String]] = {
         Seq(
-            APlusConstants.AttributeDisplayName,
-            APlusConstants.AttributeHierarchicalName,
-            APlusConstants.AttributeName
+            Seq(APlusConstants.AttributeDisplayName),
+            Seq(APlusConstants.AttributeHierarchicalName),
+            Seq(APlusConstants.AttributeName)
         )
     }
 
@@ -223,6 +223,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                         exerciseId = exerciseId,
                         submissionId = None,
                         parseGitAnswers = true,
+                        parseNames = options.parseNames,
                         useAnonymization = true,
                         gdprOptions = options.gdprOptions
                     )

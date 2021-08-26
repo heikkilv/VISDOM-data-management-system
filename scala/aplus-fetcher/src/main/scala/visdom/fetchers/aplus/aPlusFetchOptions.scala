@@ -39,6 +39,7 @@ abstract class SubmissionSpecificFetchOptions {
     val exerciseId: Int
     val submissionId: Option[Int]
     val parseGitAnswers: Boolean
+    val parseNames: Boolean
     val useAnonymization: Boolean
 }
 
@@ -71,6 +72,7 @@ final case class SubmissionSpecificFetchParameters(
     exerciseId: Int,
     submissionId: Option[Int],
     parseGitAnswers: Boolean,
+    parseNames: Boolean,
     useAnonymization: Boolean
 )
 extends SubmissionSpecificFetchOptions
@@ -112,6 +114,7 @@ final case class APlusSubmissionOptions(
     exerciseId: Int,
     submissionId: Option[Int],
     parseGitAnswers: Boolean,
+    parseNames: Boolean,
     useAnonymization: Boolean,
     gdprOptions: GdprOptions
 )
