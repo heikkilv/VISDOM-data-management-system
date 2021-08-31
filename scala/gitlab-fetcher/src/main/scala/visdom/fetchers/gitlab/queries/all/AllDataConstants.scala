@@ -22,6 +22,7 @@ object AllDataConstants {
     final val ParameterDefaultIncludeCommitLinks: Boolean = true
     final val ParameterDefaultIncludeJobs: Boolean = true
     final val ParameterDefaultIncludeJobLogs: Boolean = true
+    final val ParameterDefaultIncludeReports: Boolean = true
     final val ParameterDefaultRecursive: Boolean = true
 
     // the example responses for the all endpoint
@@ -32,7 +33,8 @@ object AllDataConstants {
             "projectName": "group/my-project-name",
             "reference": "master",
             "startDate": "2020-01-01T00:00:00.000Z",
-            "endDate": "2021-01-01T00:00:00.000Z"
+            "endDate": "2021-01-01T00:00:00.000Z",
+            "useAnonymization": "false"
         }
     }"""
 }

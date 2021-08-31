@@ -36,6 +36,7 @@ object Constants {
     final val ParameterIncludeCommitLinks = "includeCommitLinks"
     final val ParameterIncludeJobs = "includeJobs"
     final val ParameterIncludeJobLogs = "includeJobLogs"
+    final val ParameterIncludeReports = "includeReports"
     final val ParameterRecursive = "recursive"
     final val ParameterUseAnonymization = "useAnonymization"
 
@@ -49,6 +50,7 @@ object Constants {
     final val ParameterDescriptionIncludeCommitLinks = "whether commit links information is included or not"
     final val ParameterDescriptionIncludeJobs = "whether to fetch related job data or not"
     final val ParameterDescriptionIncludeJobLogs = "whether job logs are included or not (only applicable when includeJobs is true)"
+    final val ParameterDescriptionIncludeReports = "whether to include the pipeline test reports or not"
     final val ParameterDescriptionRecursive = "whether to use recursive search or not"
     final val ParameterDescriptionUseAnonymization = "whether to anonymize the user information"
 
@@ -59,6 +61,7 @@ object Constants {
     final val ParameterDefaultIncludeCommitLinksString = FalseString
     final val ParameterDefaultIncludeJobsString = TrueString
     final val ParameterDefaultIncludeJobLogsString = FalseString
+    final val ParameterDefaultIncludeReportsString = TrueString
     final val ParameterDefaultRecursiveString = TrueString
     final val ParameterDefaultUseAnonymization = TrueString
     final val ParameterExampleProjectName = "group/my-project-name"

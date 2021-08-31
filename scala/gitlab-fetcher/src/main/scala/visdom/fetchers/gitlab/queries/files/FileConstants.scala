@@ -17,7 +17,8 @@ object FileConstants {
             "projectName": "group/my-project-name",
             "reference": "master",
             "recursive": "true",
-            "includeCommitLinks": "true"
+            "includeCommitLinks": "true",
+            "useAnonymization": "false"
         }
     }"""
 }

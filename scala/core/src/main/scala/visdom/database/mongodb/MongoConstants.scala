@@ -28,6 +28,7 @@ object MongoConstants {
     val CollectionJobLogs: String = "job_logs"
     val CollectionMetadata: String = "metadata"
     val CollectionModules: String = "modules"
+    val CollectionPipelineReports: String = "pipeline_reports"
     val CollectionPipelines: String = "pipelines"
     val CollectionSubmissions: String = "submissions"
     val CollectionTemp: String = "temp"
