@@ -14,6 +14,7 @@ import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConstants
+import visdom.http.HttpUtils
 import visdom.utils.CommonConstants
 
 
@@ -58,16 +59,9 @@ extends GitlabDataHandler(options) {
         }
     }
 
-    override def processResponse(response: HttpResponse[String]): Array[Document] = {
-        // the pipeline test report is only one JSON object while the process expect an array of objects
-        // the following is a hack to delay the required refactoring to the future
-        super.processResponse(
-            HttpResponse(
-                CommonConstants.SquareBracketBegin + response.body + CommonConstants.SquareBracketEnd,
-                response.code,
-                response.headers
-            )
-        )
+    override def responseToDocumentArray(response: HttpResponse[String]): Array[BsonDocument] = {
+        // the pipeline test report is only one JSON object while the default process expects an array of objects
+        HttpUtils.responseToDocumentArrayCaseDocument(response)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
