@@ -45,57 +45,67 @@ class ModuleActor extends Actor with ActorLogging {
 }
 
 object ModuleActor {
-    def getFetchOptions(queryOptions: ModuleDataQueryOptions): Either[String, ModuleSpecificFetchParameters] = {
+    def checkQueryOptions(queryOptions: ModuleDataQueryOptions): Option[String] = {
         if (!CommonHelpers.isCourseId(Some(queryOptions.courseId))) {
-            Left(s"'${queryOptions.courseId}' is not a valid course id")
+            Some(s"'${queryOptions.courseId}' is not a valid course id")
         }
         else if (!CommonHelpers.isModuleId(queryOptions.moduleId)) {
-            Left(s"'${queryOptions.moduleId}' is not a valid module id")
+            Some(s"'${queryOptions.moduleId}' is not a valid module id")
         }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
-            Left(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
+            Some(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
         }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
-            Left(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
+            Some(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
         }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
-            Left(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
+            Some(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
         }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
-            Left(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
+            Some(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
         }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
             queryOptions.gdprFieldName
         )) {
-            Left(
+            Some(
                 s"'${queryOptions.gdprExerciseId}', '${queryOptions.gdprFieldName}' " +
                 s"and '${queryOptions.gdprAcceptedAnswer}' are not a valid values for the GDPR parameters"
             )
         }
         else {
-            Right(ModuleSpecificFetchParameters(
-                courseId = queryOptions.courseId.toInt,
-                moduleId = queryOptions.moduleId match {
-                    case Some(moduleIdString: String) => Some(moduleIdString.toInt)
-                    case None => None
-                },
-                parseNames = queryOptions.parseNames.toBoolean,
-                includeExercises = queryOptions.includeExercises.toBoolean,
-                includeSubmissions = queryOptions.includeSubmissions.toBoolean,
-                useAnonymization = queryOptions.useAnonymization.toBoolean,
-                gdprOptions = queryOptions.gdprExerciseId match {
-                    case Some(gdprExerciseId: String) => Some(
-                        GdprOptions(
-                            exerciseId = gdprExerciseId.toInt,
-                            fieldName = queryOptions.gdprFieldName,
-                            acceptedAnswer = queryOptions.gdprAcceptedAnswer,
-                            userList = None
-                        )
+            None
+        }
+    }
+
+    def getFetchOptions(queryOptions: ModuleDataQueryOptions): Either[String, ModuleSpecificFetchParameters] = {
+        checkQueryOptions(queryOptions) match {
+            case Some(errorMessage: String) => Left(errorMessage)
+            case None =>
+                Right(
+                    ModuleSpecificFetchParameters(
+                        courseId = queryOptions.courseId.toInt,
+                        moduleId = queryOptions.moduleId match {
+                            case Some(moduleIdString: String) => Some(moduleIdString.toInt)
+                            case None => None
+                        },
+                        parseNames = queryOptions.parseNames.toBoolean,
+                        includeExercises = queryOptions.includeExercises.toBoolean,
+                        includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        useAnonymization = queryOptions.useAnonymization.toBoolean,
+                        gdprOptions = queryOptions.gdprExerciseId match {
+                            case Some(gdprExerciseId: String) => Some(
+                                GdprOptions(
+                                    exerciseId = gdprExerciseId.toInt,
+                                    fieldName = queryOptions.gdprFieldName,
+                                    acceptedAnswer = queryOptions.gdprAcceptedAnswer,
+                                    userList = None
+                                )
+                            )
+                            case None => None
+                        }
                     )
-                    case None => None
-                }
-            ))
+                )
         }
     }
 

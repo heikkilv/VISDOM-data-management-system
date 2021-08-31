@@ -87,22 +87,7 @@ class CoursesFetcher(options: APlusCourseOptions)
         // try to always get the detailed course information for each course
         val detailedDocument: BsonDocument = options.courseId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
-                case Some(courseId: Int) => {
-                    HttpUtils.getRequestDocument(
-                        getRequest(Some(courseId)),
-                        HttpConstants.StatusCodeOk
-                    ) match {
-                        case Some(courseDocument: BsonDocument) =>
-                            courseDocument.getIntOption(AttributeConstants.AttributeId) match {
-                                case Some(_) => courseDocument
-                                case None => document
-                            }
-                        case None => document
-                    }
-                }
-                case None => document
-            }
+            case None => getDetailedDocument(document)
         }
 
         val moduleIds: Seq[Int] = (options.courseId.isDefined && options.includeModules) match {
@@ -114,6 +99,25 @@ class CoursesFetcher(options: APlusCourseOptions)
         addIdentifierAttributes(APlusUtils.parseCourseDocument(detailedDocument))
             .append(AttributeConstants.AttributeMetadata, getMetadata())
             .appendOption(AttributeConstants.AttributeLinks, getLinkData(moduleIds))
+    }
+
+    private def getDetailedDocument(document: BsonDocument): BsonDocument = {
+        document.getIntOption(AttributeConstants.AttributeId) match {
+            case Some(courseId: Int) => {
+                HttpUtils.getRequestDocument(
+                    getRequest(Some(courseId)),
+                    HttpConstants.StatusCodeOk
+                ) match {
+                    case Some(courseDocument: BsonDocument) =>
+                        courseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            case Some(_) => courseDocument
+                            case None => document
+                        }
+                    case None => document
+                }
+            }
+            case None => document
+        }
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
