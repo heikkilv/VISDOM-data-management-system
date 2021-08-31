@@ -16,6 +16,7 @@ object AttributeConstants {
     final val ProjectName: String = "projectName"
     final val Recursive: String = "recursive"
     final val Reference: String = "reference"
+    final val SourceServer: String = "sourceServer"
     final val StartDate: String = "startDate"
     final val UseAnonymization: String = "useAnonymization"
 }

@@ -1,0 +1,528 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8751"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/info": {
+            "get": {
+                "summary": "Returns A+ data fetcher info.",
+                "description": "Returns information about the A+ data fetcher.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/APlusFetcherInfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "aplus-fetcher",
+                                            "componentType": "fetcher",
+                                            "fetcherType": "APlus",
+                                            "version": "0.1",
+                                            "sourceServer": "https://plus.fi",
+                                            "mongoDatabase": "aplus",
+                                            "startTime": "2021-08-16T12:00:00.000Z",
+                                            "apiAddress": "localhost:8751",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/courses": {
+            "get": {
+                "summary": "Fetch course metadata from A+.",
+                "description": "Starts a fetching process for course metadata from an A+ instance.",
+                "operationId": "getCourseDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/exercises": {
+            "get": {
+                "summary": "Fetch exercise data for a course from A+.",
+                "description": "Starts a fetching process for exercise data for a module in a course from an A+ instance.",
+                "operationId": "getExerciseDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "moduleId",
+                        "in": "query",
+                        "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "gdprExerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise that contains the GDPR question. Must be -1 if no GDPR question should be checked, otherwise it must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "exerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise in the chosen course module. Must be a positive integer.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "parseNames",
+                        "in": "query",
+                        "description": "Whether to parse the module or exercise names.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "gdprFieldName",
+                        "in": "query",
+                        "description": "The field name for the GDPR question that contains the users answer.",
+                        "schema": {
+                            "type": "string",
+                            "default": "field_0"
+                        }
+                    },
+                    {
+                        "name": "gdprAcceptedAnswer",
+                        "in": "query",
+                        "description": "The only accepted answer for the GDPR question in order to be allowed to handle the users data.",
+                        "schema": {
+                            "type": "string",
+                            "default": "a"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123,
+                                                "moduleId": 765,
+                                                "exerciseId": 5555,
+                                                "parseNames": "true",
+                                                "gdprExerciseId": "12345",
+                                                "gdprFieldName": "field_0",
+                                                "gdprAcceptedAnswer": "a"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/modules": {
+            "get": {
+                "summary": "Fetch module data for a course from A+.",
+                "description": "Starts a fetching process for module data for a course from an A+ instance.",
+                "operationId": "getModuleDataRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "The id number for the course instance. Must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "gdprExerciseId",
+                        "in": "query",
+                        "description": "The id number for the exercise that contains the GDPR question. Must be -1 if no GDPR question should be checked, otherwise it must be a positive integer.",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "moduleId",
+                        "in": "query",
+                        "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
+                        "schema": {
+                            "type": "integer",
+                            "format": "int32"
+                        }
+                    },
+                    {
+                        "name": "parseNames",
+                        "in": "query",
+                        "description": "Whether to parse the module or exercise names.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "includeExercises",
+                        "in": "query",
+                        "description": "Whether to also fetch detailed exercise metadata.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "gdprFieldName",
+                        "in": "query",
+                        "description": "The field name for the GDPR question that contains the users answer.",
+                        "schema": {
+                            "type": "string",
+                            "default": "field_0"
+                        }
+                    },
+                    {
+                        "name": "gdprAcceptedAnswer",
+                        "in": "query",
+                        "description": "The only accepted answer for the GDPR question in order to be allowed to handle the users data.",
+                        "schema": {
+                            "type": "string",
+                            "default": "a"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "courseId": 123,
+                                                "moduleId": 765,
+                                                "parseNames": "true",
+                                                "includeExercises": "true",
+                                                "gdprExerciseId": "12345",
+                                                "gdprFieldName": "field_0",
+                                                "gdprAcceptedAnswer": "a"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid course id": {
+                                        "description": "Invalid course id",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'-5'' is not a valid course id"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "JsValue": {
+                "type": "object"
+            },
+            "JsObject": {
+                "required": [
+                    "fields"
+                ],
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "object",
+                        "properties": { },
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/JsValue"
+                        }
+                    }
+                }
+            },
+            "ResponseAccepted": {
+                "required": [
+                    "description",
+                    "options",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    },
+                    "options": {
+                        "$ref": "#/components/schemas/JsObject"
+                    }
+                }
+            },
+            "APlusFetcherInfoResponse": {
+                "required": [
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "fetcherType",
+                    "mongoDatabase",
+                    "sourceServer",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "fetcherType": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "sourceServer": {
+                        "type": "string"
+                    },
+                    "mongoDatabase": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "ResponseProblem": {
+                "required": [
+                    "description",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}

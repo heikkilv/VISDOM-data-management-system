@@ -1,0 +1,75 @@
+package visdom.fetchers.aplus
+
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
+
+
+object APlusConstants {
+    // the base path for the A+ API
+    val PathBase: String = "api/v2"
+
+    // the A+ API version
+    val APlusApiVersion: Int = 2
+
+    val HeaderAuthorization: String = "Authorization"
+    val Token: String = "Token"
+
+    val PathCourses: String = "courses"
+    val PathExercises: String = "exercises"
+    val PathSubmissionData: String = "submissiondata"
+    val PathSubmissions: String = "submissions"
+
+    val ParamFormat: String = "format"
+
+    // constants for the different A+ fetcher types
+    val FetcherTypeCourses: String = "courses"
+    val FetcherTypeExercises: String = "exercises"
+    val FetcherTypeModules: String = "modules"
+    val FetcherTypeSubmissions: String = "submissions"
+
+    val AttributeAcceptedAnswer: String = "accepted_answer"
+    val AttributeApiVersion: String = "api_version"
+    val AttributeCourseId: String = "course_id"
+    val AttributeCourses: String = "courses"
+    val AttributeDisplayName: String = "display_name"
+    val AttributeEmail: String = "email"
+    val AttributeExercise: String = "exercise"
+    val AttributeExerciseId: String = "exercise_id"
+    val AttributeExerciseInfo: String = "exercise_info"
+    val AttributeExercises: String = "exercises"
+    val AttributeFieldName: String = "field_name"
+    val AttributeFormI18n: String = "form_i18n"
+    val AttributeFullName: String = "full_name"
+    val AttributeGdprOptions: String = "gdpr_options"
+    val AttributeHierarchicalName: String = "hierarchical_name"
+    val AttributeHostName: String = "host_name"
+    val AttributeId: String = "id"
+    val AttributeIncludeExercises: String = "include_exercises"
+    val AttributeIncludeModules: String = "include_modules"
+    val AttributeIncludeSubmissions: String = "include_submissions"
+    val AttributeLanguage: String = "language"
+    val AttributeLastModified: String = "last_modified"
+    val AttributeModuleId: String = "module_id"
+    val AttributeModules: String = "modules"
+    val AttributeName: String = "name"
+    val AttributeNext: String = "next"
+    val AttributeNumber: String = "number"
+    val AttributeParseGitAnswers: String = "parse_git_answers"
+    val AttributeParseNames: String = "parse_names"
+    val AttributeProjectName: String = "project_name"
+    val AttributeRaw: String = "raw"
+    val AttributeResults: String = "results"
+    val AttributeStudentId: String = "student_id"
+    val AttributeSubmissionData: String = "submission_data"
+    val AttributeSubmissionId: String = "submission_id"
+    val AttributeSubmissions: String = "submissions"
+    val AttributeSubmitters: String = "submitters"
+    val AttributeUseAnonymization: String = "use_anonymization"
+    val AttributeUsername: String = "username"
+
+    // the default wait time for HTTP queries to the A+ API
+    val DefaultWaitDurationSeconds: Int = 60
+    val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
+
+    val ErrorForExerciseId: String = "error"
+}

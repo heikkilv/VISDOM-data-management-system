@@ -1,11 +1,14 @@
 package visdom.http
 
 import java.util.concurrent.TimeoutException
+import org.bson.BsonArray
 import org.bson.BsonDocument
 import org.bson.BSONException
+import org.bson.json.JsonParseException
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
+import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -61,12 +64,15 @@ object HttpUtils {
             ) match {
                 case Some(response: HttpResponse[String]) => {
                     response.code match {
-                        case code: Int if code == expectedStatusCode => try {
-                            Some(BsonDocument.parse(response.body))
+                        case code: Int if code == expectedStatusCode => {
+                            try {
+                                Some(BsonDocument.parse(response.body))
+                            }
+                            catch {
+                                case _: BSONException => None
+                            }
                         }
-                        catch {
-                            case _: BSONException => None
-                        }
+                        case _ => None
                     }
                 }
                 case None => None
@@ -84,12 +90,15 @@ object HttpUtils {
             ) match {
                 case Some(response: HttpResponse[String]) => {
                     response.code match {
-                        case code: Int if code == expectedStatusCode => try {
-                            Some(response.body)
+                        case code: Int if code == expectedStatusCode => {
+                            try {
+                                Some(response.body)
+                            }
+                            catch {
+                                case _: BSONException => None
+                            }
                         }
-                        catch {
-                            case _: BSONException => None
-                        }
+                        case _ => None
                     }
                 }
                 case None => None
@@ -97,5 +106,70 @@ object HttpUtils {
         } catch {
              case _: TimeoutException => None
         }
+    }
+
+    def bsonArrayToDocumentArray(bsonArray: BsonArray): Array[BsonDocument] = {
+        bsonArray.getValues()
+            .asScala
+            .toArray
+            .map(bsonValue => bsonValue.isDocument match {
+                case true => Some(bsonValue.asDocument())
+                case false => None
+            })
+            .flatten
+    }
+
+    def responseToDocument(response: HttpResponse[String]): Option[BsonDocument] = {
+        try {
+            Some(BsonDocument.parse(response.body))
+        }
+        catch {
+            case _: JsonParseException => None
+        }
+    }
+
+    def responseToDocumentArrayCaseArray(response: HttpResponse[String]): Array[BsonDocument] = {
+        responseToDocumentArrayCaseArray(response.body)
+    }
+
+    def responseToDocumentArrayCaseArray(responseString: String): Array[BsonDocument] = {
+        bsonArrayToDocumentArray(
+            try {
+                BsonArray.parse(responseString)
+            }
+            catch {
+                case _: JsonParseException => new BsonArray()
+            }
+        )
+    }
+
+    def responseToDocumentArrayCaseDocument(response: HttpResponse[String]): Array[BsonDocument] = {
+        try {
+            Array(BsonDocument.parse(response.body))
+        }
+        catch {
+            case _: JsonParseException => Array()
+        }
+    }
+
+    def responseToDocumentArrayCaseAttributeDocument(
+        response: HttpResponse[String],
+        documentAttribute: String
+    ): Array[BsonDocument] = {
+        bsonArrayToDocumentArray(
+            try {
+                val parsedDocument: BsonDocument = BsonDocument.parse(response.body)
+                parsedDocument.containsKey(documentAttribute) match {
+                    case true => parsedDocument.get(documentAttribute) match {
+                        case documentArray: BsonArray => documentArray
+                        case _ => new BsonArray()
+                    }
+                    case false => new BsonArray()
+                }
+            }
+            catch {
+                case _: JsonParseException => new BsonArray()
+            }
+        )
     }
 }

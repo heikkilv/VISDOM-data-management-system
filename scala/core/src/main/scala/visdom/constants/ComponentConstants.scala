@@ -7,4 +7,6 @@ object ComponentConstants {
 
     final val GitlabAdapterType: String = "GitLab"
     final val GitlabFetcherType: String = "GitLab"
+
+    final val APlusFetcherType: String = "APlus"
 }

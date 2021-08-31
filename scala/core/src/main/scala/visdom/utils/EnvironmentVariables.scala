@@ -31,4 +31,11 @@ object EnvironmentVariables {
             VariableMap.getOrElse(variableName, DefaultEnvironmentValue)
         )
     }
+
+    def getEnvironmentVariable(variableName: String, customVariableMap: Map[String, String]): String = {
+        sys.env.getOrElse(
+            variableName,
+            customVariableMap.getOrElse(variableName, DefaultEnvironmentValue)
+        )
+    }
 }

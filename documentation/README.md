@@ -31,6 +31,7 @@ The data source specific pages contain installation instructions and more detail
 The following data fetchers have been implemented:
 
 - [GitLab data fetcher](fetchers/gitlab)
+- [A+ data fetcher](fetchers/aplus)
 
 ## Data adapters
 

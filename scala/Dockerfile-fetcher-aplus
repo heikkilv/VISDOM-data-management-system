@@ -1,0 +1,32 @@
+FROM openjdk:8u292-jdk AS builder
+
+ENV SBT_VERSION 1.5.2
+RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz | gunzip | tar -x -C /usr/local
+ENV PATH /usr/local/sbt/bin:${PATH}
+
+RUN mkdir -p /builder/project
+RUN mkdir -p /builder/core
+RUN mkdir -p /builder/aplus-fetcher
+WORKDIR /builder
+
+COPY build.sbt /builder/build.sbt
+COPY project/build.properties /builder/project/build.properties
+COPY project/plugins.sbt /builder/project/plugins.sbt
+
+COPY core/build.sbt /builder/core/build.sbt
+RUN sbt core/update
+
+COPY aplus-fetcher/build.sbt /builder/aplus-fetcher/build.sbt
+RUN sbt aPlusFetcher/update
+
+COPY core/ /builder/core/
+RUN sbt core/compile
+
+COPY aplus-fetcher/ /builder/aplus-fetcher/
+RUN sbt aPlusFetcher/compile
+RUN sbt aPlusFetcher/assembly
+
+
+FROM openjdk:8u292-jre-slim
+COPY --from=builder /builder/aplus-fetcher/target/scala-2.12/aplus-fetcher-0.1.jar /aplus-fetcher-0.1.jar
+CMD [ "java", "-jar", "/aplus-fetcher-0.1.jar" ]
