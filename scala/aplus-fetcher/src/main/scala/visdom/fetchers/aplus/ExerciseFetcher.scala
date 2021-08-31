@@ -198,7 +198,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         )
         .appendOption(
             APlusConstants.AttributeSubmissions,
-            !submissionIds.isEmpty match {
+            submissionIds.nonEmpty match {
                 case true => Some(BsonArray(submissionIds))
                 case false => None
             }

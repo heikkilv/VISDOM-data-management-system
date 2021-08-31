@@ -76,7 +76,7 @@ object CheckQuestionUtils {
     final val ExerciseIdForNoGdpr: Int = -1
 
     def getCheckedUsers(courseId: Int, gdprOptions: GdprOptions): Set[Int] = {
-        gdprOptions.userList match {
+        gdprOptions.users match {
             case Some(userListSet: Set[Int]) => userListSet
             case None => gdprOptions.exerciseId match {
                 case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
@@ -98,18 +98,18 @@ object CheckQuestionUtils {
         )
     }
 
-    def getUpdatedGdprOptions(gdprOptions: GdprOptions, userList: Set[Int]): GdprOptions = {
+    def getUpdatedGdprOptions(gdprOptions: GdprOptions, users: Set[Int]): GdprOptions = {
         GdprOptions(
             exerciseId = gdprOptions.exerciseId,
             fieldName = gdprOptions.fieldName,
             acceptedAnswer = gdprOptions.acceptedAnswer,
-            userList = Some(userList)
+            users = Some(users)
         )
     }
 
-    def getUpdatedGdprOptions(gdprOptions: Option[GdprOptions], userList: Set[Int]): Option[GdprOptions] = {
+    def getUpdatedGdprOptions(gdprOptions: Option[GdprOptions], users: Set[Int]): Option[GdprOptions] = {
         gdprOptions match {
-            case Some(options: GdprOptions) => Some(getUpdatedGdprOptions(options, userList))
+            case Some(options: GdprOptions) => Some(getUpdatedGdprOptions(options, users))
             case None => None
         }
     }

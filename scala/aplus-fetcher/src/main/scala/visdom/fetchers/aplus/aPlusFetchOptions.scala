@@ -13,7 +13,7 @@ final case class GdprOptions(
     exerciseId: Int,
     fieldName: String,
     acceptedAnswer: String,
-    userList: Option[Set[Int]]
+    users: Option[Set[Int]]
 )
 
 abstract class CourseSpecificFetchOptions {

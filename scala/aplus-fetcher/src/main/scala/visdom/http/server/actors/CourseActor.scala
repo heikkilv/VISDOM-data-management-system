@@ -99,7 +99,7 @@ object CourseActor {
                                     exerciseId = gdprExerciseId.toInt,
                                     fieldName = queryOptions.gdprFieldName,
                                     acceptedAnswer = queryOptions.gdprAcceptedAnswer,
-                                    userList = None
+                                    users = None
                                 )
                             )
                             case None => None

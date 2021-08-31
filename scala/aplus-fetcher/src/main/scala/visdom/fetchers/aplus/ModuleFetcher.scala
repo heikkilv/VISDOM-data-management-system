@@ -161,7 +161,7 @@ class ModuleFetcher(options: APlusModuleOptions)
         )
         .appendOption(
             APlusConstants.AttributeSubmissions,
-            !exerciseIds.isEmpty match {
+            exerciseIds.nonEmpty match {
                 case true => Some(BsonArray(exerciseIds))
                 case false => None
             }

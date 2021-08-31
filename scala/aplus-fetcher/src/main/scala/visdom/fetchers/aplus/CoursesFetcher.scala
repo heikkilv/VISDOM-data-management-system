@@ -161,7 +161,7 @@ class CoursesFetcher(options: APlusCourseOptions)
     }
 
     private def getLinkData(moduleIds: Seq[Int]): Option[BsonDocument] = {
-        !moduleIds.isEmpty match {
+        moduleIds.nonEmpty match {
             case true => Some(BsonDocument(APlusConstants.AttributeModules -> moduleIds))
             case false => None
         }
