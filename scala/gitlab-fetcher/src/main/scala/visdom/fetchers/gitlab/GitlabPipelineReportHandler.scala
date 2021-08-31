@@ -23,6 +23,12 @@ extends GitlabDataHandler(options) {
     def getFetcherType(): String = GitlabConstants.FetcherTypePipelineReport
     def getCollectionName(): String = MongoConstants.CollectionPipelineReports
 
+    override def getOptionsDocument(): BsonDocument = {
+        BsonDocument(
+            GitlabConstants.AttributeUseAnonymization -> options.useAnonymization
+        )
+    }
+
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/pipelines.html#get-a-pipelines-test-report
         val uri: String = List(
