@@ -5,6 +5,7 @@ import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
@@ -106,6 +107,7 @@ class ModuleFetcher(options: APlusModuleOptions)
 
         addIdentifierAttributes(parsedDocument)
             .append(AttributeConstants.AttributeMetadata, getMetadata())
+            .append(AttributeConstants.AttributeLinks, getLinkData(exerciseIds))
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
@@ -150,6 +152,19 @@ class ModuleFetcher(options: APlusModuleOptions)
             Seq(APlusConstants.AttributeDisplayName),
             Seq(APlusConstants.AttributeExercises, APlusConstants.AttributeDisplayName),
             Seq(APlusConstants.AttributeExercises, APlusConstants.AttributeHierarchicalName)
+        )
+    }
+
+    private def getLinkData(exerciseIds: Seq[Int]): BsonDocument = {
+        BsonDocument(
+            APlusConstants.AttributeCourses -> options.courseId
+        )
+        .appendOption(
+            APlusConstants.AttributeSubmissions,
+            !exerciseIds.isEmpty match {
+                case true => Some(BsonArray(exerciseIds))
+                case false => None
+            }
         )
     }
 
