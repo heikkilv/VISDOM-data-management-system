@@ -56,42 +56,12 @@ unit_test:
         - sbt aPlusFetcher/test
         - sbt gitlabAdapter/test
 
-broker:
+docker_build:
     stage: Build
     extends:
         - .docker_build
     script:
-        - docker build
-          --tag visdom-broker:test
-          --file Dockerfile-broker
-          .
-
-fetcher_gitlab:
-    stage: Build
-    extends:
-        - .docker_build
-    script:
-        - docker build
-          --tag visdom-fetcher-gitlab:test
-          --file Dockerfile-fetcher-gitlab
-          .
-
-fetcher_aplus:
-    stage: Build
-    extends:
-        - .docker_build
-    script:
-        - docker build
-          --tag visdom-fetcher-aplus:test
-          --file Dockerfile-fetcher-aplus
-          .
-
-adapter_gitlab:
-    stage: Build
-    extends:
-        - .docker_build
-    script:
-        - docker build
-          --tag visdom-adapter-gitlab:test
-          --file Dockerfile-adapter-gitlab
-          .
+        - docker build --tag visdom-broker:test --file Dockerfile-broker .
+        - docker build --tag visdom-fetcher-gitlab:test --file Dockerfile-fetcher-gitlab .
+        - docker build --tag visdom-fetcher-aplus:test --file Dockerfile-fetcher-aplus .
+        - docker build --tag visdom-adapter-gitlab:test --file Dockerfile-adapter-gitlab .
