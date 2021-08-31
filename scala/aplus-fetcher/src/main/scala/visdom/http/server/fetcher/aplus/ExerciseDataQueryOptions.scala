@@ -8,10 +8,12 @@ import visdom.json.JsonUtils
 
 final case class ExerciseDataQueryOptions(
     courseId: String,
-    moduleId: String,
+    moduleId: Option[String],
     exerciseId: Option[String],
     parseNames: String,
-    gdprExerciseId: String,
+    includeSubmissions: String,
+    useAnonymization: String,
+    gdprExerciseId: Option[String],
     gdprFieldName: String,
     gdprAcceptedAnswer: String
 ) extends QueryOptionsBase {
@@ -22,6 +24,8 @@ final case class ExerciseDataQueryOptions(
                 APlusServerConstants.ModuleId -> JsonUtils.toJsonValue(moduleId),
                 APlusServerConstants.ExerciseId -> JsonUtils.toJsonValue(exerciseId),
                 APlusServerConstants.ParseNames -> JsonUtils.toJsonValue(parseNames),
+                APlusServerConstants.IncludeSubmissions -> JsonUtils.toJsonValue(includeSubmissions),
+                APlusServerConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization),
                 APlusServerConstants.GDPRExerciseId -> JsonUtils.toJsonValue((gdprExerciseId)),
                 APlusServerConstants.GDPRFieldName -> JsonUtils.toJsonValue((gdprFieldName)),
                 APlusServerConstants.GDPRAcceptedAnswer -> JsonUtils.toJsonValue((gdprAcceptedAnswer))

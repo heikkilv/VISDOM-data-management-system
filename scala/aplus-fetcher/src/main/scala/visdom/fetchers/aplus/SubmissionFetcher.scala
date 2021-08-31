@@ -6,6 +6,7 @@ import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
@@ -20,22 +21,14 @@ import visdom.http.HttpUtils
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
+import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
-import org.mongodb.scala.bson.BsonArray
 
 
 class SubmissionFetcher(options: APlusSubmissionOptions)
     extends APlusDataHandler(options) {
 
-    private val checkedUsers: Set[Int] = options.gdprOptions.exerciseId match {
-        case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
-        case _ => new CheckQuestionUtils(
-            courseId = options.courseId,
-            exerciseId = options.gdprOptions.exerciseId,
-            fieldName = options.gdprOptions.fieldName,
-            acceptedAnswer = options.gdprOptions.acceptedAnswer
-        ).checkedUsers
-    }
+    private val checkedUsers: Set[Int] = CheckQuestionUtils.getCheckedUsers(options.courseId, options.gdprOptions)
 
     def getFetcherType(): String = APlusConstants.FetcherTypeSubmissions
     def getCollectionName(): String = MongoConstants.CollectionSubmissions
@@ -49,14 +42,7 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
             APlusConstants.AttributeParseGitAnswers -> options.parseGitAnswers,
             APlusConstants.AttributeParseNames -> options.parseNames
         )
-        .append(
-            APlusConstants.AttributeGdprOptions,
-            BsonDocument(
-                APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
-                APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
-                APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
-            )
-        )
+        .appendGdprOptions(options.gdprOptions)
         .appendOption(
             APlusConstants.AttributeSubmissionId,
             options.submissionId.map(idValue => toBsonValue(idValue))
@@ -179,34 +165,28 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    APlusConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeApiVersion,
-                    new BsonInt32(APlusConstants.APlusApiVersion)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeParseGitAnswers,
-                    new BsonBoolean(options.parseGitAnswers)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeGdprOptions,
-                    BsonDocument(
-                        APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
-                        APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
-                        APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
+        (
+            new BsonDocument(
+                List(
+                    new BsonElement(
+                        APlusConstants.AttributeLastModified,
+                        new BsonDateTime(Instant.now().toEpochMilli())
+                    ),
+                    new BsonElement(
+                        APlusConstants.AttributeApiVersion,
+                        new BsonInt32(APlusConstants.APlusApiVersion)
+                    ),
+                    new BsonElement(
+                        APlusConstants.AttributeUseAnonymization,
+                        new BsonBoolean(options.useAnonymization)
+                    ),
+                    new BsonElement(
+                        APlusConstants.AttributeParseGitAnswers,
+                        new BsonBoolean(options.parseGitAnswers)
                     )
-                )
-            ).asJava
-        )
+                ).asJava
+            )
+        ).appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {

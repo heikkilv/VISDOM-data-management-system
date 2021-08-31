@@ -58,6 +58,12 @@ object ModuleActor {
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
             Left(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
         }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
+            Left(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
+            Left(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
+        }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
             queryOptions.gdprFieldName
@@ -76,11 +82,19 @@ object ModuleActor {
                 },
                 parseNames = queryOptions.parseNames.toBoolean,
                 includeExercises = queryOptions.includeExercises.toBoolean,
-                gdprOptions = GdprOptions(
-                    exerciseId = queryOptions.gdprExerciseId.toInt,
-                    fieldName = queryOptions.gdprFieldName,
-                    acceptedAnswer = queryOptions.gdprAcceptedAnswer
-                )
+                includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                useAnonymization = queryOptions.useAnonymization.toBoolean,
+                gdprOptions = queryOptions.gdprExerciseId match {
+                    case Some(gdprExerciseId: String) => Some(
+                        GdprOptions(
+                            exerciseId = gdprExerciseId.toInt,
+                            fieldName = queryOptions.gdprFieldName,
+                            acceptedAnswer = queryOptions.gdprAcceptedAnswer,
+                            userList = None
+                        )
+                    )
+                    case None => None
+                }
             ))
         }
     }
@@ -93,6 +107,8 @@ object ModuleActor {
             moduleId = fetchParameters.moduleId,
             parseNames = fetchParameters.parseNames,
             includeExercises = fetchParameters.includeExercises,
+            includeSubmissions = fetchParameters.includeSubmissions,
+            useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )
         val moduleFetcher = new ModuleFetcher(moduleFetcherOptions)

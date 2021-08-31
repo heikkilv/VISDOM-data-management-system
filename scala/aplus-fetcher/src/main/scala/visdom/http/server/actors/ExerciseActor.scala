@@ -49,11 +49,14 @@ object ExerciseActor {
         if (!CommonHelpers.isCourseId(Some(queryOptions.courseId))) {
             Left(s"'${queryOptions.courseId}' is not a valid course id")
         }
-        else if (!CommonHelpers.isModuleId(Some(queryOptions.moduleId))) {
+        else if (!CommonHelpers.isModuleId(queryOptions.moduleId)) {
             Left(s"'${queryOptions.moduleId}' is not a valid module id")
         }
         else if (!CommonHelpers.isExerciseId(queryOptions.exerciseId)) {
             Left(s"'${queryOptions.moduleId}' is not a valid exercise id")
+        }
+        else if (!queryOptions.moduleId.isDefined && !queryOptions.exerciseId.isDefined) {
+            Left("Either moduleId or exerciseId must be defined")
         }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
             Left(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
@@ -70,18 +73,28 @@ object ExerciseActor {
         else {
             Right(ExerciseSpecificFetchParameters(
                 courseId = queryOptions.courseId.toInt,
-                moduleId = queryOptions.moduleId.toInt,
+                moduleId = queryOptions.moduleId match {
+                    case Some(moduleIdString: String) => Some(moduleIdString.toInt)
+                    case None => None
+                },
                 exerciseId = queryOptions.exerciseId match {
                     case Some(exerciseIdString: String) => Some(exerciseIdString.toInt)
                     case None => None
                 },
                 parseNames = queryOptions.parseNames.toBoolean,
-                includeSubmissions = true,
-                gdprOptions = GdprOptions(
-                    exerciseId = queryOptions.gdprExerciseId.toInt,
-                    fieldName = queryOptions.gdprFieldName,
-                    acceptedAnswer = queryOptions.gdprAcceptedAnswer
-                )
+                includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                useAnonymization = queryOptions.useAnonymization.toBoolean,
+                gdprOptions = queryOptions.gdprExerciseId match {
+                    case Some(gdprExerciseIdString: String) => Some(
+                        GdprOptions(
+                            exerciseId = gdprExerciseIdString.toInt,
+                            fieldName = queryOptions.gdprFieldName,
+                            acceptedAnswer = queryOptions.gdprAcceptedAnswer,
+                            userList = None
+                        )
+                    )
+                    case None => None
+                }
             ))
         }
     }
@@ -95,6 +108,7 @@ object ExerciseActor {
             exerciseId = fetchParameters.exerciseId,
             parseNames = fetchParameters.parseNames,
             includeSubmissions = fetchParameters.includeSubmissions,
+            useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )
         val exerciseFetcher = new ExerciseFetcher(exerciseFetcherOptions)
@@ -102,9 +116,22 @@ object ExerciseActor {
             case Some(documents: Array[Document]) => documents.size
             case None => 0
         }
-        println(
-            s"Found ${exerciseCount} exercises from A+ instance at ${FetcherValues.targetServer.hostName} " +
-            s"for course with id ${fetchParameters.courseId} and module with id ${fetchParameters.moduleId}"
-        )
+
+        fetchParameters.moduleId match {
+            case Some(moduleIdInt: Int) =>
+                println(
+                    s"Found ${exerciseCount} exercises from A+ instance at ${FetcherValues.targetServer.hostName} " +
+                    s"for course with id ${fetchParameters.courseId} and module with id ${moduleIdInt}"
+                )
+            case None => fetchParameters.exerciseId match {
+                case Some(exerciseIdInt: Int) =>
+                    println(
+                        s"Found ${exerciseCount} exercises from A+ instance at ${FetcherValues.targetServer.hostName} " +
+                        s"for course with id ${fetchParameters.courseId} that matched exercise with id ${exerciseIdInt}"
+                    )
+                case None =>
+                    println("Called exercise fetcher with without module or exercise id!")
+            }
+        }
     }
 }

@@ -12,26 +12,24 @@ import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
+import visdom.fetchers.FetcherUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpUtils
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
+import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
 
 
 class ModuleFetcher(options: APlusModuleOptions)
     extends APlusDataHandler(options) {
 
-    private val checkedUsers: Set[Int] = options.gdprOptions.exerciseId match {
-        case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
-        case _ => new CheckQuestionUtils(
-            courseId = options.courseId,
-            exerciseId = options.gdprOptions.exerciseId,
-            fieldName = options.gdprOptions.fieldName,
-            acceptedAnswer = options.gdprOptions.acceptedAnswer
-        ).checkedUsers
+    private val checkedUsers: Set[Int] = options.gdprOptions match {
+        case Some(gdprOptions: GdprOptions) =>
+            CheckQuestionUtils.getCheckedUsers(options.courseId, gdprOptions)
+        case None => Set.empty
     }
 
     def getFetcherType(): String = APlusConstants.FetcherTypeModules
@@ -41,16 +39,12 @@ class ModuleFetcher(options: APlusModuleOptions)
     override def getOptionsDocument(): BsonDocument = {
         BsonDocument(
             APlusConstants.AttributeCourseId -> options.courseId,
-            APlusConstants.AttributeParseNames -> options.parseNames
+            APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
+            APlusConstants.AttributeParseNames -> options.parseNames,
+            APlusConstants.AttributeIncludeExercises -> options.includeExercises,
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
         )
-        .append(
-            APlusConstants.AttributeGdprOptions,
-            BsonDocument(
-                APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
-                APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
-                APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
-            )
-        )
+        .appendGdprOptions(options.gdprOptions)
         .appendOption(
             APlusConstants.AttributeModuleId,
             options.moduleId.map(idValue => toBsonValue(idValue))
@@ -105,11 +99,9 @@ class ModuleFetcher(options: APlusModuleOptions)
             case false => document
         }
 
-        if (options.includeExercises) {
-            parsedDocument.getIntOption(APlusConstants.AttributeId) match {
-                case Some(moduleId: Int) => fetchExerciseData(moduleId)
-                case None =>
-            }
+        val exerciseIds: Seq[Int] = options.includeExercises match {
+            case true => fetchExercises(parsedDocument)
+            case false => Seq.empty
         }
 
         addIdentifierAttributes(parsedDocument)
@@ -138,15 +130,19 @@ class ModuleFetcher(options: APlusModuleOptions)
                     new BsonBoolean(options.parseNames)
                 ),
                 new BsonElement(
-                    APlusConstants.AttributeGdprOptions,
-                    BsonDocument(
-                        APlusConstants.AttributeExerciseId -> options.gdprOptions.exerciseId,
-                        APlusConstants.AttributeFieldName -> options.gdprOptions.fieldName,
-                        APlusConstants.AttributeAcceptedAnswer -> options.gdprOptions.acceptedAnswer
-                    )
+                    APlusConstants.AttributeIncludeExercises,
+                    new BsonBoolean(options.includeExercises)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeIncludeSubmissions,
+                    new BsonBoolean(options.includeSubmissions)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
-        )
+        ).appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {
@@ -157,18 +153,35 @@ class ModuleFetcher(options: APlusModuleOptions)
         )
     }
 
-    private def fetchExerciseData(moduleId: Int): Unit = {
-        val _ = new ExerciseFetcher(
-            APlusExerciseOptions(
-                hostServer = options.hostServer,
-                mongoDatabase = options.mongoDatabase,
-                courseId = options.courseId,
-                moduleId = moduleId,
-                exerciseId = None,
-                parseNames = options.parseNames,
-                includeSubmissions = true,
-                gdprOptions = options.gdprOptions
-            )
-        ).process()
+    private def fetchExercises(document: BsonDocument): Seq[Int] = {
+        val moduleIdOption: Option[Int] = document.getIntOption(APlusConstants.AttributeId)
+        val exerciseIds: Seq[Int] = moduleIdOption match {
+            case Some(moduleId: Int) => {
+                val exerciseFetcher: ExerciseFetcher = new ExerciseFetcher(
+                    APlusExerciseOptions(
+                        hostServer = options.hostServer,
+                        mongoDatabase = options.mongoDatabase,
+                        courseId = options.courseId,
+                        moduleId = Some(moduleId),
+                        exerciseId = None,  // fetch all exercises for the module
+                        parseNames = options.parseNames,
+                        includeSubmissions = options.includeSubmissions,
+                        useAnonymization = options.useAnonymization,
+                        gdprOptions = CheckQuestionUtils.getUpdatedGdprOptions(options.gdprOptions, checkedUsers)
+                    )
+                )
+
+                FetcherUtils.getFetcherResultIds(exerciseFetcher)
+            }
+            case None => Seq.empty  // no module id was set
+        }
+
+        moduleIdOption match {
+            case Some(moduleId: Int) =>
+                println(s"Found ${exerciseIds.size} exercises in module with id ${moduleId}")
+            case None => println("Could not fetch exercises since no module id was found")
+        }
+
+        exerciseIds
     }
 }

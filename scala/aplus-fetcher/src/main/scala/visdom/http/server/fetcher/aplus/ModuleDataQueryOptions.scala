@@ -11,7 +11,9 @@ final case class ModuleDataQueryOptions(
     moduleId: Option[String],
     parseNames: String,
     includeExercises: String,
-    gdprExerciseId: String,
+    includeSubmissions: String,
+    useAnonymization: String,
+    gdprExerciseId: Option[String],
     gdprFieldName: String,
     gdprAcceptedAnswer: String
 ) extends QueryOptionsBase {
@@ -22,6 +24,8 @@ final case class ModuleDataQueryOptions(
                 APlusServerConstants.ModuleId -> JsonUtils.toJsonValue(moduleId),
                 APlusServerConstants.ParseNames -> JsonUtils.toJsonValue(parseNames),
                 APlusServerConstants.IncludeExercises -> JsonUtils.toJsonValue(includeExercises),
+                APlusServerConstants.IncludeSubmissions -> JsonUtils.toJsonValue(includeSubmissions),
+                APlusServerConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization),
                 APlusServerConstants.GDPRExerciseId -> JsonUtils.toJsonValue((gdprExerciseId)),
                 APlusServerConstants.GDPRFieldName -> JsonUtils.toJsonValue((gdprFieldName)),
                 APlusServerConstants.GDPRAcceptedAnswer -> JsonUtils.toJsonValue((gdprAcceptedAnswer))

@@ -1,5 +1,7 @@
 package visdom.http.server
 
+import visdom.utils.CheckQuestionUtils
+
 
 object CommonHelpers {
     def isIdNumber(idNumberOption: Option[String]): Boolean = {
@@ -30,7 +32,15 @@ object CommonHelpers {
         isIdNumber(exerciseIdOption)
     }
 
-    def areGdprOptions(exerciseId: String, fieldName: String): Boolean = {
-        (isExerciseId(Some(exerciseId)) || exerciseId == -1.toString()) && fieldName.size > 0
+    def areGdprOptions(exerciseId: Option[String], fieldName: String): Boolean = {
+        exerciseId match {
+            case Some(exerciseIdString: String) =>
+                (
+                    exerciseIdString == CheckQuestionUtils.ExerciseIdForNoGdpr.toString() ||
+                    isExerciseId(exerciseId)
+                ) &&
+                fieldName.size > 0
+            case None => true
+        }
     }
 }

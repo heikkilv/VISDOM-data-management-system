@@ -12,11 +12,17 @@ extends FetchOptions {
 final case class GdprOptions(
     exerciseId: Int,
     fieldName: String,
-    acceptedAnswer: String
+    acceptedAnswer: String,
+    userList: Option[Set[Int]]
 )
 
 abstract class CourseSpecificFetchOptions {
     val courseId: Option[Int]
+    val parseNames: Boolean
+    val includeModules: Boolean
+    val includeExercises: Boolean
+    val includeSubmissions: Boolean
+    val useAnonymization: Boolean
 }
 
 abstract class ModuleSpecificFetchOptions {
@@ -24,14 +30,17 @@ abstract class ModuleSpecificFetchOptions {
     val moduleId: Option[Int]
     val parseNames: Boolean
     val includeExercises: Boolean
+    val includeSubmissions: Boolean
+    val useAnonymization: Boolean
 }
 
 abstract class ExerciseSpecificFetchOptions {
     val courseId: Int
-    val moduleId: Int
+    val moduleId: Option[Int]
     val exerciseId: Option[Int]
     val parseNames: Boolean
     val includeSubmissions: Boolean
+    val useAnonymization: Boolean
 }
 
 abstract class SubmissionSpecificFetchOptions {
@@ -44,7 +53,13 @@ abstract class SubmissionSpecificFetchOptions {
 }
 
 final case class CourseSpecificFetchParameters(
-    courseId: Option[Int]
+    courseId: Option[Int],
+    parseNames: Boolean,
+    includeModules: Boolean,
+    includeExercises: Boolean,
+    includeSubmissions: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends CourseSpecificFetchOptions
 
@@ -53,17 +68,20 @@ final case class ModuleSpecificFetchParameters(
     moduleId: Option[Int],
     parseNames: Boolean,
     includeExercises: Boolean,
-    gdprOptions: GdprOptions
+    includeSubmissions: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends ModuleSpecificFetchOptions
 
 final case class ExerciseSpecificFetchParameters(
     courseId: Int,
-    moduleId: Int,
+    moduleId: Option[Int],
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
-    gdprOptions: GdprOptions
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends ExerciseSpecificFetchOptions
 
@@ -73,14 +91,21 @@ final case class SubmissionSpecificFetchParameters(
     submissionId: Option[Int],
     parseGitAnswers: Boolean,
     parseNames: Boolean,
-    useAnonymization: Boolean
+    useAnonymization: Boolean,
+    gdprOptions: GdprOptions
 )
 extends SubmissionSpecificFetchOptions
 
 final case class APlusCourseOptions(
     hostServer: APlusServer,
     mongoDatabase: Option[MongoDatabase],
-    courseId: Option[Int]
+    courseId: Option[Int],
+    parseNames: Boolean,
+    includeModules: Boolean,
+    includeExercises: Boolean,
+    includeSubmissions: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends APlusFetchOptions
 
@@ -91,7 +116,9 @@ final case class APlusModuleOptions(
     moduleId: Option[Int],
     parseNames: Boolean,
     includeExercises: Boolean,
-    gdprOptions: GdprOptions
+    includeSubmissions: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends APlusFetchOptions
 
@@ -99,11 +126,12 @@ final case class APlusExerciseOptions(
     hostServer: APlusServer,
     mongoDatabase: Option[MongoDatabase],
     courseId: Int,
-    moduleId: Int,
+    moduleId: Option[Int],
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
-    gdprOptions: GdprOptions
+    useAnonymization: Boolean,
+    gdprOptions: Option[GdprOptions]
 )
 extends APlusFetchOptions
 
