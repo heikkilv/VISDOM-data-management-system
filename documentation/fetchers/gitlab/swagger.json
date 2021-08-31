@@ -88,7 +88,8 @@
                                                 "projectName": "group/my-project-name",
                                                 "reference": "master",
                                                 "startDate": "2020-01-01T00:00:00.000Z",
-                                                "endDate": "2021-01-01T00:00:00.000Z"
+                                                "endDate": "2021-01-01T00:00:00.000Z",
+                                                "useAnonymization": "false"
                                             }
                                         }
                                     }
@@ -307,7 +308,8 @@
                                                 "endDate": "2021-01-01T00:00:00.000Z",
                                                 "includeStatistics": "true",
                                                 "includeFileLinks": "true",
-                                                "includeReferenceLinks": "false"
+                                                "includeReferenceLinks": "false",
+                                                "useAnonymization": "false"
                                             }
                                         }
                                     }
@@ -492,7 +494,8 @@
                                                 "projectName": "group/my-project-name",
                                                 "reference": "master",
                                                 "recursive": "true",
-                                                "includeCommitLinks": "true"
+                                                "includeCommitLinks": "true",
+                                                "useAnonymization": "false"
                                             }
                                         }
                                     }
@@ -665,6 +668,19 @@
                         }
                     },
                     {
+                        "name": "includeReports",
+                        "in": "query",
+                        "description": "whether to include the pipeline test reports or not",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
                         "name": "includeJobs",
                         "in": "query",
                         "description": "whether to fetch related job data or not",
@@ -719,7 +735,14 @@
                                             "status": "Accepted",
                                             "description": "The fetching of the pipeline data has been started",
                                             "options": {
-                                                "projectName": "group/my-project-name"
+                                                "projectName": "group/my-project-name",
+                                                "reference": "master",
+                                                "startDate": null,
+                                                "endDate": null,
+                                                "includeReports": "true",
+                                                "includeJobs": "true",
+                                                "includeJobLogs": "false",
+                                                "useAnonymization": "false"
                                             }
                                         }
                                     }

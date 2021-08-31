@@ -7,6 +7,7 @@ import visdom.http.HttpUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.fetchers.aplus.APlusConstants
 import visdom.fetchers.aplus.FetcherValues
+import visdom.fetchers.aplus.GdprOptions
 
 
 class CheckQuestionUtils(courseId: Int, exerciseId: Int, fieldName: String, acceptedAnswer: String) {
@@ -73,4 +74,62 @@ class CheckQuestionUtils(courseId: Int, exerciseId: Int, fieldName: String, acce
 
 object CheckQuestionUtils {
     final val ExerciseIdForNoGdpr: Int = -1
+
+    def getCheckedUsers(courseId: Int, gdprOptions: GdprOptions): Set[Int] = {
+        gdprOptions.users match {
+            case Some(userListSet: Set[Int]) => userListSet
+            case None => gdprOptions.exerciseId match {
+                case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
+                case _ => new CheckQuestionUtils(
+                    courseId = courseId,
+                    exerciseId = gdprOptions.exerciseId,
+                    fieldName = gdprOptions.fieldName,
+                    acceptedAnswer = gdprOptions.acceptedAnswer
+                ).checkedUsers
+            }
+        }
+    }
+
+    def getGdprOptionsDocument(gdprOptions: GdprOptions): BsonDocument = {
+        BsonDocument(
+            APlusConstants.AttributeExerciseId -> gdprOptions.exerciseId,
+            APlusConstants.AttributeFieldName -> gdprOptions.fieldName,
+            APlusConstants.AttributeAcceptedAnswer -> gdprOptions.acceptedAnswer
+        )
+    }
+
+    def getUpdatedGdprOptions(gdprOptions: GdprOptions, users: Set[Int]): GdprOptions = {
+        GdprOptions(
+            exerciseId = gdprOptions.exerciseId,
+            fieldName = gdprOptions.fieldName,
+            acceptedAnswer = gdprOptions.acceptedAnswer,
+            users = Some(users)
+        )
+    }
+
+    def getUpdatedGdprOptions(gdprOptions: Option[GdprOptions], users: Set[Int]): Option[GdprOptions] = {
+        gdprOptions match {
+            case Some(options: GdprOptions) => Some(getUpdatedGdprOptions(options, users))
+            case None => None
+        }
+    }
+
+    implicit class EnrichedBsonDocumentWithGdpr(document: BsonDocument) {
+        def appendGdprOptions(gdprOptions: GdprOptions): BsonDocument = {
+            document.append(
+                APlusConstants.AttributeGdprOptions,
+                getGdprOptionsDocument(gdprOptions)
+            )
+        }
+
+        def appendGdprOptions(gdprOptions: Option[GdprOptions]): BsonDocument = {
+            document.appendOption(
+                APlusConstants.AttributeGdprOptions,
+                gdprOptions match {
+                    case Some(gdprOptionsValue: GdprOptions) => Some(getGdprOptionsDocument(gdprOptionsValue))
+                    case None => None
+                }
+            )
+        }
+    }
 }

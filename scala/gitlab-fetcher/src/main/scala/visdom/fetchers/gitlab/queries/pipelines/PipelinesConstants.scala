@@ -18,7 +18,14 @@ object PipelinesConstants {
         "status": "Accepted",
         "description": "The fetching of the pipeline data has been started",
         "options": {
-            "projectName": "group/my-project-name"
+            "projectName": "group/my-project-name",
+            "reference": "master",
+            "startDate": null,
+            "endDate": null,
+            "includeReports": "true",
+            "includeJobs": "true",
+            "includeJobLogs": "false",
+            "useAnonymization": "false"
         }
     }"""
 }

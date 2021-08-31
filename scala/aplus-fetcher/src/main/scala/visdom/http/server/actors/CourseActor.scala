@@ -15,6 +15,8 @@ import visdom.fetchers.aplus.APlusCourseOptions
 import visdom.fetchers.aplus.CoursesFetcher
 import visdom.fetchers.aplus.CourseSpecificFetchParameters
 import visdom.fetchers.aplus.FetcherValues
+import visdom.fetchers.aplus.GdprOptions
+import visdom.http.server.ServerConstants
 import visdom.utils.WartRemoverConstants
 
 
@@ -43,17 +45,67 @@ class CourseActor extends Actor with ActorLogging {
 }
 
 object CourseActor {
-    def getFetchOptions(queryOptions: CourseDataQueryOptions): Either[String, CourseSpecificFetchParameters] = {
+    def checkQueryOptions(queryOptions: CourseDataQueryOptions): Option[String] = {
         if (!CommonHelpers.isCourseId(queryOptions.courseId)) {
-            Left(s"'${queryOptions.courseId}' is not a valid course id")
+            Some(s"'${queryOptions.courseId}' is not a valid course id")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
+            Some(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeModules)) {
+            Some(s"'${queryOptions.includeModules}' is not a valid value for includeModules")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
+            Some(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
+            Some(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
+        }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
+            Some(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
+        }
+        else if (!CommonHelpers.areGdprOptions(
+            queryOptions.gdprExerciseId,
+            queryOptions.gdprFieldName
+        )) {
+            Some(
+                s"'${queryOptions.gdprExerciseId}', '${queryOptions.gdprFieldName}' " +
+                s"and '${queryOptions.gdprAcceptedAnswer}' are not a valid values for the GDPR parameters"
+            )
         }
         else {
-            Right(CourseSpecificFetchParameters(
-                courseId = queryOptions.courseId match {
-                    case Some(courseIdString: String) => Some(courseIdString.toInt)
-                    case None => None
-                }
-            ))
+            None
+        }
+    }
+
+    def getFetchOptions(queryOptions: CourseDataQueryOptions): Either[String, CourseSpecificFetchParameters] = {
+        checkQueryOptions(queryOptions) match {
+            case Some(errorMessage: String) => Left(errorMessage)
+            case None =>
+                Right(
+                    CourseSpecificFetchParameters(
+                        courseId = queryOptions.courseId match {
+                            case Some(courseIdString: String) => Some(courseIdString.toInt)
+                            case None => None
+                        },
+                        parseNames = queryOptions.parseNames.toBoolean,
+                        includeModules = queryOptions.includeModules.toBoolean,
+                        includeExercises = queryOptions.includeExercises.toBoolean,
+                        includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        useAnonymization = queryOptions.useAnonymization.toBoolean,
+                        gdprOptions = queryOptions.gdprExerciseId match {
+                            case Some(gdprExerciseId: String) => Some(
+                                GdprOptions(
+                                    exerciseId = gdprExerciseId.toInt,
+                                    fieldName = queryOptions.gdprFieldName,
+                                    acceptedAnswer = queryOptions.gdprAcceptedAnswer,
+                                    users = None
+                                )
+                            )
+                            case None => None
+                        }
+                    )
+                )
         }
     }
 
@@ -61,7 +113,13 @@ object CourseActor {
         val courseFetcherOptions: APlusCourseOptions = APlusCourseOptions(
             hostServer = FetcherValues.targetServer,
             mongoDatabase = Some(FetcherValues.targetDatabase),
-            courseId = fetchParameters.courseId
+            courseId = fetchParameters.courseId,
+            parseNames = fetchParameters.parseNames,
+            includeModules = fetchParameters.includeModules,
+            includeExercises = fetchParameters.includeExercises,
+            includeSubmissions = fetchParameters.includeSubmissions,
+            useAnonymization = fetchParameters.useAnonymization,
+            gdprOptions = fetchParameters.gdprOptions
         )
         val courseFetcher = new CoursesFetcher(courseFetcherOptions)
         val courseCount = courseFetcher.process() match {

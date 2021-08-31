@@ -94,6 +94,10 @@ extends GitlabDataHandler(options) {
     override def processDocument(document: BsonDocument): BsonDocument = {
         val detailedDocument: BsonDocument = document.getIntOption(GitlabConstants.AttributeId) match {
             case Some(pipelineId: Int) => {
+                if (options.includeReports) {
+                    fetchTestReport(pipelineId)
+                }
+
                 fetchSinglePipelineData(pipelineId) match {
                     case Some(pipelineDocument: BsonDocument) => {
                         addJobData(pipelineDocument, pipelineId)
@@ -131,6 +135,10 @@ extends GitlabDataHandler(options) {
                 new BsonElement(
                     GitlabConstants.AttributeApiVersion,
                     new BsonInt32(GitlabConstants.GitlabApiVersion)
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeIncludeReports,
+                    new BsonBoolean(options.includeReports)
                 ),
                 new BsonElement(
                     GitlabConstants.AttributeIncludeJobs,
@@ -238,5 +246,19 @@ extends GitlabDataHandler(options) {
         )
 
         (new GitlabPipelineJobsHandler(jobsOptions)).process()
+    }
+
+    private def fetchTestReport(pipelineId: Int): Unit = {
+        val _ = (
+            new GitlabPipelineReportHandler(
+                GitlabPipelineReportOptions(
+                    hostServer = options.hostServer,
+                    mongoDatabase = options.mongoDatabase,
+                    projectName = options.projectName,
+                    pipelineId = pipelineId,
+                    useAnonymization = options.useAnonymization
+                )
+            )
+        ).process()
     }
 }

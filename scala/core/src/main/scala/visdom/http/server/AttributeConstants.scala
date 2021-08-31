@@ -12,6 +12,7 @@ object AttributeConstants {
     final val IncludeJobLogs: String = "includeJobLogs"
     final val IncludeReferenceLinks: String = "includeReferenceLinks"
     final val IncludeStatistics: String = "includeStatistics"
+    final val IncludeReports: String = "includeReports"
     final val ProjectName: String = "projectName"
     final val Recursive: String = "recursive"
     final val Reference: String = "reference"

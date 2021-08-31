@@ -5,17 +5,21 @@ import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.seqAsJavaListConverter
+import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
-import visdom.json.JsonUtils.EnrichedBsonDocument
-import visdom.json.JsonUtils.toBsonValue
+import visdom.fetchers.FetcherUtils
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
+import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonValue
+import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
+import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
 
 
@@ -27,10 +31,17 @@ class CoursesFetcher(options: APlusCourseOptions)
     def usePagination(): Boolean = !options.courseId.isDefined
 
     override def getOptionsDocument(): BsonDocument = {
-        BsonDocument().appendOption(
+        BsonDocument(
+            APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
+            APlusConstants.AttributeParseNames -> options.parseNames,
+            APlusConstants.AttributeIncludeModules -> options.includeModules,
+            APlusConstants.AttributeIncludeExercises -> options.includeExercises,
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
+        ).appendOption(
             APlusConstants.AttributeCourseId,
             options.courseId.map(idValue => toBsonValue(idValue))
         )
+        .appendGdprOptions(options.gdprOptions)
     }
 
     def getRequest(): HttpRequest = {
@@ -76,27 +87,37 @@ class CoursesFetcher(options: APlusCourseOptions)
         // try to always get the detailed course information for each course
         val detailedDocument: BsonDocument = options.courseId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
-                case Some(courseId: Int) => {
-                    HttpUtils.getRequestDocument(
-                        getRequest(Some(courseId)),
-                        HttpConstants.StatusCodeOk
-                    ) match {
-                        case Some(courseDocument: BsonDocument) =>
-                            courseDocument.getIntOption(AttributeConstants.AttributeId) match {
-                                case Some(_) => courseDocument
-                                case None => document
-                            }
-                        case None => document
-                    }
-                }
-                case None => document
-            }
+            case None => getDetailedDocument(document)
         }
 
-        addIdentifierAttributes(detailedDocument).append(
-            AttributeConstants.AttributeMetadata, getMetadata()
-        )
+        val moduleIds: Seq[Int] = (options.courseId.isDefined && options.includeModules) match {
+            // the module information is only fetched if a specific course is targeted
+            case true => fetchModuleData(document)
+            case false => Seq.empty
+        }
+
+        addIdentifierAttributes(APlusUtils.parseCourseDocument(detailedDocument))
+            .append(AttributeConstants.AttributeMetadata, getMetadata())
+            .appendOption(AttributeConstants.AttributeLinks, getLinkData(moduleIds))
+    }
+
+    private def getDetailedDocument(document: BsonDocument): BsonDocument = {
+        document.getIntOption(AttributeConstants.AttributeId) match {
+            case Some(courseId: Int) => {
+                HttpUtils.getRequestDocument(
+                    getRequest(Some(courseId)),
+                    HttpConstants.StatusCodeOk
+                ) match {
+                    case Some(courseDocument: BsonDocument) =>
+                        courseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            case Some(_) => courseDocument
+                            case None => document
+                        }
+                    case None => document
+                }
+            }
+            case None => document
+        }
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
@@ -114,8 +135,66 @@ class CoursesFetcher(options: APlusCourseOptions)
                 new BsonElement(
                     APlusConstants.AttributeApiVersion,
                     new BsonInt32(APlusConstants.APlusApiVersion)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeParseNames,
+                    new BsonBoolean(options.parseNames)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeIncludeModules,
+                    new BsonBoolean(options.includeModules)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeIncludeExercises,
+                    new BsonBoolean(options.includeExercises)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeIncludeSubmissions,
+                    new BsonBoolean(options.includeSubmissions)
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeUseAnonymization,
+                    new BsonBoolean(options.useAnonymization)
                 )
             ).asJava
-        )
+        ).appendGdprOptions(options.gdprOptions)
+    }
+
+    private def getLinkData(moduleIds: Seq[Int]): Option[BsonDocument] = {
+        moduleIds.nonEmpty match {
+            case true => Some(BsonDocument(APlusConstants.AttributeModules -> moduleIds))
+            case false => None
+        }
+    }
+
+    private def fetchModuleData(document: BsonDocument): Seq[Int] = {
+        val courseIdOption: Option[Int] = document.getIntOption(APlusConstants.AttributeId)
+        val moduleIds: Seq[Int] = courseIdOption match {
+            case Some(courseId: Int) => {
+                val moduleFetcher: ModuleFetcher = new ModuleFetcher(
+                    APlusModuleOptions(
+                        hostServer = options.hostServer,
+                        mongoDatabase = options.mongoDatabase,
+                        courseId = courseId,
+                        moduleId = None,  // fetch all modules
+                        parseNames = options.parseNames,
+                        includeExercises = options.includeExercises,
+                        includeSubmissions = options.includeSubmissions,
+                        useAnonymization = options.useAnonymization,
+                        gdprOptions = options.gdprOptions
+                    )
+                )
+
+                FetcherUtils.getFetcherResultIds(moduleFetcher)
+            }
+            case None => Seq.empty  // no id was found in the document
+        }
+
+        courseIdOption match {
+            case Some(courseId: Int) => println(s"Found ${moduleIds.size} modules to course with id ${courseId}")
+            case None => println("Could not fetch modules since no course id was found")
+        }
+
+        moduleIds
     }
 }

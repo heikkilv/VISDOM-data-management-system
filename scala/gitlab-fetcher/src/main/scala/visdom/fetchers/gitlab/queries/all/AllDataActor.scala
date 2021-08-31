@@ -130,6 +130,7 @@ object AllDataActor {
             reference = fetchParameters.reference,
             startDate = fetchParameters.startDate,
             endDate = fetchParameters.endDate,
+            includeReports = AllDataConstants.ParameterDefaultIncludeReports,
             includeJobs = AllDataConstants.ParameterDefaultIncludeJobs,
             includeJobLogs = AllDataConstants.ParameterDefaultIncludeJobLogs,
             useAnonymization = fetchParameters.useAnonymization

@@ -158,6 +158,7 @@ Starts a fetching process for pipeline and job data from a GitLab repository.
 | `reference`        | optional | the reference (branch or tag) for the project, default: master |
 | `startDate`        | optional | the earliest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
 | `endDate`          | optional | the latest timestamp for the fetched pipelines given in ISO 8601 format with timezone, default: no limit |
+| `includeReports`   | optional | whether to include the pipeline test reports or not (true/false, default: true) |
 | `includeJobs`      | optional | whether to fetch related job data or not (true/false, default: true) |
 | `includeJobLogs`   | optional | whether job logs are included or not (only applicable when includeJobs is true) (true/false, default: false) |
 | `useAnonymization` | optional | whether to anonymize the user information (true/false, default: true) |
@@ -165,6 +166,7 @@ Starts a fetching process for pipeline and job data from a GitLab repository.
 Successful query returns a response with a status code 202 which indicates that the data fetching process for the pipeline data (and possible job data) has been started. If there is a problem with the query, the returned status code will be either 400, 401, 404 or 500 depending on the problem. See the Swagger API definition for more details.
 
 The fetched pipeline data will be added to the collection `pipelines` in the MongoDB.
+if the includeReports option is used, the fetched test report will be added to the collection `pipeline_reports`.
 If the includeJobs option is used, the fetched job data will be added to the collection `jobs`.
 If the includeJobLogs option is used, the fetched job logs will be added to the collection `job_logs`.
 

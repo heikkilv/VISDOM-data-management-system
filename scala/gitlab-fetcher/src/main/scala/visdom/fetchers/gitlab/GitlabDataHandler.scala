@@ -71,7 +71,7 @@ extends DataHandler(options) {
                 Some(GeneralUtils.getHash(projectName, useAnonymization))
             case GitlabFileOptions(_, _, projectName, _, _, _, _, useAnonymization) =>
                 Some(GeneralUtils.getHash(projectName, useAnonymization))
-            case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, useAnonymization) =>
+            case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _, useAnonymization) =>
                 Some(GeneralUtils.getHash(projectName, useAnonymization))
             case GitlabCommitLinkOptions(_, _, projectName, _) =>
                 Some(projectName)

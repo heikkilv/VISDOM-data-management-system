@@ -59,15 +59,6 @@ with APlusFetcherResponseHandler
                 )
             ),
             new Parameter(
-                name = APlusServerConstants.GDPRExerciseId,
-                in = ParameterIn.QUERY,
-                required = true,
-                description = APlusServerConstants.ParameterDescriptionGDPRExerciseId,
-                schema = new Schema(
-                    implementation = classOf[Int]
-                )
-            ),
-            new Parameter(
                 name = APlusServerConstants.ModuleId,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -96,6 +87,37 @@ with APlusFetcherResponseHandler
                     implementation = classOf[String],
                     defaultValue = APlusServerConstants.DefaultIncludeExercises,
                     allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.IncludeSubmissions,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludeSubmissions,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludeSubmissions,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.UseAnonymization,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionUseAnonymization,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultUseAnonymization,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.GDPRExerciseId,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionGDPRExerciseId,
+                schema = new Schema(
+                    implementation = classOf[Int]
                 )
             ),
             new Parameter(
@@ -174,7 +196,9 @@ with APlusFetcherResponseHandler
             APlusServerConstants.ModuleId.optional,
             APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames),
             APlusServerConstants.IncludeExercises.withDefault(APlusServerConstants.DefaultIncludeExercises),
-            APlusServerConstants.GDPRExerciseId,
+            APlusServerConstants.IncludeSubmissions.withDefault(APlusServerConstants.DefaultIncludeSubmissions),
+            APlusServerConstants.UseAnonymization.withDefault(APlusServerConstants.DefaultUseAnonymization),
+            APlusServerConstants.GDPRExerciseId.optional,
             APlusServerConstants.GDPRFieldName.withDefault(APlusServerConstants.DefaultGDPRFieldName),
             APlusServerConstants.GDPRAcceptedAnswer.withDefault(APlusServerConstants.DefaultGDPRAcceptedAnswer)
         )
@@ -184,6 +208,8 @@ with APlusFetcherResponseHandler
             moduleId,
             parseNames,
             includeExercises,
+            includeSubmissions,
+            useAnonymization,
             gdprExerciseId,
             gdprFieldName,
             gdprAcceptedAnswer
@@ -195,6 +221,8 @@ with APlusFetcherResponseHandler
                     moduleId = moduleId,
                     parseNames = parseNames,
                     includeExercises = includeExercises,
+                    includeSubmissions = includeSubmissions,
+                    useAnonymization = useAnonymization,
                     gdprExerciseId = gdprExerciseId,
                     gdprFieldName = gdprFieldName,
                     gdprAcceptedAnswer = gdprAcceptedAnswer
