@@ -199,7 +199,7 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
     private def getLinkData(): BsonDocument = {
         BsonDocument(
             APlusConstants.AttributeCourses -> options.courseId,
-            APlusConstants.AttributeExerciseId -> options.exerciseId
+            APlusConstants.AttributeExercises -> options.exerciseId
         )
     }
 

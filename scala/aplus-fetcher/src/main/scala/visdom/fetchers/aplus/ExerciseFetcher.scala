@@ -71,7 +71,10 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                 APlusConstants.PathCourses,
                 options.courseId.toString(),
                 APlusConstants.PathExercises,
-                options.moduleId.toString()
+                options.moduleId match {
+                    case Some(moduleId: Int) => moduleId.toString()
+                    case None => APlusConstants.ErrorForExerciseId
+                }
             )
         }
         val uri: String = (
@@ -199,7 +202,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         .appendOption(
             APlusConstants.AttributeSubmissions,
             submissionIds.nonEmpty match {
-                case true => Some(BsonArray(submissionIds))
+                case true => Some(BsonArray(submissionIds.map(idValue => toBsonValue(idValue))))
                 case false => None
             }
         )

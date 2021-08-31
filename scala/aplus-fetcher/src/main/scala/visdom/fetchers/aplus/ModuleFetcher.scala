@@ -160,9 +160,9 @@ class ModuleFetcher(options: APlusModuleOptions)
             APlusConstants.AttributeCourses -> options.courseId
         )
         .appendOption(
-            APlusConstants.AttributeSubmissions,
+            APlusConstants.AttributeExercises,
             exerciseIds.nonEmpty match {
-                case true => Some(BsonArray(exerciseIds))
+                case true => Some(BsonArray(exerciseIds.map(idValue => toBsonValue(idValue))))
                 case false => None
             }
         )

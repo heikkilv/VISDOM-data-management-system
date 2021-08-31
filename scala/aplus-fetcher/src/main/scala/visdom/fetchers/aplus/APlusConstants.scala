@@ -70,4 +70,6 @@ object APlusConstants {
     // the default wait time for HTTP queries to the A+ API
     val DefaultWaitDurationSeconds: Int = 60
     val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
+
+    val ErrorForExerciseId: String = "error"
 }
