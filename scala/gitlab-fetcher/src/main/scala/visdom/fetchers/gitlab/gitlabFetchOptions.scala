@@ -107,6 +107,7 @@ final case class GitlabPipelinesOptions(
     reference: String,
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
+    includeReports: Boolean,
     includeJobs: Boolean,
     includeJobLogs: Boolean,
     useAnonymization: Boolean
@@ -126,7 +127,16 @@ final case class PipelinesSpecificFetchParameters(
     reference: String,
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
+    includeReports: Boolean,
     includeJobs: Boolean,
     includeJobLogs: Boolean,
     useAnonymization: Boolean
 )
+
+final case class GitlabPipelineReportOptions(
+    hostServer: GitlabServer,
+    mongoDatabase: Option[MongoDatabase],
+    projectName: String,
+    pipelineId: Int,
+    useAnonymization: Boolean
+) extends GitlabFetchOptions

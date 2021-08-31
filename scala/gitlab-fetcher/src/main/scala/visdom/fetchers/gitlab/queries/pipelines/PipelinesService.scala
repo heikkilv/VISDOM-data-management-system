@@ -85,6 +85,17 @@ with GitlabFetcherResponseHandler {
                 )
             ),
             new Parameter(
+                name = Constants.ParameterIncludeReports,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionIncludeReports,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultIncludeReportsString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
+            ),
+            new Parameter(
                 name = Constants.ParameterIncludeJobs,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -208,6 +219,8 @@ with GitlabFetcherResponseHandler {
                 .withDefault(Constants.ParameterDefaultReference),
             Constants.ParameterStartDate.optional,
             Constants.ParameterEndDate.optional,
+            Constants.ParameterIncludeReports
+                .withDefault(Constants.ParameterDefaultIncludeReportsString),
             Constants.ParameterIncludeJobs
                 .withDefault(Constants.ParameterDefaultIncludeJobsString),
             Constants.ParameterIncludeJobLogs
@@ -221,18 +234,20 @@ with GitlabFetcherResponseHandler {
             reference,
             startDate,
             endDate,
+            includeReports,
             includeJobs,
             includeJobLogs,
             useAnonymization
         ) => get {
             val options: PipelinesQueryOptions = PipelinesQueryOptions(
-                projectName,
-                reference,
-                startDate,
-                endDate,
-                includeJobs,
-                includeJobLogs,
-                useAnonymization
+                projectName = projectName,
+                reference = reference,
+                startDate = startDate,
+                endDate = endDate,
+                includeReports = includeReports,
+                includeJobs = includeJobs,
+                includeJobLogs = includeJobLogs,
+                useAnonymization = useAnonymization
             )
             getRoute(pipelinesActor, options)
         }

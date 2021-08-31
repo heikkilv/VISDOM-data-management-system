@@ -77,6 +77,15 @@ object PipelinesActor {
         else if (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
+        else if (!Constants.BooleanStrings.contains(queryOptions.includeReports)) {
+            Left(s"'${queryOptions.includeReports}' is not valid value for includeReports")
+        }
+        else if (!Constants.BooleanStrings.contains(queryOptions.includeJobs)) {
+            Left(s"'${queryOptions.includeJobs}' is not valid value for includeJobs")
+        }
+        else if (!Constants.BooleanStrings.contains(queryOptions.includeJobLogs)) {
+            Left(s"'${queryOptions.includeJobLogs}' is not valid value for includeJobLogs")
+        }
         else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
             Left(s"'${queryOptions.useAnonymization}' is not valid value for useAnonymization")
         }
@@ -86,6 +95,7 @@ object PipelinesActor {
                 reference = queryOptions.reference,
                 startDate = startDate,
                 endDate = endDate,
+                includeReports = queryOptions.includeReports.toBoolean,
                 includeJobs = queryOptions.includeJobs.toBoolean,
                 includeJobLogs = queryOptions.includeJobLogs.toBoolean,
                 useAnonymization = queryOptions.useAnonymization.toBoolean
@@ -102,6 +112,7 @@ object PipelinesActor {
             reference = fetchParameters.reference,
             startDate = fetchParameters.startDate,
             endDate = fetchParameters.endDate,
+            includeReports = fetchParameters.includeReports,
             includeJobs = fetchParameters.includeJobs,
             includeJobLogs = fetchParameters.includeJobLogs,
             useAnonymization = fetchParameters.useAnonymization

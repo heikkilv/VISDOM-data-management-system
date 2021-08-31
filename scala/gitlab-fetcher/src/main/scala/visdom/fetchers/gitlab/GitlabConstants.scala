@@ -30,6 +30,7 @@ object GitlabConstants {
     val PathProjects: String = "projects"
     val PathRefs: String = "refs"
     val PathRepository: String = "repository"
+    val PathTestReport: String = "test_report"
     val PathTree: String = "tree"
 
     // constants for query parameters
@@ -80,6 +81,7 @@ object GitlabConstants {
     val AttributeIncludeJobs: String = "include_jobs"
     val AttributeIncludeJobLogs: String = "include_job_logs"
     val AttributeIncludeLinksRefs: String = "include_links_refs"
+    val AttributeIncludeReports: String = "include_reports"
     val AttributeIncludeStatistics: String = "include_statistics"
     val AttributeJobLogIncluded: String = "job_log_fetched"
     val AttributeJobs: String = "jobs"
@@ -96,6 +98,7 @@ object GitlabConstants {
     val AttributePath: String = "path"
     val AttributePathWithNamespace: String = "path_with_namespace"
     val AttributePipeline: String = "pipeline"
+    val AttributePipelineId: String = "pipeline_id"
     val AttributeProjectName: String = "project_name"
     val AttributePublicEmail: String = "public_email"
     val AttributeRecursive: String = "recursive"
@@ -122,6 +125,7 @@ object GitlabConstants {
     val FetcherTypeJobs: String = "jobs"
     val FetcherTypePipeline: String = "pipeline"
     val FetcherTypePipelines: String = "pipelines"
+    val FetcherTypePipelineReport: String = "pipeline_report"
 
     // constants for default values
     val DefaultPerPage: Int = 100

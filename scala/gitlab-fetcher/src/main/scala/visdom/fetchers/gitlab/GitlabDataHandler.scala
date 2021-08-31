@@ -169,7 +169,7 @@ abstract class GitlabDataHandler(options: GitlabFetchOptions) {
                     }))
                 case GitlabCommitLinkOptions(_, _, projectName, _) =>
                     Some(toBsonValue(projectName))
-                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, useAnonymization) =>
+                case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _, useAnonymization) =>
                     Some(toBsonValue(useAnonymization match {
                         case true => GeneralUtils.getHash(projectName)
                         case false => projectName

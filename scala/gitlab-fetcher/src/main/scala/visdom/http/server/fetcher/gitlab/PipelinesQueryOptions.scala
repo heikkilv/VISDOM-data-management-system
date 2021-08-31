@@ -11,6 +11,7 @@ final case class PipelinesQueryOptions(
     reference: String,
     startDate: Option[String],
     endDate: Option[String],
+    includeReports: String,
     includeJobs: String,
     includeJobLogs: String,
     useAnonymization: String
@@ -24,6 +25,7 @@ final case class PipelinesQueryOptions(
                 AttributeConstants.EndDate -> JsonUtils.toJsonValue(endDate),
                 AttributeConstants.IncludeJobs -> JsonUtils.toJsonValue(includeJobs),
                 AttributeConstants.IncludeJobLogs -> JsonUtils.toJsonValue(includeJobLogs),
+                AttributeConstants.IncludeReports -> JsonUtils.toJsonValue(includeReports),
                 AttributeConstants.UseAnonymization -> JsonUtils.toJsonValue(useAnonymization)
             )
         )
