@@ -61,6 +61,9 @@ object CourseActor {
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
             Some(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
         }
+        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includePoints)) {
+            Some(s"'${queryOptions.includePoints}' is not a valid value for includePoints")
+        }
         else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
             Some(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
         }
@@ -92,6 +95,7 @@ object CourseActor {
                         includeModules = queryOptions.includeModules.toBoolean,
                         includeExercises = queryOptions.includeExercises.toBoolean,
                         includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        includePoints = queryOptions.includePoints.toBoolean,
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         gdprOptions = queryOptions.gdprExerciseId match {
                             case Some(gdprExerciseId: String) => Some(
@@ -118,6 +122,7 @@ object CourseActor {
             includeModules = fetchParameters.includeModules,
             includeExercises = fetchParameters.includeExercises,
             includeSubmissions = fetchParameters.includeSubmissions,
+            includePoints = fetchParameters.includePoints,
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )

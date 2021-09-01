@@ -1,18 +1,11 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.mongodb.scala.bson.BsonArray
+import org.mongodb.scala.bson.BsonDocument
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.asScalaBufferConverter
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
@@ -161,32 +154,15 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {
-        (
-            new BsonDocument(
-                List(
-                    new BsonElement(
-                        APlusConstants.AttributeLastModified,
-                        new BsonDateTime(Instant.now().toEpochMilli())
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeApiVersion,
-                        new BsonInt32(APlusConstants.APlusApiVersion)
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeUseAnonymization,
-                        new BsonBoolean(options.useAnonymization)
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeParseGitAnswers,
-                        new BsonBoolean(options.parseGitAnswers)
-                    )
-                ).asJava
-            )
-        ).appendGdprOptions(options.gdprOptions)
+        getMetadataBase()
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .append(APlusConstants.AttributeParseGitAnswers, toBsonValue(options.parseGitAnswers))
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {
@@ -205,7 +181,9 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
     private def checkUserDocument(userDocument: BsonDocument): Boolean = {
         userDocument.getIntOption(APlusConstants.AttributeId) match {
-            case Some(userId: Int) => checkedUsers.contains(userId)
+            case Some(userId: Int) =>
+                checkedUsers.contains(userId) ||
+                options.gdprOptions.exerciseId == CheckQuestionUtils.ExerciseIdForNoGdpr
             case None => false
         }
     }

@@ -16,6 +16,8 @@ object APlusConstants {
 
     val PathCourses: String = "courses"
     val PathExercises: String = "exercises"
+    val PathPoints: String = "points"
+    val PathStudents: String = "students"
     val PathSubmissionData: String = "submissiondata"
     val PathSubmissions: String = "submissions"
 
@@ -25,6 +27,7 @@ object APlusConstants {
     val FetcherTypeCourses: String = "courses"
     val FetcherTypeExercises: String = "exercises"
     val FetcherTypeModules: String = "modules"
+    val FetcherTypePoints: String = "points"
     val FetcherTypeSubmissions: String = "submissions"
 
     val AttributeAcceptedAnswer: String = "accepted_answer"
@@ -46,6 +49,7 @@ object APlusConstants {
     val AttributeId: String = "id"
     val AttributeIncludeExercises: String = "include_exercises"
     val AttributeIncludeModules: String = "include_modules"
+    val AttributeIncludePoints: String = "include_points"
     val AttributeIncludeSubmissions: String = "include_submissions"
     val AttributeLanguage: String = "language"
     val AttributeLastModified: String = "last_modified"
@@ -56,6 +60,7 @@ object APlusConstants {
     val AttributeNumber: String = "number"
     val AttributeParseGitAnswers: String = "parse_git_answers"
     val AttributeParseNames: String = "parse_names"
+    val AttributePoints: String = "points"
     val AttributeProjectName: String = "project_name"
     val AttributeRaw: String = "raw"
     val AttributeResults: String = "results"
@@ -65,6 +70,7 @@ object APlusConstants {
     val AttributeSubmissions: String = "submissions"
     val AttributeSubmitters: String = "submitters"
     val AttributeUseAnonymization: String = "use_anonymization"
+    val AttributeUserId: String = "user_id"
     val AttributeUsername: String = "username"
 
     // the default wait time for HTTP queries to the A+ API

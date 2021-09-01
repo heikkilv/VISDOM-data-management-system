@@ -1,8 +1,13 @@
 package visdom.fetchers.aplus
 
+import java.time.Instant
 import java.util.concurrent.TimeoutException
 import org.bson.BsonDocument
+import org.mongodb.scala.bson.BsonDateTime
+import org.mongodb.scala.bson.BsonElement
+import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.Document
+import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.Await
 import scalaj.http.Http
 import scalaj.http.HttpRequest
@@ -49,6 +54,21 @@ extends DataHandler(options) {
         }
 
         handleResults(handleRequestInternal(firstRequest, Array()))
+    }
+
+    protected def getMetadataBase(): BsonDocument = {
+        new BsonDocument(
+            List(
+                new BsonElement(
+                    APlusConstants.AttributeLastModified,
+                    new BsonDateTime(Instant.now().toEpochMilli())
+                ),
+                new BsonElement(
+                    APlusConstants.AttributeApiVersion,
+                    new BsonInt32(APlusConstants.APlusApiVersion)
+                )
+            ).asJava
+        )
     }
 
     private def getNextRequest(

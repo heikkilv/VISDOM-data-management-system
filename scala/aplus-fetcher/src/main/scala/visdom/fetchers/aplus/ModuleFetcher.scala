@@ -1,20 +1,13 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.mongodb.scala.bson.BsonDocument
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.FetcherUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpUtils
 import visdom.utils.APlusUtils
@@ -112,39 +105,17 @@ class ModuleFetcher(options: APlusModuleOptions)
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
-            .append(APlusConstants.AttributeCourseId, new BsonInt32(options.courseId))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
+            .append(APlusConstants.AttributeCourseId, toBsonValue(options.courseId))
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    APlusConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeApiVersion,
-                    new BsonInt32(APlusConstants.APlusApiVersion)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeParseNames,
-                    new BsonBoolean(options.parseNames)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeExercises,
-                    new BsonBoolean(options.includeExercises)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeSubmissions,
-                    new BsonBoolean(options.includeSubmissions)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        ).appendGdprOptions(options.gdprOptions)
+        getMetadataBase()
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .append(APlusConstants.AttributeIncludeExercises, toBsonValue(options.includeExercises))
+            .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {
@@ -162,7 +133,7 @@ class ModuleFetcher(options: APlusModuleOptions)
         .appendOption(
             APlusConstants.AttributeExercises,
             exerciseIds.nonEmpty match {
-                case true => Some(BsonArray(exerciseIds.map(idValue => toBsonValue(idValue))))
+                case true => Some(toBsonArray(exerciseIds))
                 case false => None
             }
         )

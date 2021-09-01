@@ -159,6 +159,10 @@ object JsonUtils {
         }
     }
 
+    def toBsonArray[T](values: Seq[T]): BsonArray = {
+        BsonArray(values.map(value => toBsonValue(value)))
+    }
+
     def toJsonValue(value: Any): JsValue = {
         value match {
             case jsValue: JsValue => jsValue

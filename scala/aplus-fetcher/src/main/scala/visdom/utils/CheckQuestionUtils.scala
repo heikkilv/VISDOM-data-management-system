@@ -79,7 +79,9 @@ object CheckQuestionUtils {
         gdprOptions.users match {
             case Some(userListSet: Set[Int]) => userListSet
             case None => gdprOptions.exerciseId match {
+                // return an empty user id set for the case when no GDPR question is checked
                 case CheckQuestionUtils.ExerciseIdForNoGdpr => Set.empty
+                // only users that have given the acceptedAnswer will be included in the returned set
                 case _ => new CheckQuestionUtils(
                     courseId = courseId,
                     exerciseId = gdprOptions.exerciseId,

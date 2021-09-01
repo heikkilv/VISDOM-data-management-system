@@ -1,23 +1,16 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.mongodb.scala.bson.BsonDocument
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.FetcherUtils
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
@@ -159,34 +152,15 @@ class ExerciseFetcher(options: APlusExerciseOptions)
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    APlusConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeApiVersion,
-                    new BsonInt32(APlusConstants.APlusApiVersion)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeParseNames,
-                    new BsonBoolean(options.parseNames)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeSubmissions,
-                    new BsonBoolean(options.includeSubmissions)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        ).appendGdprOptions(options.gdprOptions)
+        getMetadataBase()
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendGdprOptions(options.gdprOptions)
     }
 
     private def getLinkData(submissionIds: Seq[Int]): BsonDocument = {
@@ -202,7 +176,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         .appendOption(
             APlusConstants.AttributeSubmissions,
             submissionIds.nonEmpty match {
-                case true => Some(BsonArray(submissionIds.map(idValue => toBsonValue(idValue))))
+                case true => Some(toBsonArray(submissionIds))
                 case false => None
             }
         )
