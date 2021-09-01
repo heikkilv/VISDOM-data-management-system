@@ -61,7 +61,7 @@ with APlusFetcherResponseHandler
             new Parameter(
                 name = APlusServerConstants.ModuleId,
                 in = ParameterIn.QUERY,
-                required = true,
+                required = false,
                 description = APlusServerConstants.ParameterDescriptionModuleId,
                 schema = new Schema(
                     implementation = classOf[Int]

@@ -28,4 +28,13 @@ object GeneralUtils {
             case false => inputString
         }
     }
+
+    implicit class EnrichedWithToTuple[A](elements: Seq[A]) {
+        def toTuple1 = elements match { case Seq(a) => Tuple1(a) }
+        def toTuple2 = elements match { case Seq(a, b) => (a, b) }
+        def toTuple3 = elements match { case Seq(a, b, c) => (a, b, c) }
+        def toTuple4 = elements match { case Seq(a, b, c, d) => (a, b, c, d) }
+        def toTuple5 = elements match { case Seq(a, b, c, d, e) => (a, b, c, d, e) }
+        def toTuple6 = elements match { case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f) }
+    }
 }

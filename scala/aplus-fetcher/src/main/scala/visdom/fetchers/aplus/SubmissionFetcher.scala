@@ -1,7 +1,10 @@
 package visdom.fetchers.aplus
 
+import org.bson.BsonType.DOCUMENT
+import org.bson.BsonType.STRING
 import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -16,10 +19,16 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils.EnrichedWithToTuple
+import visdom.utils.WartRemoverConstants
 
 
 class SubmissionFetcher(options: APlusSubmissionOptions)
     extends APlusDataHandler(options) {
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var gitProjects: Map[String, Set[String]] = Map.empty
+    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = CheckQuestionUtils.getCheckedUsers(options.courseId, options.gdprOptions)
 
@@ -121,6 +130,8 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                     case false => parsedDocumentGit
                 }
 
+                updateGitProjects(parsedDocumentNames)
+
                 addIdentifierAttributes(parsedDocumentNames)
                     .append(AttributeConstants.AttributeMetadata, getMetadata())
                     .append(AttributeConstants.AttributeLinks, getLinkData())
@@ -212,6 +223,36 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                 )
             }
             case None => false
+        }
+    }
+
+    private def addGitProject(hostName: String, projectName: String): Unit = {
+        gitProjects = APlusUtils.appendValueToMapOfSet(gitProjects, hostName, projectName)
+    }
+
+    private def updateGitProjects(document: BsonDocument): Unit = {
+        (
+            document.getDocumentOption(APlusConstants.AttributeSubmissionData) match {
+                case Some(submissionData: BsonDocument) => submissionData.getOption(CommonConstants.Git) match {
+                    case Some(gitValue: BsonValue) => gitValue.getBsonType() match {
+                        case STRING => APlusUtils.getParsedGitAnswerOption(gitValue.asString().getValue())
+                        case DOCUMENT =>
+                            gitValue
+                                .asDocument()
+                                .getManyStringOption(
+                                    APlusConstants.AttributeHostName,
+                                    APlusConstants.AttributeProjectName
+                                )
+                                .map(targetValues => targetValues.toTuple2)
+                        case _ => None  // the git answer given in unexpected format
+                    }
+                    case None => None  // no git answer found in the submission data
+                }
+                case None => None  // no submission data found in the document
+            }
+        ) match {
+            case Some((hostName: String, projectName: String)) => addGitProject(hostName, projectName)
+            case None =>
         }
     }
 }

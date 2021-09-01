@@ -17,10 +17,15 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.WartRemoverConstants
 
 
 class ExerciseFetcher(options: APlusExerciseOptions)
     extends APlusDataHandler(options) {
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var gitProjects: Map[String, Set[String]] = Map.empty
+    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = options.gdprOptions match {
         case Some(gdprOptions: GdprOptions) =>
@@ -210,7 +215,12 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                             )
                         )
 
-                        FetcherUtils.getFetcherResultIds(submissionFetcher)
+                        val submissionIds: Seq[Int] = FetcherUtils.getFetcherResultIds(submissionFetcher)
+
+                        // update the gitProjects variable from the submission fetcher
+                        gitProjects = APlusUtils.combinedMapOfSet(gitProjects, submissionFetcher.getGitProject())
+
+                        submissionIds
                     }
                     case None => Seq.empty  // could not create the GdprOptions
                 }

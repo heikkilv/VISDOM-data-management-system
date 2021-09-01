@@ -130,7 +130,17 @@ object APlusUtils {
                             case false => projectName
                         }
 
-                        Some(hostName, cleanProjectName)
+                        // the host name should contain exactly one double dot
+                        // and the project name should not contain the string "/-/"
+                        if (
+                            hostName.count(letter => letter == CommonConstants.DoubleDotChar) != 1 ||
+                            projectName.contains(CommonConstants.SlashDashSlash)
+                        ) {
+                            None
+                        }
+                        else {
+                            Some(hostName, cleanProjectName)
+                        }
                     }
                     // the project name part was missing
                     case _ => None
@@ -164,25 +174,25 @@ object APlusUtils {
         }
     }
 
-    def getParsedGitAnswer(answer: String): BsonValue = {
+    def getParsedGitAnswerOption(answer: String): Option[(String, String)] = {
         val lowerCaseAnswer: String = answer.toLowerCase()
 
         // the answer is expected to be of two formats:
         //   a) http(s)://host_name/project_name.git
         //   b) git@host_name:project_name.git  (https is assumed in this case)
-        val parsedAnswerOption: Option[(String, String)] = {
-            if (lowerCaseAnswer.startsWith(CommonConstants.Http)) {
-                getParsedGitAnswerCaseHttp(answer.split(HostPrefix))
-            }
-            else if (lowerCaseAnswer.startsWith(GitStartString)) {
-                getParsedGitAnswerCaseGit(answer.split(CommonConstants.AtSign))
-            }
-            else {
-                None
-            }
+        if (lowerCaseAnswer.startsWith(CommonConstants.Http)) {
+            getParsedGitAnswerCaseHttp(answer.split(HostPrefix))
         }
+        else if (lowerCaseAnswer.startsWith(GitStartString)) {
+            getParsedGitAnswerCaseGit(answer.split(CommonConstants.AtSign))
+        }
+        else {
+            None
+        }
+    }
 
-        parsedAnswerOption match {
+    def getParsedGitAnswer(answer: String): BsonValue = {
+        getParsedGitAnswerOption(answer) match {
             case Some((hostName: String, projectName: String)) =>
                 BsonDocument(
                     APlusConstants.AttributeHostName -> hostName,
@@ -209,5 +219,38 @@ object APlusUtils {
             Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git),
             getParsedGitAnswer(_)
         )
+    }
+
+    def appendValueToMapOfSet[T](origin: Map[String, Set[T]], key: String, value: T): Map[String, Set[T]] = {
+        origin.updated(
+            key,
+            origin.get(key) match {
+                case Some(values: Set[T]) => values + value
+                case None => Set(value)
+            }
+        )
+    }
+
+    def appendValuesToMapOfSet[T](origin: Map[String, Set[T]], key: String, values: Set[T]): Map[String, Set[T]] = {
+        values.headOption match {
+            case Some(value) =>
+                appendValuesToMapOfSet(
+                    appendValueToMapOfSet(origin, key, value),
+                    key,
+                    values.drop(1)
+                )
+            case None => origin
+        }
+    }
+
+    def combinedMapOfSet[T](origin: Map[String, Set[T]], other: Map[String, Set[T]]): Map[String, Set[T]] = {
+        other.headOption match {
+            case Some((headKey: String, headValues: Set[T])) =>
+                combinedMapOfSet(
+                    appendValuesToMapOfSet(origin, headKey, headValues),
+                    other.drop(1)
+                )
+            case None => origin
+        }
     }
 }

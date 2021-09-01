@@ -70,6 +70,25 @@ object JsonUtils {
             }
         }
 
+        def getManyStringOption(keys: Any*): Option[Seq[String]] = {
+            def getManyStringOptionInternal(keySequence: Seq[Any], values: Seq[String]): Seq[String] = {
+                keySequence.headOption match {
+                    case Some(headKey: Any) => document.getStringOption(headKey) match {
+                        case Some(headValue: String) =>
+                            getManyStringOptionInternal(keySequence.drop(1), values ++ Seq(headValue))
+                        case None => Seq.empty
+                    }
+                    case None => values
+                }
+            }
+
+            val valueSequence: Seq[String] = getManyStringOptionInternal(keys.toSeq, Seq.empty)
+            valueSequence.nonEmpty match {
+                case true => Some(valueSequence)
+                case false => None
+            }
+        }
+
         def appendOption(key: String, optionValue: Option[BsonValue]): BsonDocument = {
             optionValue match {
                 case Some(value: BsonValue) => document.append(key, value)

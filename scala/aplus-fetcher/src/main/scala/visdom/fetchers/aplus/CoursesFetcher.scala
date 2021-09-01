@@ -15,10 +15,15 @@ import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.WartRemoverConstants
 
 
 class CoursesFetcher(options: APlusCourseOptions)
     extends APlusDataHandler(options) {
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var gitProjects: Map[String, Set[String]] = Map.empty
+    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     def getFetcherType(): String = APlusConstants.FetcherTypeCourses
     def getCollectionName(): String = MongoConstants.CollectionCourses
@@ -166,7 +171,12 @@ class CoursesFetcher(options: APlusCourseOptions)
                     )
                 )
 
-                FetcherUtils.getFetcherResultIds(moduleFetcher)
+                val moduleIds: Seq[Int] = FetcherUtils.getFetcherResultIds(moduleFetcher)
+
+                // update the gitProjects variable from the submission fetcher
+                gitProjects = APlusUtils.combinedMapOfSet(gitProjects, moduleFetcher.getGitProject())
+
+                moduleIds
             }
             case None => Seq.empty  // no id was found in the given document
         }

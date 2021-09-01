@@ -15,10 +15,15 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.WartRemoverConstants
 
 
 class ModuleFetcher(options: APlusModuleOptions)
     extends APlusDataHandler(options) {
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var gitProjects: Map[String, Set[String]] = Map.empty
+    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = options.gdprOptions match {
         case Some(gdprOptions: GdprOptions) =>
@@ -157,7 +162,12 @@ class ModuleFetcher(options: APlusModuleOptions)
                     )
                 )
 
-                FetcherUtils.getFetcherResultIds(exerciseFetcher)
+                val exerciseIds = FetcherUtils.getFetcherResultIds(exerciseFetcher)
+
+                // update the gitProjects variable from the exercise fetcher
+                gitProjects = APlusUtils.combinedMapOfSet(gitProjects, exerciseFetcher.getGitProject())
+
+                exerciseIds
             }
             case None => Seq.empty  // no module id was set
         }
