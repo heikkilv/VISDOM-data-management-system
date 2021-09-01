@@ -47,7 +47,7 @@ extends APlusDataHandler(options) {
                 APlusConstants.PathCourses,
                 options.courseId.toString(),
                 APlusConstants.PathPoints,
-                options.userId.toString()
+                idNumber.toString()
             )
             case None => List(
                 APlusConstants.PathCourses,
@@ -101,8 +101,8 @@ extends APlusDataHandler(options) {
 
     override def processDocument(document: BsonDocument): BsonDocument = {
         val detailedDocument: BsonDocument = options.userId match {
-            case Some(_) => getDetailedDocument(document)
-            case None => document
+            case Some(_) => document
+            case None => getDetailedDocument(document)
         }
 
         isDataFetchingAllowed(detailedDocument) match {
@@ -155,11 +155,10 @@ extends APlusDataHandler(options) {
     def getParsableAttributes(): Seq[Seq[String]] = {
         Seq(
             Seq(APlusConstants.AttributeModules, APlusConstants.AttributeName),
-            Seq(APlusConstants.AttributeModules, APlusConstants.AttributeHierarchicalName),
             Seq(
                 APlusConstants.AttributeModules,
                 APlusConstants.AttributeExercises,
-                APlusConstants.AttributeHierarchicalName
+                APlusConstants.AttributeName
             )
         )
     }
