@@ -13,9 +13,11 @@ import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
 import scala.collection.JavaConverters.asScalaBufferConverter
+import spray.json.JsArray
 import spray.json.JsBoolean
 import spray.json.JsNull
 import spray.json.JsNumber
+import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
 import visdom.utils.GeneralUtils
@@ -168,6 +170,9 @@ object JsonUtils {
             case doubleValue: Double => JsNumber(doubleValue)
             case booleanValue: Boolean => JsBoolean(booleanValue)
             case Some(optionValue) => toJsonValue(optionValue)
+            case seqValue: Seq[_] => JsArray(seqValue.map(value => toJsonValue(value)).toList)
+            case mapValue: Map[_, _] =>
+                JsObject(mapValue.map({ case (key, value) => (key.toString(), toJsonValue(value)) }))
             case _ => JsNull
         }
     }
