@@ -24,6 +24,7 @@ services:
             - APLUS_HOST=${APLUS_HOST}
             - APLUS_TOKEN=${APLUS_TOKEN}
             - APLUS_INSECURE_CONNECTION=${APLUS_INSECURE_CONNECTION}
+            - DATA_BROKER_ADDRESS=${DATA_BROKER_ADDRESS}
         networks:
             - visdom-mongodb-network
 

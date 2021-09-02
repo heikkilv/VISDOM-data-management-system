@@ -42,8 +42,18 @@ object FetcherValues {
     val hostServerName: String = getEnvironmentVariable(EnvironmentHostName, APlusVariableMap)
     val hostServerPort: String = getEnvironmentVariable(EnvironmentHostPort, APlusVariableMap)
     val apiAddress: String = List(hostServerName, hostServerPort).mkString(CommonConstants.DoubleDot)
-    val fullApiAddress: String = HttpConstants.HttpPrefix + apiAddress
     val swaggerDefinition: String = SwaggerConstants.SwaggerLocation
+
+    val fullApiAddress: String =
+        HttpConstants.HttpPrefix.concat(
+            apiAddress.contains(HttpConstants.Localhost) match {
+                case true => Seq(
+                    getEnvironmentVariable(EnvironmentApplicationName),
+                    ServerConstants.HttpInternalPort.toString()
+                ).mkString(CommonConstants.DoubleDot)
+                case false => apiAddress
+            }
+        )
 
     val sourceServer: String = getEnvironmentVariable(EnvironmentAPlusHost, APlusVariableMap)
     val sourceServerToken: String = getEnvironmentVariable(EnvironmentAPlusToken, APlusVariableMap)

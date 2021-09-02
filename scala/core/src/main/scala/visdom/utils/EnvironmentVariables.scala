@@ -13,7 +13,7 @@ object EnvironmentVariables {
 
     // the default values for the environment variables
     val DefaultApplicationName: String = "component-name"
-    val DefaultDataBrokerAddress: String = "http://localhost:9123"
+    val DefaultDataBrokerAddress: String = "http://visdom-broker:8080"
     val DefaultHostName: String = "localhost"
     val DefaultHostPort: String = "8765"
     val DefaultMetadataDatabase: String = "metadata"

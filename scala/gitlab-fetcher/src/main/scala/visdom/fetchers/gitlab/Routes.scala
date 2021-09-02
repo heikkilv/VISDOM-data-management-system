@@ -14,6 +14,10 @@ import visdom.database.mongodb.MongoConnection.mongoClient
 import visdom.database.mongodb.MongoConnection.storeDocument
 import visdom.database.mongodb.MongoConstants
 import visdom.http.HttpConstants
+import visdom.http.server.ServerConstants
+import visdom.utils.CommonConstants
+import visdom.utils.EnvironmentVariables.getEnvironmentVariable
+import visdom.utils.EnvironmentVariables.EnvironmentApplicationName
 
 
 object Routes {
@@ -23,7 +27,16 @@ object Routes {
     val AttributeStartTime: String = "start_time"
     val AttributeSwaggerDefinition: String = "swagger_definition"
 
-    val fullApiAddress: String = HttpConstants.HttpPrefix + SwaggerFetcherDocService.host
+    val fullApiAddress: String =
+        HttpConstants.HttpPrefix.concat(
+            SwaggerFetcherDocService.host.contains(HttpConstants.Localhost) match {
+                case true => Seq(
+                    getEnvironmentVariable(EnvironmentApplicationName),
+                    ServerConstants.HttpInternalPort.toString()
+                ).mkString(CommonConstants.DoubleDot)
+                case false => SwaggerFetcherDocService.host
+            }
+        )
     final val SwaggerLocation: String = "/api-docs/swagger.json"
 
 

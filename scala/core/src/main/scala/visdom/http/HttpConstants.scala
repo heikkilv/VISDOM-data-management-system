@@ -21,6 +21,7 @@ object HttpConstants {
     final val StatusErrorCode = "500"
 
     val CharacterSlash: String = "/"
+    val Localhost: String = "localhost"
 
     // constants for constructing query paths
     val PathCommits: String = "commits"
