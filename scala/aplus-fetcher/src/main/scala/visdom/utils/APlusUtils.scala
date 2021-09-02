@@ -131,10 +131,11 @@ object APlusUtils {
                         }
 
                         // the host name should contain exactly one double dot
-                        // and the project name should not contain the string "/-/"
+                        // and the project name should not contain the string "/-/" or commas
                         if (
                             hostName.count(letter => letter == CommonConstants.DoubleDotChar) != 1 ||
-                            projectName.contains(CommonConstants.SlashDashSlash)
+                            projectName.contains(CommonConstants.SlashDashSlash) ||
+                            projectName.contains(CommonConstants.Comma)
                         ) {
                             None
                         }

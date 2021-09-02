@@ -23,7 +23,6 @@ class CoursesFetcher(options: APlusCourseOptions)
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
     private var gitProjects: Map[String, Set[String]] = Map.empty
-    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     def getFetcherType(): String = APlusConstants.FetcherTypeCourses
     def getCollectionName(): String = MongoConstants.CollectionCourses
