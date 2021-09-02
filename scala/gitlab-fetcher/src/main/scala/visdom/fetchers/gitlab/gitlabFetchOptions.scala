@@ -3,6 +3,7 @@ package visdom.fetchers.gitlab
 import java.time.ZonedDateTime
 import org.mongodb.scala.MongoDatabase
 import visdom.fetchers.FetchOptions
+import visdom.http.server.fetcher.gitlab.Projects
 
 
 abstract class GitlabFetchOptions
@@ -100,6 +101,40 @@ final case class AllDataSpecificFetchParameters(
     endDate: Option[ZonedDateTime],
     useAnonymization: Boolean
 ) extends AllDataSpecificFetchOptions
+
+abstract class MultiSpecificFetchOptions {
+    val projectNames: Seq[String]
+    val filePath: Option[String]
+    val startDate: Option[ZonedDateTime]
+    val endDate: Option[ZonedDateTime]
+    val useAnonymization: Boolean
+    val projects: Projects
+}
+
+abstract class MultiSpecificSingleFetchOptions {
+    val projectName: String
+    val filePath: Option[String]
+    val startDate: Option[ZonedDateTime]
+    val endDate: Option[ZonedDateTime]
+    val useAnonymization: Boolean
+}
+
+final case class MultiSpecificFetchParameters(
+    projectNames: Seq[String],
+    filePath: Option[String],
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    useAnonymization: Boolean,
+    projects: Projects
+) extends MultiSpecificFetchOptions
+
+final case class MultiSpecificSingleFetchParameters(
+    projectName: String,
+    filePath: Option[String],
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    useAnonymization: Boolean
+) extends MultiSpecificSingleFetchOptions
 
 final case class GitlabPipelinesOptions(
     hostServer: GitlabServer,

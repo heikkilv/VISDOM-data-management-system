@@ -3,6 +3,7 @@ package visdom.utils
 
 object CommonConstants {
     final val AtSign: String = "@"
+    final val Comma: String = ","
     final val Dot: String = "."
     final val DoubleDot: String = ":"
     final val EmptyString: String = ""

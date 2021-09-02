@@ -5,6 +5,7 @@ import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitService
 import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.info.InfoService
+import visdom.fetchers.gitlab.queries.multi.MultiService
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesService
 import visdom.http.server.swagger.SwaggerDocService
 
@@ -26,6 +27,7 @@ object SwaggerFetcherDocService extends SwaggerDocService {
         classOf[FileService],
         classOf[PipelinesService],
         classOf[AllDataService],
+        classOf[MultiService],
         classOf[InfoService]
     )
 }

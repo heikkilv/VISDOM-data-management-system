@@ -17,12 +17,13 @@ import visdom.fetchers.gitlab.queries.Constants
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.fetcher.gitlab.CommitQueryOptions
 import visdom.http.server.ResponseUtils
+import visdom.utils.WartRemoverConstants
 
 
 class CommitActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: CommitQueryOptions => {
             log.info(s"Received commits query with options: ${queryOptions.toString()}")
@@ -47,7 +48,7 @@ class CommitActor extends Actor with ActorLogging {
                         case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }

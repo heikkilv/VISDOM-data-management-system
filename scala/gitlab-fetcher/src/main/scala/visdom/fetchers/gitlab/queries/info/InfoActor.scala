@@ -9,12 +9,13 @@ import visdom.fetchers.gitlab.GitlabFetcher
 import visdom.fetchers.gitlab.Routes
 import visdom.http.server.QueryOptionsBaseObject
 import visdom.http.server.response.GitlabFetcherInfoResponse
+import visdom.utils.WartRemoverConstants
 
 
 class InfoActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case QueryOptionsBaseObject => {
             log.info("Received info query")

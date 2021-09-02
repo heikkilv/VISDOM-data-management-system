@@ -26,6 +26,7 @@ object Constants {
     final val StatusErrorDescription = "Internal server error"
 
     final val ParameterProjectName = "projectName"
+    final val ParameterProjectNames = "projectNames"
     final val ParameterReference = "reference"
     final val ParameterStartDate = "startDate"
     final val ParameterEndDate = "endDate"
@@ -41,6 +42,7 @@ object Constants {
     final val ParameterUseAnonymization = "useAnonymization"
 
     final val ParameterDescriptionProjectName = "the GitLab project name"
+    final val ParameterDescriptionProjectNames = "a comma-separated list for GitLab project names"
     final val ParameterDescriptionReference = "the reference (branch or tag) for the project"
     final val ParameterDescriptionFilePath = "the path for a file or folder to fetch commits for"
     final val ParameterDescriptionFilePathForFiles = "the path inside repository to allow getting content of subdirectories"
@@ -65,6 +67,7 @@ object Constants {
     final val ParameterDefaultRecursiveString = TrueString
     final val ParameterDefaultUseAnonymization = TrueString
     final val ParameterExampleProjectName = "group/my-project-name"
+    final val ParameterExampleProjectNames = "group/project-name1,group/project-name2"
 
     // the example responses and their names for that can common for the various endpoints
     final val ResponseExampleAcceptedName = "Successful response example"
@@ -79,17 +82,32 @@ object Constants {
         "status": "BadRequest",
         "description": "'2020-13-13T00:00' is not valid datetime in ISO 8601 format with timezone"
     }"""
+    final val ResponseExampleInvalidName3 = "Invalid project name list"
+    final val ResponseExampleInvalid3 = """{
+        "status": "BadRequest",
+        "description": "'name1,,name3'' is not a valid comma-separated list of project names"
+    }"""
 
     final val ResponseExampleUnauthorizedName = "Unauthorized response example"
     final val ResponseExampleUnauthorized = """{
         "status": "Unauthorized",
         "description": "Access to project 'example-project' not allowed"
     }"""
+    final val ResponseExampleUnauthorizedName2 = "Unauthorized response example"
+    final val ResponseExampleUnauthorized2 = """{
+        "status": "Unauthorized",
+        "description": "No available projects found. Access to projects 'group/secret' not allowed"
+    }"""
 
     final val ResponseExampleNotFoundName = "No project found example"
     final val ResponseExampleNotFound = """{
         "status": "NotFound",
         "description": "Project 'example-project' not found"
+    }"""
+    final val ResponseExampleNotFoundName2 = "No projects found example"
+    final val ResponseExampleNotFound2 = """{
+        "status": "NotFound",
+        "description": "No available projects found"
     }"""
 
     final val ResponseExampleErrorName = "Timeout response example"
