@@ -47,9 +47,7 @@ object FetcherUtils {
                         case Failure(error: Throwable) => println(s"Error: ${error.getMessage()}")
                     })
                 }
-                case None => println(
-                    s"Data fetching sequence was completed successfully."
-                )
+                case None => println("Data fetching sequence was completed successfully.")
             }
         }
 

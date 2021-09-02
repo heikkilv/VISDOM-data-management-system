@@ -49,7 +49,7 @@ class MultiActor extends Actor with ActorLogging {
                                     CommonConstants.Comma + CommonConstants.WhiteSpace
                                 )}' not allowed"
                             )
-                            case false => ResponseUtils.getNotFoundResponse(s"No available projects found")
+                            case false => ResponseUtils.getNotFoundResponse("No available projects found")
                         }
                     }
                 }
@@ -61,6 +61,7 @@ class MultiActor extends Actor with ActorLogging {
 }
 
 object MultiActor {
+    // scalastyle:off cyclomatic.complexity
     def checkQueryOptions(queryOptions: MultiQueryOptions): Option[String] = {
         val filePath: Option[String] = CommonHelpers.toFilePath(queryOptions.filePath)
         val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
@@ -88,6 +89,7 @@ object MultiActor {
             None
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def getFetchOptions(queryOptions: MultiQueryOptions): Either[String, MultiSpecificFetchParameters] = {
         checkQueryOptions(queryOptions) match {
