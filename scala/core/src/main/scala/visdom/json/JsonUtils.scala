@@ -82,7 +82,7 @@ object JsonUtils {
                 }
             }
 
-            val valueSequence: Seq[String] = getManyStringOptionInternal(keys.toSeq, Seq.empty)
+            val valueSequence: Seq[String] = getManyStringOptionInternal(keys, Seq.empty)
             valueSequence.nonEmpty match {
                 case true => Some(valueSequence)
                 case false => None
