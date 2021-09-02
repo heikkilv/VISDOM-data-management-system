@@ -8,13 +8,13 @@ import visdom.utils.SnakeCaseConstants
 
 
 final case class GitlabFetcherInformation(
-    gitlabServer: String,
+    sourceServer: String,
     database: String
 ) extends QueryOptionsBase {
     def toJsObject(): JsObject = {
         JsObject(
             Map(
-                AttributeConstants.GitlabServer -> JsonUtils.toJsonValue(gitlabServer),
+                AttributeConstants.SourceServer -> JsonUtils.toJsonValue(sourceServer),
                 AttributeConstants.Database -> JsonUtils.toJsonValue(database)
             )
         )
@@ -23,7 +23,7 @@ final case class GitlabFetcherInformation(
 
 object GitlabFetcherInformation {
     def requiredKeys: Set[String] = Set(
-        SnakeCaseConstants.GitlabServer,
+        SnakeCaseConstants.SourceServer,
         SnakeCaseConstants.Database
     )
 }

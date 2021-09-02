@@ -13,6 +13,7 @@ import visdom.database.mongodb.MongoConnection.applicationName
 import visdom.database.mongodb.MongoConnection.mongoClient
 import visdom.database.mongodb.MongoConnection.storeDocument
 import visdom.database.mongodb.MongoConstants
+import visdom.http.HttpConstants
 
 
 object Routes {
@@ -22,6 +23,7 @@ object Routes {
     val AttributeStartTime: String = "start_time"
     val AttributeSwaggerDefinition: String = "swagger_definition"
 
+    val fullApiAddress: String = HttpConstants.HttpPrefix + SwaggerFetcherDocService.host
     final val SwaggerLocation: String = "/api-docs/swagger.json"
 
 
@@ -80,9 +82,9 @@ object Routes {
                 GitlabConstants.AttributeComponentType -> GitlabConstants.ComponentType,
                 GitlabConstants.AttributeFetcherType -> GitlabConstants.FetcherType,
                 GitlabConstants.AttributeVersion -> GitlabConstants.FetcherVersion,
-                GitlabConstants.AttributeGitlabServer -> server.hostName,
+                GitlabConstants.AttributeSourceServer -> server.hostName,
                 GitlabConstants.AttributeDatabase -> databaseName,
-                AttributeApiAddress -> SwaggerFetcherDocService.host,
+                AttributeApiAddress -> fullApiAddress,
                 AttributeSwaggerDefinition -> SwaggerLocation,
                 AttributeStartTime -> GitlabFetcher.StartTime
             )

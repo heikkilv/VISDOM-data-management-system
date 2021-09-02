@@ -118,33 +118,36 @@ object APlusUtils {
 
     def getParsedGitAnswerCaseHttp(answerParts: Array[String]): Option[(String, String)] = {
         // expected format: ["https", "host_name/project_name.git"]
+
+        def parseAddress(addressParts: Array[String]): Option[(String, String)] = {
+            // NOTE: addressParts.size >= 2
+            val hostName: String = List(answerParts.head, addressParts.head).mkString(HostPrefix)
+            val projectName: String = addressParts.tail.mkString(CommonConstants.Slash)
+            val cleanProjectName: String = projectName.endsWith(GitEndString) match {
+                case true => projectName.substring(0, projectName.size - GitEndString.size)
+                case false => projectName
+            }
+
+            // the host name should contain exactly one double dot
+            // and the project name should not contain the string "/-/" or commas
+            if (
+                hostName.count(letter => letter == CommonConstants.DoubleDotChar) != 1 ||
+                projectName.contains(CommonConstants.SlashDashSlash) ||
+                projectName.contains(CommonConstants.Comma)
+            ) {
+                None
+            }
+            else {
+                Some(hostName, cleanProjectName)
+            }
+        }
+
         answerParts.size match {
             case 2 => {
                 val addressParts: Array[String] = answerParts.last.split(CommonConstants.Slash)
                 addressParts.size match {
-                    case n: Int if n >= 2 => {
-                        val hostName: String = List(answerParts.head, addressParts.head).mkString(HostPrefix)
-                        val projectName: String = addressParts.tail.mkString(CommonConstants.Slash)
-                        val cleanProjectName: String = projectName.endsWith(GitEndString) match {
-                            case true => projectName.substring(0, projectName.size - GitEndString.size)
-                            case false => projectName
-                        }
-
-                        // the host name should contain exactly one double dot
-                        // and the project name should not contain the string "/-/" or commas
-                        if (
-                            hostName.count(letter => letter == CommonConstants.DoubleDotChar) != 1 ||
-                            projectName.contains(CommonConstants.SlashDashSlash) ||
-                            projectName.contains(CommonConstants.Comma)
-                        ) {
-                            None
-                        }
-                        else {
-                            Some(hostName, cleanProjectName)
-                        }
-                    }
-                    // the project name part was missing
-                    case _ => None
+                    case n: Int if n >= 2 => parseAddress(addressParts)
+                    case _ => None  // the project name part was missing
                 }
             }
             case _ => None

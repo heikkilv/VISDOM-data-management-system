@@ -8,6 +8,7 @@ import org.mongodb.scala.MongoDatabase
 import scala.concurrent.ExecutionContextExecutor
 import visdom.constants.ComponentConstants
 import visdom.database.mongodb.MongoConnection
+import visdom.http.HttpConstants
 import visdom.http.server.ServerConstants
 import visdom.http.server.actors.APlusInfoActor
 import visdom.http.server.actors.CourseActor
@@ -41,6 +42,7 @@ object FetcherValues {
     val hostServerName: String = getEnvironmentVariable(EnvironmentHostName, APlusVariableMap)
     val hostServerPort: String = getEnvironmentVariable(EnvironmentHostPort, APlusVariableMap)
     val apiAddress: String = List(hostServerName, hostServerPort).mkString(CommonConstants.DoubleDot)
+    val fullApiAddress: String = HttpConstants.HttpPrefix + apiAddress
     val swaggerDefinition: String = SwaggerConstants.SwaggerLocation
 
     val sourceServer: String = getEnvironmentVariable(EnvironmentAPlusHost, APlusVariableMap)

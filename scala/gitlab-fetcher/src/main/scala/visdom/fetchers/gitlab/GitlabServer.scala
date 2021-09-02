@@ -4,11 +4,12 @@ import scalaj.http.Http
 import scalaj.http.HttpOptions
 import scalaj.http.HttpRequest
 import visdom.fetchers.HostServer
+import visdom.utils.CommonConstants
 
 
 class GitlabServer(hostAddress: String, apiToken: Option[String], allowUnsafeSSL: Option[Boolean])
 extends HostServer(hostAddress, apiToken, allowUnsafeSSL) {
-    val baseAddress: String = List(hostAddress, GitlabConstants.PathBase).mkString("/")
+    val baseAddress: String = List(hostAddress, GitlabConstants.PathBase).mkString(CommonConstants.Slash)
 
     def modifyRequest(request: HttpRequest): HttpRequest = {
         val requestWithToken: HttpRequest = apiToken match {

@@ -44,6 +44,30 @@ object FetchersResponse {
     def fromDocument(document: Document): Option[FetchersResponse] = {
         val documentKeys: Set[String] = document.keySet
 
+        def getFetcherInformation(fetcherType: String) = {
+            fetcherType match {
+                case ComponentConstants.GitlabFetcherType => {
+                    documentKeys.intersect(GitlabFetcherInformation.requiredKeys).size match {
+                        case n: Int if n < GitlabFetcherInformation.requiredKeys.size => JsObject()
+                        case _ => GitlabFetcherInformation(
+                            sourceServer = document.getString(SnakeCaseConstants.SourceServer),
+                            database = document.getString(SnakeCaseConstants.Database)
+                        ).toJsObject()
+                    }
+                }
+                case ComponentConstants.APlusFetcherType => {
+                    documentKeys.intersect(APlusFetcherInformation.requiredKeys).size match {
+                        case n: Int if n < APlusFetcherInformation.requiredKeys.size => JsObject()
+                        case _ => APlusFetcherInformation(
+                            sourceServer = document.getString(SnakeCaseConstants.SourceServer),
+                            database = document.getString(SnakeCaseConstants.Database)
+                        ).toJsObject()
+                    }
+                }
+                case _ => JsObject()
+            }
+        }
+
         documentKeys.intersect(requiredKeys).size match {
             case m: Int if m < requiredKeys.size => None
             case _ => Some({
@@ -59,27 +83,7 @@ object FetchersResponse {
                         document.getString(SnakeCaseConstants.ApiAddress),
                     swaggerDefinition =
                         document.getString(SnakeCaseConstants.SwaggerDefinition),
-                    information = fetcherType match {
-                        case ComponentConstants.GitlabFetcherType => {
-                            documentKeys.intersect(GitlabFetcherInformation.requiredKeys).size match {
-                                case n: Int if n < GitlabFetcherInformation.requiredKeys.size => JsObject()
-                                case _ => GitlabFetcherInformation(
-                                    gitlabServer = document.getString(SnakeCaseConstants.GitlabServer),
-                                    database = document.getString(SnakeCaseConstants.Database)
-                                ).toJsObject()
-                            }
-                        }
-                        case ComponentConstants.APlusFetcherType => {
-                            documentKeys.intersect(APlusFetcherInformation.requiredKeys).size match {
-                                case n: Int if n < APlusFetcherInformation.requiredKeys.size => JsObject()
-                                case _ => APlusFetcherInformation(
-                                    sourceServer = document.getString(SnakeCaseConstants.SourceServer),
-                                    database = document.getString(SnakeCaseConstants.Database)
-                                ).toJsObject()
-                            }
-                        }
-                        case _ => JsObject()
-                    }
+                    information = getFetcherInformation(fetcherType)
                 )
             })
         }

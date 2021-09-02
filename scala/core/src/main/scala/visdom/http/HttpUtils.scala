@@ -17,6 +17,10 @@ import scala.concurrent.Future
 object HttpUtils {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
+    def getSimpleRequest(targetUrl: String): HttpRequest = {
+        Http(targetUrl)
+    }
+
     def makeRequest(inputRequest: HttpRequest): Future[Option[HttpResponse[String]]] = {
         Future(
             try {
@@ -42,69 +46,47 @@ object HttpUtils {
             .options(request.options)
     }
 
-    def returnRequestStatusCode(request: HttpRequest): Int = {
+    def getRequestResponse(request: HttpRequest): Option[HttpResponse[String]] = {
         try {
             Await.result(
                 makeRequest(request),
                 HttpConstants.DefaultWaitDuration
-            ) match {
-                case Some(response: HttpResponse[String]) => response.code
-                case None => HttpConstants.StatusCodeUnknown
-            }
+            )
         } catch {
-             case _: TimeoutException => HttpConstants.StatusCodeUnknown
+             case _: TimeoutException => None
         }
     }
 
-    def getRequestDocument(request: HttpRequest, expectedStatusCode: Int): Option[BsonDocument] = {
-        try {
-            Await.result(
-                makeRequest(request),
-                HttpConstants.DefaultWaitDuration
-            ) match {
-                case Some(response: HttpResponse[String]) => {
-                    response.code match {
-                        case code: Int if code == expectedStatusCode => {
-                            try {
-                                Some(BsonDocument.parse(response.body))
-                            }
-                            catch {
-                                case _: BSONException => None
-                            }
-                        }
-                        case _ => None
-                    }
-                }
-                case None => None
-            }
-        } catch {
-             case _: TimeoutException => None
+    def returnRequestStatusCode(request: HttpRequest): Int = {
+        getRequestResponse(request) match {
+            case Some(response: HttpResponse[String]) => response.code
+            case None => HttpConstants.StatusCodeUnknown
         }
     }
 
     def getRequestBody(request: HttpRequest, expectedStatusCode: Int): Option[String] = {
-        try {
-            Await.result(
-                makeRequest(request),
-                HttpConstants.DefaultWaitDuration
-            ) match {
-                case Some(response: HttpResponse[String]) => {
-                    response.code match {
-                        case code: Int if code == expectedStatusCode => {
-                            try {
-                                Some(response.body)
-                            }
-                            catch {
-                                case _: BSONException => None
-                            }
-                        }
-                        case _ => None
-                    }
+        getRequestResponse(request) match {
+            case Some(response: HttpResponse[String]) => {
+                response.code match {
+                    case code: Int if code == expectedStatusCode => Some(response.body)
+                    case _ => None
                 }
-                case None => None
             }
-        } catch {
-             case _: TimeoutException => None
+            case None => None
+        }
+    }
+
+    def getRequestDocument(request: HttpRequest, expectedStatusCode: Int): Option[BsonDocument] = {
+        getRequestBody(request, expectedStatusCode) match {
+            case Some(responseBody: String) => {
+                try {
+                    Some(BsonDocument.parse(responseBody))
+                }
+                catch {
+                    case _: BSONException => None
+                }
+            }
+            case None => None
         }
     }
 

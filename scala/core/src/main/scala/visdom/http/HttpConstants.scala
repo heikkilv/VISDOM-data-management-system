@@ -30,6 +30,9 @@ object HttpConstants {
     val PathRepository: String = "repository"
     val PathTree: String = "tree"
 
+    final val HttpPrefix: String = "http://"
+    final val HttpsPrefix: String = "https://"
+
     // the default wait time for HTTP queries
     val DefaultWaitDurationSeconds: Int = 10
     val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
