@@ -1,6 +1,7 @@
 package visdom.json
 
 import java.time.ZonedDateTime
+import org.bson.BSONException
 import org.bson.BsonType
 import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonDateTime
@@ -19,6 +20,7 @@ import spray.json.JsNumber
 import spray.json.JsString
 import spray.json.JsValue
 import visdom.utils.GeneralUtils
+import visdom.utils.FileUtils
 
 
 object JsonUtils {
@@ -257,6 +259,23 @@ object JsonUtils {
         doubleArrayToDocument(value) match {
             case Some(document: BsonDocument) => document
             case None => value
+        }
+    }
+
+    def getBsonDocumentFromFile(filename: String): Option[BsonDocument] = {
+        FileUtils.readTextFile(filename) match {
+            case Some(fileContents: String) => {
+                try {
+                    Some(org.bson.BsonDocument.parse(fileContents))
+                }
+                catch {
+                    case error: BSONException => {
+                        println(s"BSON parsing error: ${error}")
+                        None
+                    }
+                }
+            }
+            case None => None
         }
     }
 }
