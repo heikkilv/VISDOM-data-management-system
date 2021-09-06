@@ -12,6 +12,7 @@ object AttributeConstants {
     val FetcherType: String = "fetcherType"
     val Id: String = "id"
     val Information: String = "information"
+    val LateSubmissionCoefficient: String = "lateSubmissionCoefficient"
     val LateSubmissionDate: String = "lateSubmissionDate"
     val Links: String = "_links"
     val Metadata: String = "metadata"
