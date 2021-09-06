@@ -14,6 +14,7 @@ import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
 import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters.asScalaSetConverter
 import spray.json.JsBoolean
 import spray.json.JsNull
 import spray.json.JsNumber
@@ -50,6 +51,20 @@ object JsonUtils {
                 }
                 case None => None
             }
+        }
+
+        def getDoubleOption(key: Any): Option[Double] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isDouble() match {
+                    case true => Some(value.asDouble().getValue())
+                    case false => None
+                }
+                case None => None
+            }
+        }
+
+        def getZonedDateTimeOption(key: Any): Option[ZonedDateTime] = {
+            GeneralUtils.toZonedDateTime(document.getStringOption(key))
         }
 
         def getDocumentOption(key: Any): Option[BsonDocument] = {
@@ -163,6 +178,29 @@ object JsonUtils {
                     transformAttributes(attributes, JsonUtils.anonymizeValue(_))
                 case None => document
             }
+        }
+
+        def toIntMap(): Map[Int, BsonValue] = {
+            document
+                .keySet()
+                .asScala
+                .flatMap(keyValue => GeneralUtils.toInt(keyValue))
+                .map(intKey => (intKey, document.get(intKey.toString())))
+                .toMap
+        }
+
+        def toIntStringMap(): Map[Int, String] = {
+            document
+                .toIntMap()
+                .filter({case (_, value) => value.isString()})
+                .mapValues(value => value.asString().getValue())
+        }
+
+        def toIntDocumentMap(): Map[Int, BsonDocument] = {
+            document
+                .toIntMap()
+                .filter({case (_, value) => value.isDocument()})
+                .mapValues(value => value.asDocument())
         }
     }
 

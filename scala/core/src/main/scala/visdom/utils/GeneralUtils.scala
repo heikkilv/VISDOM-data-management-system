@@ -2,6 +2,8 @@ package visdom.utils
 
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.time.ZonedDateTime
+import java.time.format.DateTimeParseException
 
 
 object GeneralUtils {
@@ -10,6 +12,29 @@ object GeneralUtils {
             Some(stringValue.toInt)
         } catch {
             case _: java.lang.NumberFormatException => None
+        }
+    }
+
+    def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
+        dateTimeStringOption match {
+            case Some(dateTimeString: String) =>
+                try {
+                    Some(ZonedDateTime.parse(dateTimeString))
+                }
+                catch {
+                    case error: DateTimeParseException => None
+                }
+            case None => None
+        }
+    }
+
+    def lessOrEqual(dateTimeA: Option[ZonedDateTime], dateTimeB: Option[ZonedDateTime]): Boolean = {
+        dateTimeA match {
+            case Some(valueA: ZonedDateTime) => dateTimeB match {
+                case Some(valueB: ZonedDateTime) => valueA.compareTo(valueB) <= 0
+                case None => false
+            }
+            case None => false
         }
     }
 

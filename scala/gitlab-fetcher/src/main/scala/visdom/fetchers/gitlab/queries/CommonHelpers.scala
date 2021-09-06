@@ -16,19 +16,6 @@ object CommonHelpers {
         reference != ""
     }
 
-    def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
-        dateTimeStringOption match {
-            case Some(dateTimeString: String) =>
-                try {
-                    Some(ZonedDateTime.parse(dateTimeString))
-                }
-                catch {
-                    case error: DateTimeParseException => None
-                }
-            case None => None
-        }
-    }
-
     def toFilePath(filePathOption: Option[String]): Option[String] = {
         filePathOption match {
             case Some(filePath: String) => filePath match {
@@ -37,16 +24,6 @@ object CommonHelpers {
                 case _ => filePathOption
             }
             case None => None
-        }
-    }
-
-    def lessOrEqual(dateTimeA: Option[ZonedDateTime], dateTimeB: Option[ZonedDateTime]): Boolean = {
-        dateTimeA match {
-            case Some(valueA: ZonedDateTime) => dateTimeB match {
-                case Some(valueB: ZonedDateTime) => valueA.compareTo(valueB) <= 0
-                case None => false
-            }
-            case None => false
         }
     }
 
