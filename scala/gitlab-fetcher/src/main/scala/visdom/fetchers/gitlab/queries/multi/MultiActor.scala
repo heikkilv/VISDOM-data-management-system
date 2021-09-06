@@ -107,8 +107,8 @@ object MultiActor {
                         projectNames = projectAvailability.allowed,
                         filePath = queryOptions.filePath,
                         recursive = queryOptions.recursive.toBoolean,
-                        startDate = CommonHelpers.toZonedDateTime(queryOptions.startDate),
-                        endDate = CommonHelpers.toZonedDateTime(queryOptions.endDate),
+                        startDate = GeneralUtils.toZonedDateTime(queryOptions.startDate),
+                        endDate = GeneralUtils.toZonedDateTime(queryOptions.endDate),
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         projects = projectAvailability
                     )

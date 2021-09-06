@@ -5,6 +5,7 @@ import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
+import visdom.constants.ComponentConstants
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.FetcherUtils
 import visdom.http.HttpConstants
@@ -15,10 +16,13 @@ import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
+import visdom.utils.BrokerUtils
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.GitlabFetcherQueryOptions
 import visdom.utils.metadata.APlusMetadata
+import visdom.utils.metadata.ExerciseGitLocation
 
 
 class ExerciseFetcher(options: APlusExerciseOptions)
@@ -204,6 +208,35 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         )
     }
 
+    private def fetchGitlabData(exerciseId: Int, gitProjects: Map[String,Set[String]]): Unit = {
+        gitProjects.map({
+            case (serverAddress, projectNames) => (
+                (
+                    BrokerUtils.getFetcherAddress(ComponentConstants.GitlabFetcherType, serverAddress),
+                    serverAddress
+                ),
+                APlusMetadata.exerciseGitLocation
+                    .get((options.courseId, exerciseId))
+                    .map(
+                        gitLocation => GitlabFetcherQueryOptions(
+                            projectNames = projectNames.toSeq,
+                            gitLocation = gitLocation
+                        )
+                    )
+            )
+        })
+        .foreach({case ((fetcherAddressOption, gitlabAddress), fetcherQueryOptions) =>
+            fetcherAddressOption match {
+                case Some(fetcherAddress: String) => fetcherQueryOptions match {
+                    case Some(fetcherOptions: GitlabFetcherQueryOptions) =>
+                        APlusUtils.makeGitlabFetcherQuery(fetcherAddress, fetcherOptions)
+                    case None => println(s"No Git location found for exercise: ${exerciseId}")
+                }
+                case None => println(s"No active fetcher found for GitLab server: ${gitlabAddress}")
+            }
+        })
+    }
+
     private def fetchSubmissions(document: BsonDocument): Seq[Int] = {
         val exerciseIdOption: Option[Int] = document.getIntOption(APlusConstants.AttributeId)
         val submissionIds: Seq[Int] = exerciseIdOption match {
@@ -226,9 +259,11 @@ class ExerciseFetcher(options: APlusExerciseOptions)
 
                         val submissionIds: Seq[Int] = FetcherUtils.getFetcherResultIds(submissionFetcher)
 
-                        // get the Git projects list from the submission fetcher
-                        val gitProjects = submissionFetcher.getGitProject()
-                        // TODO: call GitLab fetcher if the gitlab data is required
+                        // fetch the GitLab data related to the exercise submissions
+                        options.includeGitlabData match {
+                            case true => fetchGitlabData(exerciseId, submissionFetcher.getGitProject())
+                            case false =>
+                        }
 
                         submissionIds
                     }
