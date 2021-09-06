@@ -74,6 +74,9 @@ object MultiActor {
         else if (queryOptions.filePath.isDefined && !filePath.isDefined) {
             Some(s"'${queryOptions.filePath.getOrElse("")}' is not valid path for a file or folder")
         }
+        else if (!Constants.BooleanStrings.contains(queryOptions.recursive)) {
+            Some(s"'${queryOptions.recursive}' is not valid value for recursive")
+        }
         else if (queryOptions.startDate.isDefined && !startDate.isDefined) {
             Some(s"'${queryOptions.startDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
@@ -103,8 +106,9 @@ object MultiActor {
                     MultiSpecificFetchParameters(
                         projectNames = projectAvailability.allowed,
                         filePath = queryOptions.filePath,
-                        startDate = GeneralUtils.toZonedDateTime(queryOptions.startDate),
-                        endDate = GeneralUtils.toZonedDateTime(queryOptions.endDate),
+                        recursive = queryOptions.recursive.toBoolean,
+                        startDate = CommonHelpers.toZonedDateTime(queryOptions.startDate),
+                        endDate = CommonHelpers.toZonedDateTime(queryOptions.endDate),
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         projects = projectAvailability
                     )
@@ -149,7 +153,7 @@ object MultiActor {
             projectName = fetchParameters.projectName,
             reference = Constants.ParameterDefaultReference,
             filePath = fetchParameters.filePath,
-            recursive = MultiConstants.ParameterDefaultRecursive,
+            recursive = fetchParameters.recursive,
             includeCommitLinks = MultiConstants.ParameterDefaultIncludeCommitLinks,
             useAnonymization = fetchParameters.useAnonymization
         )
@@ -166,6 +170,7 @@ object MultiActor {
             projectName => MultiSpecificSingleFetchParameters(
                 projectName = projectName,
                 filePath = fetchParameters.filePath,
+                recursive = fetchParameters.recursive,
                 startDate = fetchParameters.startDate,
                 endDate = fetchParameters.endDate,
                 useAnonymization = fetchParameters.useAnonymization

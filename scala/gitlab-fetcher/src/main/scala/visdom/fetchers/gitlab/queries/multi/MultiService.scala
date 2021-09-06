@@ -60,6 +60,17 @@ with GitlabFetcherResponseHandler
                 )
             ),
             new Parameter(
+                name = Constants.ParameterRecursive,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionRecursive,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultRecursiveString,
+                    allowableValues = Array(Constants.FalseString, Constants.TrueString)
+                )
+            ),
+            new Parameter(
                 name = Constants.ParameterStartDate,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -178,6 +189,7 @@ with GitlabFetcherResponseHandler
         parameters(
             Constants.ParameterProjectNames.withDefault(""),
             Constants.ParameterFilePath.optional,
+            Constants.ParameterRecursive.withDefault(Constants.ParameterDefaultRecursiveString),
             Constants.ParameterStartDate.optional,
             Constants.ParameterEndDate.optional,
             Constants.ParameterUseAnonymization
@@ -187,6 +199,7 @@ with GitlabFetcherResponseHandler
         (
             projectNames,
             filePath,
+            recursive,
             startDate,
             endDate,
             useAnonymization
@@ -194,6 +207,7 @@ with GitlabFetcherResponseHandler
             val options: MultiQueryOptions = MultiQueryOptions(
                 projectNames = projectNames,
                 filePath = filePath,
+                recursive = recursive,
                 startDate = startDate,
                 endDate = endDate,
                 useAnonymization = useAnonymization

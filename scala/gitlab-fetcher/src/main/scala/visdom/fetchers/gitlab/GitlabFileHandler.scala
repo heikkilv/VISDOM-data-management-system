@@ -19,6 +19,9 @@ import org.mongodb.scala.bson.Document
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
+import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
+import visdom.utils.WartRemoverConstants
 
 
 class GitlabFileHandler(options: GitlabFileOptions)
@@ -48,7 +51,7 @@ class GitlabFileHandler(options: GitlabFileOptions)
             urlEncode(options.projectName, utf8),
             GitlabConstants.PathRepository,
             GitlabConstants.PathTree
-        ).mkString("/")
+        ).mkString(CommonConstants.Slash)
 
         val commitRequest: HttpRequest = processOptionalParameters(
             Http(uri)
@@ -74,6 +77,25 @@ class GitlabFileHandler(options: GitlabFileOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
+        val resultFailCheck: Boolean = !options.recursive && (
+            options.filePath match {
+                case Some(filePath: String) => document.getStringOption(GitlabConstants.AttributePath) match {
+                    case Some(documentPath: String) => !documentPath.startsWith(filePath)
+                    case None => true  // result document did not contain string valued path attribute
+                }
+                case None => false
+            }
+        )
+
+        if (resultFailCheck) {
+            BsonDocument()  // empty result will be discarded
+        }
+        else {
+            processDocumentInternal(document)
+        }
+    }
+
+    private def processDocumentInternal(document: BsonDocument): BsonDocument = {
         val filePathOption: Option[String] = document.getStringOption(GitlabConstants.AttributePath)
         val linkDocumentOption: Option[BsonDocument] = filePathOption match {
             case Some(filePath: String) => collectData(Seq(
@@ -209,13 +231,18 @@ class GitlabFileHandler(options: GitlabFileOptions)
     }
 
     private def processOptionalParameters(request: HttpRequest): HttpRequest = {
-        @SuppressWarnings(Array("org.wartremover.warts.Var"))
+        @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
         var paramMap: Seq[(String, String)] = Seq.empty
 
         options.filePath match {
             case Some(filePath: String) => {
                 paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamPath, filePath
+                    GitlabConstants.ParamPath, options.recursive match {
+                        case true => filePath
+                        case false =>
+                            // if trying to get data for a single file, GitLab API returns an empty response
+                            GeneralUtils.getUpperFolder(filePath)
+                    }
                 ))
             }
             case None =>

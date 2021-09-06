@@ -55,11 +55,21 @@ object GeneralUtils {
     }
 
     implicit class EnrichedWithToTuple[A](elements: Seq[A]) {
-        def toTuple1: Tuple1[A] = elements match { case Seq(a) => Tuple1(a) }
-        def toTuple2: (A, A) = elements match { case Seq(a, b) => (a, b) }
-        def toTuple3: (A, A, A) = elements match { case Seq(a, b, c) => (a, b, c) }
-        def toTuple4: (A, A, A, A) = elements match { case Seq(a, b, c, d) => (a, b, c, d) }
-        def toTuple5: (A, A, A, A, A) = elements match { case Seq(a, b, c, d, e) => (a, b, c, d, e) }
-        def toTuple6: (A, A, A, A, A, A) = elements match { case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f) }
+        def toTuple1: Tuple1[A] = elements match {case Seq(a) => Tuple1(a)}
+        def toTuple2: (A, A) = elements match {case Seq(a, b) => (a, b)}
+        def toTuple3: (A, A, A) = elements match {case Seq(a, b, c) => (a, b, c)}
+        def toTuple4: (A, A, A, A) = elements match {case Seq(a, b, c, d) => (a, b, c, d)}
+        def toTuple5: (A, A, A, A, A) = elements match {case Seq(a, b, c, d, e) => (a, b, c, d, e)}
+        def toTuple6: (A, A, A, A, A, A) = elements match {case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f)}
+    }
+
+    def getUpperFolder(path: String): String = {
+        path.contains(CommonConstants.Slash) match {
+            case true => {
+                val pathParts: Array[String] = path.split(CommonConstants.Slash)
+                pathParts.take(pathParts.size - 1).mkString(CommonConstants.Slash)
+            }
+            case false => CommonConstants.EmptyString
+        }
     }
 }
