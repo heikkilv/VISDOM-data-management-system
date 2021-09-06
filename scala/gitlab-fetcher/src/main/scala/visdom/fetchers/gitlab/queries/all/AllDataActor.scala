@@ -3,11 +3,8 @@ package visdom.fetchers.gitlab.queries.all
 import akka.actor.Actor
 import akka.actor.ActorLogging
 import java.time.ZonedDateTime
-import org.mongodb.scala.bson.collection.immutable.Document
-import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import scala.util.Failure
-import scala.util.Success
+import visdom.fetchers.FetcherUtils
 import visdom.fetchers.gitlab.AllDataSpecificFetchParameters
 import visdom.fetchers.gitlab.CommitSpecificFetchParameters
 import visdom.fetchers.gitlab.FileSpecificFetchParameters
@@ -37,7 +34,7 @@ class AllDataActor extends Actor with ActorLogging {
                     CommonHelpers.checkProjectAvailability(fetchParameters.projectName) match {
                         case GitlabConstants.StatusCodeOk => {
                             // start the data fetching
-                            AllDataActor.handleDataFetching(fetchParameters)
+                            FetcherUtils.handleDataFetchingSequence(AllDataActor.dataFetchers, fetchParameters)
                             // return the accepted response
                             ResponseUtils.getAcceptedResponse(
                                 AllDataConstants.AllDataStatusAcceptedDescription,
@@ -53,7 +50,7 @@ class AllDataActor extends Actor with ActorLogging {
                         case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }
@@ -144,21 +141,4 @@ object AllDataActor {
         AllDataActor.startFileFetching(_),
         AllDataActor.startPipelineFetching(_)
     )
-
-    def handleDataFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
-        def handleDataFetchingInternal(fetchers: Seq[AllDataSpecificFetchParameters => Unit]): Unit = {
-            fetchers.headOption match {
-                case Some(fetcher) => {
-                    val fetcherFuture: Future[Unit] = Future(fetcher(fetchParameters))
-                    fetcherFuture.onComplete({
-                        case Success(_) => handleDataFetchingInternal(fetchers.drop(1))
-                        case Failure(error: Throwable) => println(s"Error: ${error.getMessage()}")
-                    })
-                }
-                case None =>
-            }
-        }
-
-        handleDataFetchingInternal(dataFetchers)
-    }
 }

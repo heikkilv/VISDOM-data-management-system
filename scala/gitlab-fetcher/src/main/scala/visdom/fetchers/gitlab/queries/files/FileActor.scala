@@ -17,12 +17,13 @@ import visdom.http.server.response.StatusResponse
 import visdom.http.server.fetcher.gitlab.FileQueryOptions
 import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerProtocol
+import visdom.utils.WartRemoverConstants
 
 
 class FileActor extends Actor with ActorLogging with ServerProtocol {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
-    @SuppressWarnings(Array("org.wartremover.warts.Any"))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: FileQueryOptions => {
             log.info(s"Received files query with options: ${queryOptions.toString()}")
@@ -47,7 +48,7 @@ class FileActor extends Actor with ActorLogging with ServerProtocol {
                         case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }

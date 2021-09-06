@@ -49,7 +49,7 @@ class CommitActor extends Actor with ActorLogging {
                         case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }

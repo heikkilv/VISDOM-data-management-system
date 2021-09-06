@@ -15,9 +15,11 @@ import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.JavaConverters.asScalaSetConverter
+import spray.json.JsArray
 import spray.json.JsBoolean
 import spray.json.JsNull
 import spray.json.JsNumber
+import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
 import visdom.utils.GeneralUtils
@@ -222,6 +224,7 @@ object JsonUtils {
         BsonArray(values.map(value => toBsonValue(value)))
     }
 
+    // scalastyle:off cyclomatic.complexity
     def toJsonValue(value: Any): JsValue = {
         value match {
             case jsValue: JsValue => jsValue
@@ -231,9 +234,13 @@ object JsonUtils {
             case doubleValue: Double => JsNumber(doubleValue)
             case booleanValue: Boolean => JsBoolean(booleanValue)
             case Some(optionValue) => toJsonValue(optionValue)
+            case seqValue: Seq[_] => JsArray(seqValue.map(content => toJsonValue(content)).toList)
+            case mapValue: Map[_, _] =>
+                JsObject(mapValue.map({ case (key, content) => (key.toString(), toJsonValue(content)) }))
             case _ => JsNull
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def removeAttribute(document: BsonDocument, attributeName: String): BsonDocument = {
         document.containsKey(attributeName) match {

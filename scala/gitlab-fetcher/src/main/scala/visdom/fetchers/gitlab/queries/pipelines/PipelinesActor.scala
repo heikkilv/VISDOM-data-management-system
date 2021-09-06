@@ -50,7 +50,7 @@ class PipelinesActor extends Actor with ActorLogging with ServerProtocol {
                         case _ => ResponseUtils.getErrorResponse(Constants.StatusErrorDescription)
                     }
                 }
-                case Left(errorDescription: String) => ResponseUtils.getErrorResponse(errorDescription)
+                case Left(errorDescription: String) => ResponseUtils.getInvalidResponse(errorDescription)
             }
             sender() ! response
         }
