@@ -20,7 +20,6 @@ object MultiConstants {
     final val ParameterDefaultIncludeFileLinks: Boolean = true
     final val ParameterDefaultIncludeReferenceLinks: Boolean = true
     final val ParameterDefaultIncludeCommitLinks: Boolean = true
-    final val ParameterDefaultRecursive: Boolean = true
 
     // the example responses for the all endpoint
     final val MultiResponseExampleAccepted = """{
@@ -29,6 +28,7 @@ object MultiConstants {
         "options": {
             "projectNames": "group/project-name1,group/project-name2",
             "filePath": "folder",
+            "recursive": "true",
             "startDate": "2020-01-01T00:00:00.000Z",
             "endDate": "2021-01-01T00:00:00.000Z",
             "useAnonymization": "false",
