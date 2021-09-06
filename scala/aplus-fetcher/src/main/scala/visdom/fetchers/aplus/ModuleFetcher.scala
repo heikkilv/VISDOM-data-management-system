@@ -38,7 +38,8 @@ class ModuleFetcher(options: APlusModuleOptions)
             APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
             APlusConstants.AttributeParseNames -> options.parseNames,
             APlusConstants.AttributeIncludeExercises -> options.includeExercises,
-            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions,
+            APlusConstants.AttributeIncludeGitlabData -> options.includeGitlabData
         )
         .appendGdprOptions(options.gdprOptions)
         .appendOption(
@@ -125,6 +126,7 @@ class ModuleFetcher(options: APlusModuleOptions)
             .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
             .append(APlusConstants.AttributeIncludeExercises, toBsonValue(options.includeExercises))
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeIncludeGitlabData, toBsonValue(options.includeGitlabData))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
             .appendOption(APlusConstants.AttributeOther, otherMetadata)
             .appendGdprOptions(options.gdprOptions)
@@ -164,6 +166,7 @@ class ModuleFetcher(options: APlusModuleOptions)
                         exerciseId = None,  // fetch all exercises for the module
                         parseNames = options.parseNames,
                         includeSubmissions = options.includeSubmissions,
+                        includeGitlabData = options.includeGitlabData,
                         useAnonymization = options.useAnonymization,
                         gdprOptions = CheckQuestionUtils.getUpdatedGdprOptions(options.gdprOptions, checkedUsers)
                     )

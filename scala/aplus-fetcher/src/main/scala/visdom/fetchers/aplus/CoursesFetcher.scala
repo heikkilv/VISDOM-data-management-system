@@ -33,6 +33,7 @@ class CoursesFetcher(options: APlusCourseOptions)
             APlusConstants.AttributeIncludeModules -> options.includeModules,
             APlusConstants.AttributeIncludeExercises -> options.includeExercises,
             APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions,
+            APlusConstants.AttributeIncludeGitlabData -> options.includeGitlabData,
             APlusConstants.AttributeIncludePoints -> options.includePoints
         ).appendOption(
             APlusConstants.AttributeCourseId,
@@ -144,6 +145,7 @@ class CoursesFetcher(options: APlusCourseOptions)
             .append(APlusConstants.AttributeIncludeModules, toBsonValue(options.includeModules))
             .append(APlusConstants.AttributeIncludeExercises, toBsonValue(options.includeExercises))
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeIncludeGitlabData, toBsonValue(options.includeGitlabData))
             .append(APlusConstants.AttributeIncludePoints, toBsonValue(options.includePoints))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
             .appendOption(APlusConstants.AttributeOther, otherMetadata)
@@ -173,6 +175,7 @@ class CoursesFetcher(options: APlusCourseOptions)
                         parseNames = options.parseNames,
                         includeExercises = options.includeExercises,
                         includeSubmissions = options.includeSubmissions,
+                        includeGitlabData = options.includeGitlabData,
                         useAnonymization = options.useAnonymization,
                         gdprOptions = options.gdprOptions
                     )

@@ -49,6 +49,7 @@ object APlusConstants {
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeIncludeExercises: String = "include_exercises"
+    val AttributeIncludeGitlabData: String = "include_gitlab_data"
     val AttributeIncludeModules: String = "include_modules"
     val AttributeIncludePoints: String = "include_points"
     val AttributeIncludeSubmissions: String = "include_submissions"

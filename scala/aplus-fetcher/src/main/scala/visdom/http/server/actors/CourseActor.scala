@@ -6,17 +6,17 @@ import java.time.ZonedDateTime
 import org.mongodb.scala.bson.collection.immutable.Document
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import visdom.http.server.CommonHelpers
-import visdom.http.server.ResponseUtils
-import visdom.http.server.fetcher.aplus.CourseDataQueryOptions
-import visdom.http.server.response.StatusResponse
-import visdom.http.server.services.constants.APlusFetcherDescriptions
 import visdom.fetchers.aplus.APlusCourseOptions
 import visdom.fetchers.aplus.CoursesFetcher
 import visdom.fetchers.aplus.CourseSpecificFetchParameters
 import visdom.fetchers.aplus.FetcherValues
 import visdom.fetchers.aplus.GdprOptions
-import visdom.http.server.ServerConstants
+import visdom.http.server.CommonHelpers
+import visdom.http.server.ResponseUtils
+import visdom.http.server.fetcher.aplus.CourseDataQueryOptions
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.services.constants.APlusFetcherDescriptions
+import visdom.http.server.services.constants.APlusServerConstants
 import visdom.utils.WartRemoverConstants
 
 
@@ -46,26 +46,23 @@ class CourseActor extends Actor with ActorLogging {
 
 object CourseActor {
     def checkQueryOptions(queryOptions: CourseDataQueryOptions): Option[String] = {
+        val nonBooleanParameter: Option[(String, String)] = CommonHelpers.getNonBooleanParameter(
+            Seq(
+                (APlusServerConstants.ParseNames, queryOptions.parseNames),
+                (APlusServerConstants.IncludeModules, queryOptions.includeModules),
+                (APlusServerConstants.IncludeExercises, queryOptions.includeExercises),
+                (APlusServerConstants.IncludeSubmissions, queryOptions.includeSubmissions),
+                (APlusServerConstants.IncludeGitlabData, queryOptions.includeGitlabData),
+                (APlusServerConstants.IncludePoints, queryOptions.includePoints),
+                (APlusServerConstants.UseAnonymization, queryOptions.useAnonymization)
+            )
+        )
+
         if (!CommonHelpers.isCourseId(queryOptions.courseId)) {
             Some(s"'${queryOptions.courseId}' is not a valid course id")
         }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
-            Some(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeModules)) {
-            Some(s"'${queryOptions.includeModules}' is not a valid value for includeModules")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
-            Some(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
-            Some(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includePoints)) {
-            Some(s"'${queryOptions.includePoints}' is not a valid value for includePoints")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
-            Some(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
+        else if (nonBooleanParameter.isDefined) {
+            nonBooleanParameter.map({case (name, value) => s"'${value}' is not a valid value for ${name}"})
         }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
@@ -95,6 +92,7 @@ object CourseActor {
                         includeModules = queryOptions.includeModules.toBoolean,
                         includeExercises = queryOptions.includeExercises.toBoolean,
                         includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        includeGitlabData = queryOptions.includeGitlabData.toBoolean,
                         includePoints = queryOptions.includePoints.toBoolean,
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         gdprOptions = queryOptions.gdprExerciseId match {
@@ -122,6 +120,7 @@ object CourseActor {
             includeModules = fetchParameters.includeModules,
             includeExercises = fetchParameters.includeExercises,
             includeSubmissions = fetchParameters.includeSubmissions,
+            includeGitlabData = fetchParameters.includeGitlabData,
             includePoints = fetchParameters.includePoints,
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions

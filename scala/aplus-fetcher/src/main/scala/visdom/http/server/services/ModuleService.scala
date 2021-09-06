@@ -101,6 +101,17 @@ with APlusFetcherResponseHandler
                 )
             ),
             new Parameter(
+                name = APlusServerConstants.IncludeGitlabData,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludeGitlabData,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludeGitlabData,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
                 name = APlusServerConstants.UseAnonymization,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -197,6 +208,7 @@ with APlusFetcherResponseHandler
             APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames),
             APlusServerConstants.IncludeExercises.withDefault(APlusServerConstants.DefaultIncludeExercises),
             APlusServerConstants.IncludeSubmissions.withDefault(APlusServerConstants.DefaultIncludeSubmissions),
+            APlusServerConstants.IncludeGitlabData.withDefault(APlusServerConstants.DefaultIncludeGitlabData),
             APlusServerConstants.UseAnonymization.withDefault(APlusServerConstants.DefaultUseAnonymization),
             APlusServerConstants.GDPRExerciseId.optional,
             APlusServerConstants.GDPRFieldName.withDefault(APlusServerConstants.DefaultGDPRFieldName),
@@ -209,6 +221,7 @@ with APlusFetcherResponseHandler
             parseNames,
             includeExercises,
             includeSubmissions,
+            includeGitlabData,
             useAnonymization,
             gdprExerciseId,
             gdprFieldName,
@@ -222,6 +235,7 @@ with APlusFetcherResponseHandler
                     parseNames = parseNames,
                     includeExercises = includeExercises,
                     includeSubmissions = includeSubmissions,
+                    includeGitlabData = includeGitlabData,
                     useAnonymization = useAnonymization,
                     gdprExerciseId = gdprExerciseId,
                     gdprFieldName = gdprFieldName,

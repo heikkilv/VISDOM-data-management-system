@@ -6,17 +6,17 @@ import java.time.ZonedDateTime
 import org.mongodb.scala.bson.collection.immutable.Document
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import visdom.http.server.CommonHelpers
-import visdom.http.server.ResponseUtils
-import visdom.http.server.fetcher.aplus.ModuleDataQueryOptions
-import visdom.http.server.response.StatusResponse
-import visdom.http.server.services.constants.APlusFetcherDescriptions
 import visdom.fetchers.aplus.APlusModuleOptions
 import visdom.fetchers.aplus.FetcherValues
 import visdom.fetchers.aplus.GdprOptions
 import visdom.fetchers.aplus.ModuleFetcher
 import visdom.fetchers.aplus.ModuleSpecificFetchParameters
-import visdom.http.server.ServerConstants
+import visdom.http.server.CommonHelpers
+import visdom.http.server.ResponseUtils
+import visdom.http.server.fetcher.aplus.ModuleDataQueryOptions
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.services.constants.APlusFetcherDescriptions
+import visdom.http.server.services.constants.APlusServerConstants
 import visdom.utils.WartRemoverConstants
 
 
@@ -46,23 +46,24 @@ class ModuleActor extends Actor with ActorLogging {
 
 object ModuleActor {
     def checkQueryOptions(queryOptions: ModuleDataQueryOptions): Option[String] = {
+        val nonBooleanParameter: Option[(String, String)] = CommonHelpers.getNonBooleanParameter(
+            Seq(
+                (APlusServerConstants.ParseNames, queryOptions.parseNames),
+                (APlusServerConstants.IncludeExercises, queryOptions.includeExercises),
+                (APlusServerConstants.IncludeSubmissions, queryOptions.includeSubmissions),
+                (APlusServerConstants.IncludeGitlabData, queryOptions.includeGitlabData),
+                (APlusServerConstants.UseAnonymization, queryOptions.useAnonymization)
+            )
+        )
+
         if (!CommonHelpers.isCourseId(Some(queryOptions.courseId))) {
             Some(s"'${queryOptions.courseId}' is not a valid course id")
         }
         else if (!CommonHelpers.isModuleId(queryOptions.moduleId)) {
             Some(s"'${queryOptions.moduleId}' is not a valid module id")
         }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
-            Some(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeExercises)) {
-            Some(s"'${queryOptions.includeExercises}' is not a valid value for includeExercises")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.includeSubmissions)) {
-            Some(s"'${queryOptions.includeSubmissions}' is not a valid value for includeSubmissions")
-        }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.useAnonymization)) {
-            Some(s"'${queryOptions.useAnonymization}' is not a valid value for useAnonymization")
+        else if (nonBooleanParameter.isDefined) {
+            nonBooleanParameter.map({case (name, value) => s"'${value}' is not a valid value for ${name}"})
         }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
@@ -92,6 +93,7 @@ object ModuleActor {
                         parseNames = queryOptions.parseNames.toBoolean,
                         includeExercises = queryOptions.includeExercises.toBoolean,
                         includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        includeGitlabData = queryOptions.includeGitlabData.toBoolean,
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         gdprOptions = queryOptions.gdprExerciseId match {
                             case Some(gdprExerciseId: String) => Some(
@@ -118,6 +120,7 @@ object ModuleActor {
             parseNames = fetchParameters.parseNames,
             includeExercises = fetchParameters.includeExercises,
             includeSubmissions = fetchParameters.includeSubmissions,
+            includeGitlabData = fetchParameters.includeGitlabData,
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )

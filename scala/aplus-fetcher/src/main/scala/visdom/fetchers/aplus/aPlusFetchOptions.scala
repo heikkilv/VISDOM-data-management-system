@@ -23,6 +23,7 @@ abstract class CourseSpecificFetchOptions {
     val includeExercises: Boolean
     val includeSubmissions: Boolean
     val includePoints: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -32,6 +33,7 @@ abstract class ModuleSpecificFetchOptions {
     val parseNames: Boolean
     val includeExercises: Boolean
     val includeSubmissions: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -41,6 +43,7 @@ abstract class ExerciseSpecificFetchOptions {
     val exerciseId: Option[Int]
     val parseNames: Boolean
     val includeSubmissions: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -67,6 +70,7 @@ final case class CourseSpecificFetchParameters(
     includeExercises: Boolean,
     includeSubmissions: Boolean,
     includePoints: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -78,6 +82,7 @@ final case class ModuleSpecificFetchParameters(
     parseNames: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -89,6 +94,7 @@ final case class ExerciseSpecificFetchParameters(
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -123,6 +129,7 @@ final case class APlusCourseOptions(
     includeExercises: Boolean,
     includeSubmissions: Boolean,
     includePoints: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -136,6 +143,7 @@ final case class APlusModuleOptions(
     parseNames: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -149,6 +157,7 @@ final case class APlusExerciseOptions(
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )

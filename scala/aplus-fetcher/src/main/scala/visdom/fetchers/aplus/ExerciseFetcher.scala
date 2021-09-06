@@ -39,7 +39,8 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
             APlusConstants.AttributeParseNames -> options.parseNames,
-            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions,
+            APlusConstants.AttributeIncludeGitlabData -> options.includeGitlabData
         )
         .appendGdprOptions(options.gdprOptions)
         .appendOption(
@@ -170,6 +171,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         getMetadataBase()
             .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeIncludeGitlabData, toBsonValue(options.includeGitlabData))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
             .appendOption(APlusConstants.AttributeOther, gitLocation)
             .appendGdprOptions(options.gdprOptions)
