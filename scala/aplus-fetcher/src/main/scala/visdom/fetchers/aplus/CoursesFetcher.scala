@@ -1,6 +1,7 @@
 package visdom.fetchers.aplus
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -15,14 +16,11 @@ import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
-import visdom.utils.WartRemoverConstants
+import visdom.utils.metadata.APlusMetadata
 
 
 class CoursesFetcher(options: APlusCourseOptions)
     extends APlusDataHandler(options) {
-
-    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
-    private var gitProjects: Map[String, Set[String]] = Map.empty
 
     def getFetcherType(): String = APlusConstants.FetcherTypeCourses
     def getCollectionName(): String = MongoConstants.CollectionCourses
@@ -88,6 +86,7 @@ class CoursesFetcher(options: APlusCourseOptions)
             case Some(_) => document
             case None => getDetailedDocument(document)
         }
+        val courseId: Option[Int] = detailedDocument.getIntOption(AttributeConstants.Id)
 
         val moduleIds: Seq[Int] = (options.courseId.isDefined && options.includeModules) match {
             // the module information is only fetched if a specific course is targeted
@@ -103,7 +102,7 @@ class CoursesFetcher(options: APlusCourseOptions)
             }
 
         addIdentifierAttributes(APlusUtils.parseCourseDocument(detailedDocument))
-            .append(AttributeConstants.Metadata, getMetadata())
+            .append(AttributeConstants.Metadata, getMetadata(courseId))
             .appendOption(AttributeConstants.Links, getLinkData(moduleIds, userIds))
     }
 
@@ -131,7 +130,15 @@ class CoursesFetcher(options: APlusCourseOptions)
             .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
-    private def getMetadata(): BsonDocument = {
+    private def getMetadata(courseIdOption: Option[Int]): BsonDocument = {
+        val otherMetadata: Option[BsonValue] = courseIdOption match {
+            case Some(courseId: Int) =>
+                APlusMetadata.courseMetadata
+                    .get(courseId)
+                    .map(metadata => metadata.toBsonValue())
+            case None => None
+        }
+
         getMetadataBase()
             .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
             .append(APlusConstants.AttributeIncludeModules, toBsonValue(options.includeModules))
@@ -139,6 +146,7 @@ class CoursesFetcher(options: APlusCourseOptions)
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
             .append(APlusConstants.AttributeIncludePoints, toBsonValue(options.includePoints))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendOption(APlusConstants.AttributeOther, otherMetadata)
     }
 
     private def getLinkData(moduleIds: Seq[Int], userIds: Seq[Int]): Option[BsonDocument] = {
@@ -170,12 +178,7 @@ class CoursesFetcher(options: APlusCourseOptions)
                     )
                 )
 
-                val moduleIds: Seq[Int] = FetcherUtils.getFetcherResultIds(moduleFetcher)
-
-                // update the gitProjects variable from the submission fetcher
-                gitProjects = APlusUtils.combinedMapOfSet(gitProjects, moduleFetcher.getGitProject())
-
-                moduleIds
+                FetcherUtils.getFetcherResultIds(moduleFetcher)
             }
             case None => Seq.empty  // no id was found in the given document
         }

@@ -1,6 +1,7 @@
 package visdom.fetchers.aplus
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -15,15 +16,11 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
-import visdom.utils.WartRemoverConstants
+import visdom.utils.metadata.APlusMetadata
 
 
 class ModuleFetcher(options: APlusModuleOptions)
     extends APlusDataHandler(options) {
-
-    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
-    private var gitProjects: Map[String, Set[String]] = Map.empty
-    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = options.gdprOptions match {
         case Some(gdprOptions: GdprOptions) =>
@@ -93,6 +90,7 @@ class ModuleFetcher(options: APlusModuleOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
+        val moduleId: Option[Int] = document.getIntOption(AttributeConstants.Id)
         val parsedDocument: BsonDocument = options.parseNames match {
             case true => APlusUtils.parseDocument(document, getParsableAttributes())
             case false => document
@@ -104,7 +102,7 @@ class ModuleFetcher(options: APlusModuleOptions)
         }
 
         addIdentifierAttributes(parsedDocument)
-            .append(AttributeConstants.Metadata, getMetadata())
+            .append(AttributeConstants.Metadata, getMetadata(moduleId))
             .append(AttributeConstants.Links, getLinkData(exerciseIds))
     }
 
@@ -114,12 +112,21 @@ class ModuleFetcher(options: APlusModuleOptions)
             .append(APlusConstants.AttributeCourseId, toBsonValue(options.courseId))
     }
 
-    private def getMetadata(): BsonDocument = {
+    private def getMetadata(moduleIdOption: Option[Int]): BsonDocument = {
+        val otherMetadata: Option[BsonValue] = moduleIdOption match {
+            case Some(moduleId: Int) =>
+                APlusMetadata.moduleMetadata
+                    .get((options.courseId, moduleId))
+                    .map(metadata => metadata.toBsonValue())
+            case None => None
+        }
+
         getMetadataBase()
             .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
             .append(APlusConstants.AttributeIncludeExercises, toBsonValue(options.includeExercises))
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendOption(APlusConstants.AttributeOther, otherMetadata)
             .appendGdprOptions(options.gdprOptions)
     }
 
@@ -162,12 +169,7 @@ class ModuleFetcher(options: APlusModuleOptions)
                     )
                 )
 
-                val exerciseIds = FetcherUtils.getFetcherResultIds(exerciseFetcher)
-
-                // update the gitProjects variable from the exercise fetcher
-                gitProjects = APlusUtils.combinedMapOfSet(gitProjects, exerciseFetcher.getGitProject())
-
-                exerciseIds
+                FetcherUtils.getFetcherResultIds(exerciseFetcher)
             }
             case None => Seq.empty  // no module id was set
         }

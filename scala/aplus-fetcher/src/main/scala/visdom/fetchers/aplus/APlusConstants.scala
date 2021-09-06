@@ -62,6 +62,7 @@ object APlusConstants {
     val AttributeName: String = "name"
     val AttributeNext: String = "next"
     val AttributeNumber: String = "number"
+    val AttributeOther: String = "other"
     val AttributeParseGitAnswers: String = "parse_git_answers"
     val AttributeParseNames: String = "parse_names"
     val AttributePath: String = "path"

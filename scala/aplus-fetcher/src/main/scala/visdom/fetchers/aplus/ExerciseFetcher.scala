@@ -1,6 +1,7 @@
 package visdom.fetchers.aplus
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -17,15 +18,11 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
-import visdom.utils.WartRemoverConstants
+import visdom.utils.metadata.APlusMetadata
 
 
 class ExerciseFetcher(options: APlusExerciseOptions)
     extends APlusDataHandler(options) {
-
-    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
-    private var gitProjects: Map[String, Set[String]] = Map.empty
-    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = options.gdprOptions match {
         case Some(gdprOptions: GdprOptions) =>
@@ -107,6 +104,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
     override def processDocument(document: BsonDocument): BsonDocument = {
         // try to always get the detailed exercise information for each exercise
         val detailedDocument: BsonDocument = getDetailedDocument(document)
+        val exerciseId: Option[Int] = detailedDocument.getIntOption(AttributeConstants.Id)
 
         val parsedDocument: BsonDocument = options.parseNames match {
             case true => APlusUtils.parseDocument(detailedDocument, getParsableAttributes())
@@ -129,7 +127,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         }
 
         addIdentifierAttributes(cleanedDocument)
-            .append(AttributeConstants.Metadata, getMetadata())
+            .append(AttributeConstants.Metadata, getMetadata(exerciseId))
             .append(AttributeConstants.Links, getLinkData(submissionIds))
     }
 
@@ -160,11 +158,20 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
-    private def getMetadata(): BsonDocument = {
+    private def getMetadata(exerciseIdOption: Option[Int]): BsonDocument = {
+        val gitLocation: Option[BsonValue] = exerciseIdOption match {
+            case Some(exerciseId: Int) =>
+                APlusMetadata.exerciseGitLocation
+                    .get((options.courseId, exerciseId))
+                    .map(location => location.toBsonValue())
+            case None => None
+        }
+
         getMetadataBase()
             .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
             .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
             .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendOption(APlusConstants.AttributeOther, gitLocation)
             .appendGdprOptions(options.gdprOptions)
     }
 
@@ -217,8 +224,9 @@ class ExerciseFetcher(options: APlusExerciseOptions)
 
                         val submissionIds: Seq[Int] = FetcherUtils.getFetcherResultIds(submissionFetcher)
 
-                        // update the gitProjects variable from the submission fetcher
-                        gitProjects = APlusUtils.combinedMapOfSet(gitProjects, submissionFetcher.getGitProject())
+                        // get the Git projects list from the submission fetcher
+                        val gitProjects = submissionFetcher.getGitProject()
+                        // TODO: call GitLab fetcher if the gitlab data is required
 
                         submissionIds
                     }
