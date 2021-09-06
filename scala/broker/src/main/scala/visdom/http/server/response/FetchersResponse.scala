@@ -21,12 +21,12 @@ final case class FetchersResponse(
     def toJsObject(): JsObject = {
         JsObject({
             Map[String, JsValue](
-                AttributeConstants.AttributeComponentName -> JsString(componentName),
-                AttributeConstants.AttributeFetcherType -> JsString(fetcherType),
-                AttributeConstants.AttributeVersion -> JsString(version),
-                AttributeConstants.AttributeApiAddress -> JsString(apiAddress),
-                AttributeConstants.AttributeSwaggerDefinition -> JsString(swaggerDefinition),
-                AttributeConstants.AttributeInformation -> information
+                AttributeConstants.ComponentName -> JsString(componentName),
+                AttributeConstants.FetcherType -> JsString(fetcherType),
+                AttributeConstants.Version -> JsString(version),
+                AttributeConstants.ApiAddress -> JsString(apiAddress),
+                AttributeConstants.SwaggerDefinition -> JsString(swaggerDefinition),
+                AttributeConstants.Information -> information
             )
         })
     }

@@ -113,7 +113,7 @@ extends APlusDataHandler(options) {
                 }
 
                 addIdentifierAttributes(parsedDocumentNames)
-                    .append(AttributeConstants.AttributeMetadata, getMetadata())
+                    .append(AttributeConstants.Metadata, getMetadata())
             }
             // no data fetching allowed for the given user id => return empty document
             case false => BsonDocument()
@@ -123,11 +123,11 @@ extends APlusDataHandler(options) {
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
         options.userId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
+            case None => document.getIntOption(AttributeConstants.Id) match {
                 case Some(userId: Int) => {
                     HttpUtils.getRequestDocument(getRequest(Some(userId)), HttpConstants.StatusCodeOk) match {
                         case Some(pointDocument: BsonDocument) =>
-                            pointDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            pointDocument.getIntOption(AttributeConstants.Id) match {
                                 case Some(_) => pointDocument
                                 case None => document  // no id attribute in the response JSON
                             }

@@ -129,21 +129,21 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         }
 
         addIdentifierAttributes(cleanedDocument)
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData(submissionIds))
+            .append(AttributeConstants.Metadata, getMetadata())
+            .append(AttributeConstants.Links, getLinkData(submissionIds))
     }
 
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
         options.exerciseId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
+            case None => document.getIntOption(AttributeConstants.Id) match {
                 case Some(exerciseId: Int) => {
                     HttpUtils.getRequestDocument(
                         getRequest(Some(exerciseId)),
                         HttpConstants.StatusCodeOk
                     ) match {
                         case Some(exerciseDocument: BsonDocument) =>
-                            exerciseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            exerciseDocument.getIntOption(AttributeConstants.Id) match {
                                 case Some(_) => exerciseDocument
                                 case None => document
                             }

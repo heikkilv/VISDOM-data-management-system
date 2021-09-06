@@ -104,8 +104,8 @@ class ModuleFetcher(options: APlusModuleOptions)
         }
 
         addIdentifierAttributes(parsedDocument)
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData(exerciseIds))
+            .append(AttributeConstants.Metadata, getMetadata())
+            .append(AttributeConstants.Links, getLinkData(exerciseIds))
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {

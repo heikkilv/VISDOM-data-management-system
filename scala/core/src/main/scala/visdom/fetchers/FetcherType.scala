@@ -14,7 +14,7 @@ final case class FetcherType(
     information: BsonDocument
 ) {
     def usesMatchingSourceServer(sourceServer: String): Boolean = {
-        information.getStringOption(AttributeConstants.AttributeSourceServer) match {
+        information.getStringOption(AttributeConstants.SourceServer) match {
             case Some(fetcherSourceServer: String) => fetcherSourceServer == sourceServer
             case None => false
         }
@@ -29,13 +29,13 @@ object FetcherType {
     def fromBsonDocument(document: BsonDocument): Option[FetcherType] = {
         val requiredAttributes: Option[(String, String, String, String)] =
             document.getManyStringOption(
-                AttributeConstants.AttributeComponentName,
-                AttributeConstants.AttributeFetcherType,
-                AttributeConstants.AttributeVersion,
-                AttributeConstants.AttributeApiAddress
+                AttributeConstants.ComponentName,
+                AttributeConstants.FetcherType,
+                AttributeConstants.Version,
+                AttributeConstants.ApiAddress
             ).map(valueSequence => valueSequence.toTuple4)
         val informationAttribute: Option[BsonDocument] =
-            document.getDocumentOption(AttributeConstants.AttributeInformation)
+            document.getDocumentOption(AttributeConstants.Information)
 
         requiredAttributes match {
             case Some((componentName: String, fetcherType: String, version: String, apiAddress: String)) =>

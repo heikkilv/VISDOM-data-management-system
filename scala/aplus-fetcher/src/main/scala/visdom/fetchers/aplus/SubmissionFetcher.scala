@@ -133,8 +133,8 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                 updateGitProjects(parsedDocumentNames)
 
                 addIdentifierAttributes(parsedDocumentNames)
-                    .append(AttributeConstants.AttributeMetadata, getMetadata())
-                    .append(AttributeConstants.AttributeLinks, getLinkData())
+                    .append(AttributeConstants.Metadata, getMetadata())
+                    .append(AttributeConstants.Links, getLinkData())
             }
             // no data fetching allowed for at least one user involved in the submission => return empty document
             case false => BsonDocument()
@@ -144,14 +144,14 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
         options.submissionId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
+            case None => document.getIntOption(AttributeConstants.Id) match {
                 case Some(submissionId: Int) => {
                     HttpUtils.getRequestDocument(
                         getRequest(Some(submissionId)),
                         HttpConstants.StatusCodeOk
                     ) match {
                         case Some(submissionDocument: BsonDocument) =>
-                            submissionDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            submissionDocument.getIntOption(AttributeConstants.Id) match {
                                 case Some(_) => submissionDocument
                                 case None => document
                             }

@@ -103,19 +103,19 @@ class CoursesFetcher(options: APlusCourseOptions)
             }
 
         addIdentifierAttributes(APlusUtils.parseCourseDocument(detailedDocument))
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .appendOption(AttributeConstants.AttributeLinks, getLinkData(moduleIds, userIds))
+            .append(AttributeConstants.Metadata, getMetadata())
+            .appendOption(AttributeConstants.Links, getLinkData(moduleIds, userIds))
     }
 
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
-        document.getIntOption(AttributeConstants.AttributeId) match {
+        document.getIntOption(AttributeConstants.Id) match {
             case Some(courseId: Int) => {
                 HttpUtils.getRequestDocument(
                     getRequest(Some(courseId)),
                     HttpConstants.StatusCodeOk
                 ) match {
                     case Some(courseDocument: BsonDocument) =>
-                        courseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                        courseDocument.getIntOption(AttributeConstants.Id) match {
                             case Some(_) => courseDocument
                             case None => document
                         }
