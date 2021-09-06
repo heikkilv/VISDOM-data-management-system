@@ -7,6 +7,8 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
 import scala.collection.JavaConverters.asScalaBufferConverter
 import visdom.fetchers.aplus.APlusConstants
+import visdom.http.HttpConstants
+import visdom.http.HttpUtils
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
@@ -255,6 +257,35 @@ object APlusUtils {
                     other.drop(1)
                 )
             case None => origin
+        }
+    }
+
+    def makeGitlabFetcherQuery(fetcherAddress: String, queryOptions: GitlabFetcherQueryOptions): Unit = {
+        println(s"Sending query to GitLab fetcher at ${fetcherAddress} for projects: ${queryOptions.projectNames}")
+        val response: Option[BsonDocument] = HttpUtils.getRequestDocument(
+            request =
+                HttpUtils.getSimpleRequest(fetcherAddress)
+                    .param(AttributeConstants.ProjectNames, queryOptions.projectNames.mkString(CommonConstants.Comma))
+                    .param(AttributeConstants.FilePath, queryOptions.gitLocation.path)
+                    .param(AttributeConstants.Recursive, queryOptions.gitLocation.isFolder.toString()),
+            expectedStatusCode = HttpConstants.StatusCodeAccepted
+        )
+
+        response match {
+            case Some(responseDocument: BsonDocument) =>
+                responseDocument.getDocumentOption(AttributeConstants.Projects) match {
+                    case Some(projectsDocument: BsonDocument) =>
+                        projectsDocument.getArrayOption(AttributeConstants.Allowed) match {
+                            case Some(allowedProjects: BsonArray) =>
+                                println(
+                                    s"GitLab fetcher at ${fetcherAddress} allowed data fetching for projects: " +
+                                    s"${allowedProjects.toString()}"
+                                )
+                            case None => println(s"No allowed projects found in the response from ${fetcherAddress}")
+                    }
+                    case None => println(s"No projects found in the response from ${fetcherAddress}")
+                }
+            case None => println(s"Did not get accepted response from ${fetcherAddress}")
         }
     }
 }
