@@ -28,4 +28,14 @@ object GeneralUtils {
             case false => inputString
         }
     }
+
+    def getUpperFolder(path: String): String = {
+        path.contains(CommonConstants.Slash) match {
+            case true => {
+                val pathParts: Array[String] = path.split(CommonConstants.Slash)
+                pathParts.take(pathParts.size - 1).mkString(CommonConstants.Slash)
+            }
+            case false => CommonConstants.EmptyString
+        }
+    }
 }

@@ -105,6 +105,7 @@ final case class AllDataSpecificFetchParameters(
 abstract class MultiSpecificFetchOptions {
     val projectNames: Seq[String]
     val filePath: Option[String]
+    val recursive: Boolean
     val startDate: Option[ZonedDateTime]
     val endDate: Option[ZonedDateTime]
     val useAnonymization: Boolean
@@ -114,6 +115,7 @@ abstract class MultiSpecificFetchOptions {
 abstract class MultiSpecificSingleFetchOptions {
     val projectName: String
     val filePath: Option[String]
+    val recursive: Boolean
     val startDate: Option[ZonedDateTime]
     val endDate: Option[ZonedDateTime]
     val useAnonymization: Boolean
@@ -122,6 +124,7 @@ abstract class MultiSpecificSingleFetchOptions {
 final case class MultiSpecificFetchParameters(
     projectNames: Seq[String],
     filePath: Option[String],
+    recursive: Boolean,
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     useAnonymization: Boolean,
@@ -131,6 +134,7 @@ final case class MultiSpecificFetchParameters(
 final case class MultiSpecificSingleFetchParameters(
     projectName: String,
     filePath: Option[String],
+    recursive: Boolean,
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     useAnonymization: Boolean
