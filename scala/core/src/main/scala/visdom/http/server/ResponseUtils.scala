@@ -1,14 +1,6 @@
 package visdom.http.server
 
-import akka.actor.ActorRef
-import akka.http.scaladsl.model.StatusCodes
-import akka.http.scaladsl.server.Directives
-import akka.http.scaladsl.server.StandardRoute
-import akka.pattern.ask
-import java.util.concurrent.TimeoutException
-import scala.concurrent.Await
 import spray.json.JsObject
-import akka.http.scaladsl.model.StatusCode
 
 
 object ResponseUtils extends ServerProtocol {

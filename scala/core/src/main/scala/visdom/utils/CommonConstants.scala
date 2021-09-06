@@ -12,6 +12,7 @@ object CommonConstants {
     final val SlashDashSlash: String ="/-/"
     final val SquareBracketBegin: String = "["
     final val SquareBracketEnd: String = "]"
+    final val TempString: String = "temp"
     final val WhiteSpace: String = " "
 
     final val Code: String = "code"

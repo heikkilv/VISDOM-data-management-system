@@ -22,6 +22,7 @@ import spray.json.JsNumber
 import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
+import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 import visdom.utils.FileUtils
 
@@ -203,6 +204,14 @@ object JsonUtils {
                 .toIntMap()
                 .filter({case (_, value) => value.isDocument()})
                 .mapValues(value => value.asDocument())
+        }
+    }
+
+    implicit class EnrichedBsonArray(array: BsonArray) {
+        def toJson(): String = {
+            val documentString: String = BsonDocument().append(CommonConstants.TempString, array).toJson()
+            // to get the array, need to remove '{"temp": ' from the start and '}' from the end
+            documentString.substring(CommonConstants.TempString.size + 5, documentString.size - 1)
         }
     }
 

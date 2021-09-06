@@ -20,6 +20,7 @@ object AttributeConstants {
     val Links: String = "_links"
     val Metadata: String = "metadata"
     val Modules: String = "modules"
+    val Options: String = "options"
     val Projects: String = "projects"
     val Recursive: String = "recursive"
     val SourceServer: String = "sourceServer"

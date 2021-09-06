@@ -26,6 +26,8 @@ object HttpConstants {
     // constants for constructing query paths
     val PathCommits: String = "commits"
     val PathDiff: String = "diff"
+    val PathInfo: String = "info"
+    val PathMulti: String = "multi"
     val PathProjects: String = "projects"
     val PathRefs: String = "refs"
     val PathRepository: String = "repository"
@@ -35,6 +37,9 @@ object HttpConstants {
     final val HttpsPrefix: String = "https://"
 
     // the default wait time for HTTP queries
-    val DefaultWaitDurationSeconds: Int = 10
+    val DefaultWaitDurationSeconds: Int = 30
     val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
+
+    val MaxUriLength: Int = 1024
+    val FutureTaskDelayMs: Int = 20000
 }

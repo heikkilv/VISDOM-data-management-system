@@ -10,6 +10,7 @@ import visdom.fetchers.aplus.APlusConstants
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils
+import visdom.json.JsonUtils.EnrichedBsonArray
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
 
@@ -260,11 +261,56 @@ object APlusUtils {
         }
     }
 
-    def makeGitlabFetcherQuery(fetcherAddress: String, queryOptions: GitlabFetcherQueryOptions): Unit = {
+    def divideProjectNames(projectNames: Seq[String]): Seq[Seq[String]] = {
+        def divideProjectNamesInternal(names: Seq[String], dividedSequence: Seq[Seq[String]]): Seq[Seq[String]] = {
+            if (names.isEmpty) {
+                dividedSequence
+            }
+            else if (names.size == 1 || names.mkString(CommonConstants.Comma).size <= HttpConstants.MaxUriLength) {
+                dividedSequence ++ Seq(names)
+            }
+            else {
+                val (names1, names2): (Seq[String], Seq[String]) = names.splitAt(names.size / 2)
+                divideProjectNamesInternal(names2, divideProjectNamesInternal(names1, dividedSequence))
+            }
+        }
+
+        divideProjectNamesInternal(projectNames, Seq.empty)
+    }
+
+    def makeGitlabFetcherTestQuery(fetcherAddress: String): Boolean = {
+        HttpUtils.getRequestDocument(
+            request = HttpUtils.getSimpleRequest(
+                Seq(fetcherAddress, HttpConstants.PathInfo).mkString(CommonConstants.Slash)
+            ),
+            expectedStatusCode = HttpConstants.StatusCodeOk
+        ) match {
+            case Some(_) => true
+            case None => false
+        }
+    }
+
+    private def makeGitlabFetcherQueryInternal(
+        fetcherAddress: String,
+        queryOptions: GitlabFetcherQueryOptions
+    ): Unit = {
+        def handleProjectsDocument(projectsDocument: BsonDocument): Unit = {
+            projectsDocument.getArrayOption(AttributeConstants.Allowed) match {
+                case Some(allowedProjects: BsonArray) =>
+                    println(
+                        s"GitLab fetcher at ${fetcherAddress} allowed data fetching for projects: " +
+                        s"${allowedProjects.toJson()}"
+                    )
+                case None => println(s"No allowed projects found in the response from ${fetcherAddress}")
+            }
+        }
+
         println(s"Sending query to GitLab fetcher at ${fetcherAddress} for projects: ${queryOptions.projectNames}")
         val response: Option[BsonDocument] = HttpUtils.getRequestDocument(
             request =
-                HttpUtils.getSimpleRequest(fetcherAddress)
+                HttpUtils.getSimpleRequest(
+                    Seq(fetcherAddress, HttpConstants.PathMulti).mkString(CommonConstants.Slash)
+                )
                     .param(AttributeConstants.ProjectNames, queryOptions.projectNames.mkString(CommonConstants.Comma))
                     .param(AttributeConstants.FilePath, queryOptions.gitLocation.path)
                     .param(AttributeConstants.Recursive, queryOptions.gitLocation.isFolder.toString()),
@@ -273,19 +319,34 @@ object APlusUtils {
 
         response match {
             case Some(responseDocument: BsonDocument) =>
-                responseDocument.getDocumentOption(AttributeConstants.Projects) match {
-                    case Some(projectsDocument: BsonDocument) =>
-                        projectsDocument.getArrayOption(AttributeConstants.Allowed) match {
-                            case Some(allowedProjects: BsonArray) =>
-                                println(
-                                    s"GitLab fetcher at ${fetcherAddress} allowed data fetching for projects: " +
-                                    s"${allowedProjects.toString()}"
-                                )
-                            case None => println(s"No allowed projects found in the response from ${fetcherAddress}")
-                    }
-                    case None => println(s"No projects found in the response from ${fetcherAddress}")
+                responseDocument.getDocumentOption(AttributeConstants.Options) match {
+                    case Some(optionsDocument: BsonDocument) =>
+                        optionsDocument.getDocumentOption(AttributeConstants.Projects) match {
+                            case Some(projectsDocument: BsonDocument) => handleProjectsDocument(projectsDocument)
+                            case None => println(s"No projects found in the response from ${fetcherAddress}")
+                        }
+                    case None => println(s"No options found in the response from ${fetcherAddress}")
                 }
             case None => println(s"Did not get accepted response from ${fetcherAddress}")
+        }
+    }
+
+    def makeGitlabFetcherQuery(fetcherAddress: String, queryOptions: GitlabFetcherQueryOptions): Unit = {
+        makeGitlabFetcherTestQuery(fetcherAddress) match {
+            case true =>
+                TaskUtils.startTaskSequence(
+                    divideProjectNames(queryOptions.projectNames)
+                        .map(
+                            projectNames => (
+                                makeGitlabFetcherQueryInternal(fetcherAddress, _),
+                                GitlabFetcherQueryOptions(
+                                    projectNames = projectNames,
+                                    gitLocation = queryOptions.gitLocation
+                                )
+                            )
+                        )
+                )
+            case false => println(s"Test query to GitLab fetcher at ${fetcherAddress} failed")
         }
     }
 }
