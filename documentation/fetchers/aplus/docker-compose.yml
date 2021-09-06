@@ -25,6 +25,9 @@ services:
             - APLUS_TOKEN=${APLUS_TOKEN}
             - APLUS_INSECURE_CONNECTION=${APLUS_INSECURE_CONNECTION}
             - DATA_BROKER_ADDRESS=${DATA_BROKER_ADDRESS}
+            - ADDITIONAL_METADATA=${ADDITIONAL_METADATA}
+        volumes:
+            - ./metadata_aplus.json:${ADDITIONAL_METADATA}
         networks:
             - visdom-mongodb-network
 

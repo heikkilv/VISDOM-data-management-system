@@ -1,0 +1,27 @@
+{
+    "courses": {
+        "12345": {
+            "lateSubmissionCoefficient": 0.50,
+            "modules": {
+                "123456": {
+                    "startDate": "2021-01-01T00:00:00+03:00",
+                    "endDate": "2021-02-01T00:00:00+03:00",
+                    "lateSubmissionDate": "2021-02-08T00:00:00+03:00",
+                    "exerciseGitLocations": {
+                        "1234567": "folder/first/",
+                        "1234568": "single_file"
+                    }
+                },
+                "123457": {
+                    "startDate": "2021-01-01T00:00:00+03:00",
+                    "endDate": "2021-02-01T00:00:00+03:00",
+                    "lateSubmissionDate": "2021-02-08T00:00:00+03:00",
+                    "exerciseGitLocations": {
+                        "2345678": "folder/second/",
+                        "2345679": "folder/third/"
+                    }
+                }
+            }
+        }
+    }
+}

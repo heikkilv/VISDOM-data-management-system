@@ -22,6 +22,7 @@ import visdom.http.server.swagger.SwaggerAPlusFetcherDocService
 import visdom.http.server.swagger.SwaggerConstants
 import visdom.http.server.swagger.SwaggerRoutes
 import visdom.utils.APlusEnvironmentVariables.APlusVariableMap
+import visdom.utils.APlusEnvironmentVariables.EnvironmentAdditionalMetadata
 import visdom.utils.APlusEnvironmentVariables.EnvironmentAPlusHost
 import visdom.utils.APlusEnvironmentVariables.EnvironmentAPlusInsecureConnection
 import visdom.utils.APlusEnvironmentVariables.EnvironmentAPlusToken
@@ -65,6 +66,8 @@ object FetcherValues {
 
     val FetcherType: String = ComponentConstants.APlusFetcherType
     val FetcherVersion: String = "0.1"
+
+    val AdditionalMetadataFilename: String = getEnvironmentVariable(EnvironmentAdditionalMetadata, APlusVariableMap)
 
     val targetServer: APlusServer = new APlusServer(
         hostAddress = sourceServer,
