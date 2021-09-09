@@ -19,7 +19,7 @@ object FetcherUtils {
                     resultDocument =>
                         resultDocument
                             .toBsonDocument
-                            .getIntOption(AttributeConstants.AttributeId)
+                            .getIntOption(AttributeConstants.Id)
                 ).flatten
             case None => Seq.empty  // did not get any results
         }

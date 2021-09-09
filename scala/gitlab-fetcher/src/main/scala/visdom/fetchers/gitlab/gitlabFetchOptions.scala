@@ -4,6 +4,8 @@ import java.time.ZonedDateTime
 import org.mongodb.scala.MongoDatabase
 import visdom.fetchers.FetchOptions
 import visdom.http.server.fetcher.gitlab.Projects
+import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
 
 
 abstract class GitlabFetchOptions
@@ -138,7 +140,18 @@ final case class MultiSpecificSingleFetchParameters(
     startDate: Option[ZonedDateTime],
     endDate: Option[ZonedDateTime],
     useAnonymization: Boolean
-) extends MultiSpecificSingleFetchOptions
+) extends MultiSpecificSingleFetchOptions {
+    override def toString(): String = {
+        (
+            projectName,
+            filePath.getOrElse(CommonConstants.EmptyString),
+            recursive,
+            GeneralUtils.zonedDateTimeToString(startDate),
+            GeneralUtils.zonedDateTimeToString(endDate),
+            useAnonymization
+        ).toString()
+    }
+}
 
 final case class GitlabPipelinesOptions(
     hostServer: GitlabServer,

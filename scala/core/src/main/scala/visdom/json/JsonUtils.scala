@@ -1,6 +1,7 @@
 package visdom.json
 
 import java.time.ZonedDateTime
+import org.bson.BSONException
 import org.bson.BsonType
 import org.mongodb.scala.bson.BsonArray
 import org.mongodb.scala.bson.BsonDateTime
@@ -13,6 +14,7 @@ import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
 import scala.collection.JavaConverters.asScalaBufferConverter
+import scala.collection.JavaConverters.asScalaSetConverter
 import spray.json.JsArray
 import spray.json.JsBoolean
 import spray.json.JsNull
@@ -20,7 +22,9 @@ import spray.json.JsNumber
 import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
+import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
+import visdom.utils.FileUtils
 
 
 object JsonUtils {
@@ -52,6 +56,20 @@ object JsonUtils {
             }
         }
 
+        def getDoubleOption(key: Any): Option[Double] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isDouble() match {
+                    case true => Some(value.asDouble().getValue())
+                    case false => None
+                }
+                case None => None
+            }
+        }
+
+        def getZonedDateTimeOption(key: Any): Option[ZonedDateTime] = {
+            GeneralUtils.toZonedDateTime(document.getStringOption(key))
+        }
+
         def getDocumentOption(key: Any): Option[BsonDocument] = {
             document.getOption(key) match {
                 case Some(value: BsonValue) => value.isDocument() match {
@@ -69,6 +87,25 @@ object JsonUtils {
                     case false => None
                 }
                 case None => None
+            }
+        }
+
+        def getManyStringOption(keys: Any*): Option[Seq[String]] = {
+            def getManyStringOptionInternal(keySequence: Seq[Any], values: Seq[String]): Seq[String] = {
+                keySequence.headOption match {
+                    case Some(headKey: Any) => document.getStringOption(headKey) match {
+                        case Some(headValue: String) =>
+                            getManyStringOptionInternal(keySequence.drop(1), values ++ Seq(headValue))
+                        case None => Seq.empty
+                    }
+                    case None => values
+                }
+            }
+
+            val valueSequence: Seq[String] = getManyStringOptionInternal(keys, Seq.empty)
+            valueSequence.nonEmpty match {
+                case true => Some(valueSequence)
+                case false => None
             }
         }
 
@@ -145,6 +182,37 @@ object JsonUtils {
                 case None => document
             }
         }
+
+        def toIntMap(): Map[Int, BsonValue] = {
+            document
+                .keySet()
+                .asScala
+                .flatMap(keyValue => GeneralUtils.toInt(keyValue))
+                .map(intKey => (intKey, document.get(intKey.toString())))
+                .toMap
+        }
+
+        def toIntStringMap(): Map[Int, String] = {
+            document
+                .toIntMap()
+                .filter({case (_, value) => value.isString()})
+                .mapValues(value => value.asString().getValue())
+        }
+
+        def toIntDocumentMap(): Map[Int, BsonDocument] = {
+            document
+                .toIntMap()
+                .filter({case (_, value) => value.isDocument()})
+                .mapValues(value => value.asDocument())
+        }
+    }
+
+    implicit class EnrichedBsonArray(array: BsonArray) {
+        def toJson(): String = {
+            val documentString: String = BsonDocument().append(CommonConstants.TempString, array).toJson()
+            // to get the array, need to remove '{"temp": ' from the start and '}' from the end
+            documentString.substring(CommonConstants.TempString.size + 5, documentString.size - 1)
+        }
     }
 
     def toBsonValue[T](value: T): BsonValue = {
@@ -159,6 +227,10 @@ object JsonUtils {
             )
             case _ => BsonNull()
         }
+    }
+
+    def toBsonArray[T](values: Seq[T]): BsonArray = {
+        BsonArray(values.map(value => toBsonValue(value)))
     }
 
     // scalastyle:off cyclomatic.complexity
@@ -178,6 +250,12 @@ object JsonUtils {
         }
     }
     // scalastyle:on cyclomatic.complexity
+
+    def bsonArrayOptionToSeq(arrayOption: Option[BsonArray]): Seq[BsonValue] = {
+        arrayOption
+            .map(arrayElement => arrayElement.getValues().asScala)
+            .getOrElse(Seq.empty)
+    }
 
     def removeAttribute(document: BsonDocument, attributeName: String): BsonDocument = {
         document.containsKey(attributeName) match {
@@ -241,6 +319,23 @@ object JsonUtils {
         doubleArrayToDocument(value) match {
             case Some(document: BsonDocument) => document
             case None => value
+        }
+    }
+
+    def getBsonDocumentFromFile(filename: String): Option[BsonDocument] = {
+        FileUtils.readTextFile(filename) match {
+            case Some(fileContents: String) => {
+                try {
+                    Some(org.bson.BsonDocument.parse(fileContents))
+                }
+                catch {
+                    case error: BSONException => {
+                        println(s"BSON parsing error: ${error}")
+                        None
+                    }
+                }
+            }
+            case None => None
         }
     }
 }

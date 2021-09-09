@@ -19,7 +19,17 @@ object APlusFetcherExamples {
         "status": "Accepted",
         "description": "The fetching of the data has been started",
         "options": {
-            "courseId": 123
+            "courseId": "123",
+            "parseNames": "true",
+            "includeModules": "true",
+            "includeExercises": "true",
+            "includeSubmissions": "false",
+            "includeGitlabData": "false",
+            "includePoints": "false",
+            "useAnonymization": "true",
+            "gdprExerciseId": "12345",
+            "gdprFieldName": "field_0",
+            "gdprAcceptedAnswer": "a"
         }
     }"""
 
@@ -33,10 +43,13 @@ object APlusFetcherExamples {
         "status": "Accepted",
         "description": "The fetching of the data has been started",
         "options": {
-            "courseId": 123,
-            "moduleId": 765,
+            "courseId": "123",
+            "moduleId": "765",
             "parseNames": "true",
             "includeExercises": "true",
+            "includeSubmissions": "false",
+            "includeGitlabData": "false",
+            "useAnonymization": "true",
             "gdprExerciseId": "12345",
             "gdprFieldName": "field_0",
             "gdprAcceptedAnswer": "a"
@@ -47,10 +60,13 @@ object APlusFetcherExamples {
         "status": "Accepted",
         "description": "The fetching of the data has been started",
         "options": {
-            "courseId": 123,
-            "moduleId": 765,
-            "exerciseId": 5555,
+            "courseId": "123",
+            "moduleId": "765",
+            "exerciseId": "5555",
             "parseNames": "true",
+            "includeSubmissions": "false",
+            "includeGitlabData": "false",
+            "useAnonymization": "true",
             "gdprExerciseId": "12345",
             "gdprFieldName": "field_0",
             "gdprAcceptedAnswer": "a"

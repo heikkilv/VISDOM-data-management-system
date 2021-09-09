@@ -1,20 +1,14 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.FetcherUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
 import visdom.http.HttpUtils
 import visdom.utils.APlusUtils
@@ -22,6 +16,7 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.metadata.APlusMetadata
 
 
 class ModuleFetcher(options: APlusModuleOptions)
@@ -43,7 +38,8 @@ class ModuleFetcher(options: APlusModuleOptions)
             APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
             APlusConstants.AttributeParseNames -> options.parseNames,
             APlusConstants.AttributeIncludeExercises -> options.includeExercises,
-            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions,
+            APlusConstants.AttributeIncludeGitlabData -> options.includeGitlabData
         )
         .appendGdprOptions(options.gdprOptions)
         .appendOption(
@@ -95,6 +91,7 @@ class ModuleFetcher(options: APlusModuleOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
+        val moduleId: Option[Int] = document.getIntOption(AttributeConstants.Id)
         val parsedDocument: BsonDocument = options.parseNames match {
             case true => APlusUtils.parseDocument(document, getParsableAttributes())
             case false => document
@@ -106,45 +103,33 @@ class ModuleFetcher(options: APlusModuleOptions)
         }
 
         addIdentifierAttributes(parsedDocument)
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData(exerciseIds))
+            .append(AttributeConstants.Metadata, getMetadata(moduleId))
+            .append(AttributeConstants.Links, getLinkData(exerciseIds))
     }
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
-            .append(APlusConstants.AttributeCourseId, new BsonInt32(options.courseId))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
+            .append(APlusConstants.AttributeCourseId, toBsonValue(options.courseId))
     }
 
-    private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    APlusConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeApiVersion,
-                    new BsonInt32(APlusConstants.APlusApiVersion)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeParseNames,
-                    new BsonBoolean(options.parseNames)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeExercises,
-                    new BsonBoolean(options.includeExercises)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeSubmissions,
-                    new BsonBoolean(options.includeSubmissions)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        ).appendGdprOptions(options.gdprOptions)
+    private def getMetadata(moduleIdOption: Option[Int]): BsonDocument = {
+        val otherMetadata: Option[BsonValue] = moduleIdOption match {
+            case Some(moduleId: Int) =>
+                APlusMetadata.moduleMetadata
+                    .get((options.courseId, moduleId))
+                    .map(metadata => metadata.toBsonValue())
+            case None => None
+        }
+
+        getMetadataBase()
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .append(APlusConstants.AttributeIncludeExercises, toBsonValue(options.includeExercises))
+            .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeIncludeGitlabData, toBsonValue(options.includeGitlabData))
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendOption(APlusConstants.AttributeOther, otherMetadata)
+            .appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {
@@ -162,7 +147,7 @@ class ModuleFetcher(options: APlusModuleOptions)
         .appendOption(
             APlusConstants.AttributeExercises,
             exerciseIds.nonEmpty match {
-                case true => Some(BsonArray(exerciseIds.map(idValue => toBsonValue(idValue))))
+                case true => Some(toBsonArray(exerciseIds))
                 case false => None
             }
         )
@@ -181,6 +166,7 @@ class ModuleFetcher(options: APlusModuleOptions)
                         exerciseId = None,  // fetch all exercises for the module
                         parseNames = options.parseNames,
                         includeSubmissions = options.includeSubmissions,
+                        includeGitlabData = options.includeGitlabData,
                         useAnonymization = options.useAnonymization,
                         gdprOptions = CheckQuestionUtils.getUpdatedGdprOptions(options.gdprOptions, checkedUsers)
                     )

@@ -27,7 +27,7 @@ class InfoActor extends Actor with ActorLogging {
                 gitlabServer = Routes.server.hostName,
                 mongoDatabase = Routes.databaseName,
                 startTime = GitlabFetcher.StartTime,
-                apiAddress = visdom.fetchers.gitlab.SwaggerFetcherDocService.host,
+                apiAddress = Routes.fullApiAddress,
                 swaggerDefinition = visdom.fetchers.gitlab.Routes.SwaggerLocation
             )
             sender() ! response

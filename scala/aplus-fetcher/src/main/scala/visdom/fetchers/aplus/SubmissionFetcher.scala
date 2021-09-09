@@ -1,18 +1,14 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.bson.BsonType.DOCUMENT
+import org.bson.BsonType.STRING
+import org.mongodb.scala.bson.BsonArray
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import scala.collection.JavaConverters.asScalaBufferConverter
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.json.JsonUtils.toBsonValue
@@ -23,10 +19,16 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils.EnrichedWithToTuple
+import visdom.utils.WartRemoverConstants
 
 
 class SubmissionFetcher(options: APlusSubmissionOptions)
     extends APlusDataHandler(options) {
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var gitProjects: Map[String, Set[String]] = Map.empty
+    def getGitProject(): Map[String, Set[String]] = gitProjects
 
     private val checkedUsers: Set[Int] = CheckQuestionUtils.getCheckedUsers(options.courseId, options.gdprOptions)
 
@@ -128,9 +130,11 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                     case false => parsedDocumentGit
                 }
 
+                updateGitProjects(parsedDocumentNames)
+
                 addIdentifierAttributes(parsedDocumentNames)
-                    .append(AttributeConstants.AttributeMetadata, getMetadata())
-                    .append(AttributeConstants.AttributeLinks, getLinkData())
+                    .append(AttributeConstants.Metadata, getMetadata())
+                    .append(AttributeConstants.Links, getLinkData())
             }
             // no data fetching allowed for at least one user involved in the submission => return empty document
             case false => BsonDocument()
@@ -140,14 +144,14 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
         options.submissionId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
+            case None => document.getIntOption(AttributeConstants.Id) match {
                 case Some(submissionId: Int) => {
                     HttpUtils.getRequestDocument(
                         getRequest(Some(submissionId)),
                         HttpConstants.StatusCodeOk
                     ) match {
                         case Some(submissionDocument: BsonDocument) =>
-                            submissionDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            submissionDocument.getIntOption(AttributeConstants.Id) match {
                                 case Some(_) => submissionDocument
                                 case None => document
                             }
@@ -161,32 +165,15 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {
-        (
-            new BsonDocument(
-                List(
-                    new BsonElement(
-                        APlusConstants.AttributeLastModified,
-                        new BsonDateTime(Instant.now().toEpochMilli())
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeApiVersion,
-                        new BsonInt32(APlusConstants.APlusApiVersion)
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeUseAnonymization,
-                        new BsonBoolean(options.useAnonymization)
-                    ),
-                    new BsonElement(
-                        APlusConstants.AttributeParseGitAnswers,
-                        new BsonBoolean(options.parseGitAnswers)
-                    )
-                ).asJava
-            )
-        ).appendGdprOptions(options.gdprOptions)
+        getMetadataBase()
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .append(APlusConstants.AttributeParseGitAnswers, toBsonValue(options.parseGitAnswers))
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .appendGdprOptions(options.gdprOptions)
     }
 
     def getParsableAttributes(): Seq[Seq[String]] = {
@@ -205,7 +192,9 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
 
     private def checkUserDocument(userDocument: BsonDocument): Boolean = {
         userDocument.getIntOption(APlusConstants.AttributeId) match {
-            case Some(userId: Int) => checkedUsers.contains(userId)
+            case Some(userId: Int) =>
+                checkedUsers.contains(userId) ||
+                options.gdprOptions.exerciseId == CheckQuestionUtils.ExerciseIdForNoGdpr
             case None => false
         }
     }
@@ -234,6 +223,36 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                 )
             }
             case None => false
+        }
+    }
+
+    private def addGitProject(hostName: String, projectName: String): Unit = {
+        gitProjects = APlusUtils.appendValueToMapOfSet(gitProjects, hostName, projectName)
+    }
+
+    private def updateGitProjects(document: BsonDocument): Unit = {
+        (
+            document.getDocumentOption(APlusConstants.AttributeSubmissionData) match {
+                case Some(submissionData: BsonDocument) => submissionData.getOption(CommonConstants.Git) match {
+                    case Some(gitValue: BsonValue) => gitValue.getBsonType() match {
+                        case STRING => APlusUtils.getParsedGitAnswerOption(gitValue.asString().getValue())
+                        case DOCUMENT =>
+                            gitValue
+                                .asDocument()
+                                .getManyStringOption(
+                                    APlusConstants.AttributeHostName,
+                                    APlusConstants.AttributeProjectName
+                                )
+                                .map(targetValues => targetValues.toTuple2)
+                        case _ => None  // the git answer given in unexpected format
+                    }
+                    case None => None  // no git answer found in the submission data
+                }
+                case None => None  // no submission data found in the document
+            }
+        ) match {
+            case Some((hostName: String, projectName: String)) => addGitProject(hostName, projectName)
+            case None =>
         }
     }
 }

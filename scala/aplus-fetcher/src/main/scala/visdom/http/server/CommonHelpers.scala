@@ -32,6 +32,20 @@ object CommonHelpers {
         isIdNumber(exerciseIdOption)
     }
 
+    def isBooleanString(inputString: String): Boolean = {
+        ServerConstants.BooleanStrings.contains(inputString)
+    }
+
+    def getNonBooleanParameter(inputParameters: Seq[(String, String)]): Option[(String, String)] = {
+        inputParameters.headOption match {
+            case Some((name: String, value: String)) => isBooleanString(value) match {
+                case true => getNonBooleanParameter(inputParameters.drop(1))
+                case false => Some((name, value))
+            }
+            case None => None
+        }
+    }
+
     def areGdprOptions(exerciseId: Option[String], fieldName: String): Boolean = {
         exerciseId match {
             case Some(exerciseIdString: String) =>

@@ -1,29 +1,28 @@
 package visdom.fetchers.aplus
 
-import java.time.Instant
+import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
-import scala.collection.JavaConverters.seqAsJavaListConverter
-import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
-import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
+import visdom.constants.ComponentConstants
 import visdom.database.mongodb.MongoConstants
 import visdom.fetchers.FetcherUtils
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
 import visdom.utils.APlusUtils
 import visdom.utils.AttributeConstants
+import visdom.utils.BrokerUtils
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.GitlabFetcherQueryOptions
+import visdom.utils.metadata.APlusMetadata
+import visdom.utils.metadata.ExerciseGitLocation
 
 
 class ExerciseFetcher(options: APlusExerciseOptions)
@@ -44,7 +43,8 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             APlusConstants.AttributeCourseId -> options.courseId,
             APlusConstants.AttributeUseAnonymization -> options.useAnonymization,
             APlusConstants.AttributeParseNames -> options.parseNames,
-            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions
+            APlusConstants.AttributeIncludeSubmissions -> options.includeSubmissions,
+            APlusConstants.AttributeIncludeGitlabData -> options.includeGitlabData
         )
         .appendGdprOptions(options.gdprOptions)
         .appendOption(
@@ -109,6 +109,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
     override def processDocument(document: BsonDocument): BsonDocument = {
         // try to always get the detailed exercise information for each exercise
         val detailedDocument: BsonDocument = getDetailedDocument(document)
+        val exerciseId: Option[Int] = detailedDocument.getIntOption(AttributeConstants.Id)
 
         val parsedDocument: BsonDocument = options.parseNames match {
             case true => APlusUtils.parseDocument(detailedDocument, getParsableAttributes())
@@ -131,21 +132,21 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         }
 
         addIdentifierAttributes(cleanedDocument)
-            .append(AttributeConstants.AttributeMetadata, getMetadata())
-            .append(AttributeConstants.AttributeLinks, getLinkData(submissionIds))
+            .append(AttributeConstants.Metadata, getMetadata(exerciseId))
+            .append(AttributeConstants.Links, getLinkData(submissionIds))
     }
 
     private def getDetailedDocument(document: BsonDocument): BsonDocument = {
         options.exerciseId match {
             case Some(_) => document
-            case None => document.getIntOption(AttributeConstants.AttributeId) match {
+            case None => document.getIntOption(AttributeConstants.Id) match {
                 case Some(exerciseId: Int) => {
                     HttpUtils.getRequestDocument(
                         getRequest(Some(exerciseId)),
                         HttpConstants.StatusCodeOk
                     ) match {
                         case Some(exerciseDocument: BsonDocument) =>
-                            exerciseDocument.getIntOption(AttributeConstants.AttributeId) match {
+                            exerciseDocument.getIntOption(AttributeConstants.Id) match {
                                 case Some(_) => exerciseDocument
                                 case None => document
                             }
@@ -159,34 +160,25 @@ class ExerciseFetcher(options: APlusExerciseOptions)
 
     private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
         document
-            .append(APlusConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
+            .append(APlusConstants.AttributeHostName, toBsonValue(options.hostServer.hostName))
     }
 
-    private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    APlusConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeApiVersion,
-                    new BsonInt32(APlusConstants.APlusApiVersion)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeParseNames,
-                    new BsonBoolean(options.parseNames)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeIncludeSubmissions,
-                    new BsonBoolean(options.includeSubmissions)
-                ),
-                new BsonElement(
-                    APlusConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        ).appendGdprOptions(options.gdprOptions)
+    private def getMetadata(exerciseIdOption: Option[Int]): BsonDocument = {
+        val gitLocation: Option[BsonValue] = exerciseIdOption match {
+            case Some(exerciseId: Int) =>
+                APlusMetadata.exerciseGitLocation
+                    .get((options.courseId, exerciseId))
+                    .map(location => location.toBsonValue())
+            case None => None
+        }
+
+        getMetadataBase()
+            .append(APlusConstants.AttributeParseNames, toBsonValue(options.parseNames))
+            .append(APlusConstants.AttributeIncludeSubmissions, toBsonValue(options.includeSubmissions))
+            .append(APlusConstants.AttributeIncludeGitlabData, toBsonValue(options.includeGitlabData))
+            .append(APlusConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
+            .appendOption(APlusConstants.AttributeOther, gitLocation)
+            .appendGdprOptions(options.gdprOptions)
     }
 
     private def getLinkData(submissionIds: Seq[Int]): BsonDocument = {
@@ -202,7 +194,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         .appendOption(
             APlusConstants.AttributeSubmissions,
             submissionIds.nonEmpty match {
-                case true => Some(BsonArray(submissionIds.map(idValue => toBsonValue(idValue))))
+                case true => Some(toBsonArray(submissionIds))
                 case false => None
             }
         )
@@ -214,6 +206,35 @@ class ExerciseFetcher(options: APlusExerciseOptions)
             Seq(APlusConstants.AttributeHierarchicalName),
             Seq(APlusConstants.AttributeName)
         )
+    }
+
+    private def fetchGitlabData(exerciseId: Int, gitProjects: Map[String,Set[String]]): Unit = {
+        gitProjects.map({
+            case (serverAddress, projectNames) => (
+                (
+                    BrokerUtils.getFetcherAddress(ComponentConstants.GitlabFetcherType, serverAddress),
+                    serverAddress
+                ),
+                APlusMetadata.exerciseGitLocation
+                    .get((options.courseId, exerciseId))
+                    .map(
+                        gitLocation => GitlabFetcherQueryOptions(
+                            projectNames = projectNames.toSeq,
+                            gitLocation = gitLocation
+                        )
+                    )
+            )
+        })
+        .foreach({case ((fetcherAddressOption, gitlabAddress), fetcherQueryOptions) =>
+            fetcherAddressOption match {
+                case Some(fetcherAddress: String) => fetcherQueryOptions match {
+                    case Some(fetcherOptions: GitlabFetcherQueryOptions) =>
+                        APlusUtils.makeGitlabFetcherQuery(fetcherAddress, fetcherOptions)
+                    case None => println(s"No Git location found for exercise: ${exerciseId}")
+                }
+                case None => println(s"No active fetcher found for GitLab server: ${gitlabAddress}")
+            }
+        })
     }
 
     private def fetchSubmissions(document: BsonDocument): Seq[Int] = {
@@ -236,7 +257,15 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                             )
                         )
 
-                        FetcherUtils.getFetcherResultIds(submissionFetcher)
+                        val submissionIds: Seq[Int] = FetcherUtils.getFetcherResultIds(submissionFetcher)
+
+                        // fetch the GitLab data related to the exercise submissions
+                        options.includeGitlabData match {
+                            case true => fetchGitlabData(exerciseId, submissionFetcher.getGitProject())
+                            case false =>
+                        }
+
+                        submissionIds
                     }
                     case None => Seq.empty  // could not create the GdprOptions
                 }

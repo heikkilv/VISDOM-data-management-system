@@ -6,10 +6,13 @@ object CommonConstants {
     final val Comma: String = ","
     final val Dot: String = "."
     final val DoubleDot: String = ":"
+    final val DoubleDotChar: Char = ':'
     final val EmptyString: String = ""
     final val Slash: String = "/"
+    final val SlashDashSlash: String ="/-/"
     final val SquareBracketBegin: String = "["
     final val SquareBracketEnd: String = "]"
+    final val TempString: String = "temp"
     final val WhiteSpace: String = " "
 
     final val Code: String = "code"

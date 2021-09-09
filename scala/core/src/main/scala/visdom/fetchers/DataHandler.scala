@@ -38,7 +38,7 @@ abstract class DataHandler(options: FetchOptions) {
     }
 
     def getIdentifierAttributes(): Array[String] = {
-        Array(AttributeConstants.AttributeId)
+        Array(AttributeConstants.Id)
     }
 
     def getHashableAttributes(): Option[Seq[Seq[String]]] = None

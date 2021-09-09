@@ -20,6 +20,7 @@ import visdom.http.server.fetcher.gitlab.Projects
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -64,8 +65,8 @@ object MultiActor {
     // scalastyle:off cyclomatic.complexity
     def checkQueryOptions(queryOptions: MultiQueryOptions): Option[String] = {
         val filePath: Option[String] = CommonHelpers.toFilePath(queryOptions.filePath)
-        val startDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.startDate)
-        val endDate: Option[ZonedDateTime] = CommonHelpers.toZonedDateTime(queryOptions.endDate)
+        val startDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.endDate)
 
         if (!CommonHelpers.isProjectNameSequence(queryOptions.projectNames)) {
             Some(s"'${queryOptions.projectNames}' is not a valid comma-separated list of project names")
@@ -82,7 +83,7 @@ object MultiActor {
         else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
             Some(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
-        else if (startDate.isDefined && endDate.isDefined && !CommonHelpers.lessOrEqual(startDate, endDate)) {
+        else if (startDate.isDefined && endDate.isDefined && !GeneralUtils.lessOrEqual(startDate, endDate)) {
             Some("the endDate must be later than the startDate")
         }
         else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
@@ -106,8 +107,8 @@ object MultiActor {
                         projectNames = projectAvailability.allowed,
                         filePath = queryOptions.filePath,
                         recursive = queryOptions.recursive.toBoolean,
-                        startDate = CommonHelpers.toZonedDateTime(queryOptions.startDate),
-                        endDate = CommonHelpers.toZonedDateTime(queryOptions.endDate),
+                        startDate = GeneralUtils.toZonedDateTime(queryOptions.startDate),
+                        endDate = GeneralUtils.toZonedDateTime(queryOptions.endDate),
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         projects = projectAvailability
                     )

@@ -103,6 +103,28 @@ with APlusFetcherResponseHandler
                 )
             ),
             new Parameter(
+                name = APlusServerConstants.IncludeGitlabData,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludeGitlabData,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludeGitlabData,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.IncludePoints,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludePoints,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludePoints,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
                 name = APlusServerConstants.UseAnonymization,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -199,6 +221,8 @@ with APlusFetcherResponseHandler
             APlusServerConstants.IncludeModules.withDefault(APlusServerConstants.DefaultIncludeModules),
             APlusServerConstants.IncludeExercises.withDefault(APlusServerConstants.DefaultIncludeExercises),
             APlusServerConstants.IncludeSubmissions.withDefault(APlusServerConstants.DefaultIncludeSubmissions),
+            APlusServerConstants.IncludeGitlabData.withDefault(APlusServerConstants.DefaultIncludeGitlabData),
+            APlusServerConstants.IncludePoints.withDefault(APlusServerConstants.DefaultIncludePoints),
             APlusServerConstants.UseAnonymization.withDefault(APlusServerConstants.DefaultUseAnonymization),
             APlusServerConstants.GDPRExerciseId.optional,
             APlusServerConstants.GDPRFieldName.withDefault(APlusServerConstants.DefaultGDPRFieldName),
@@ -211,6 +235,8 @@ with APlusFetcherResponseHandler
             includeModules,
             includeExercises,
             includeSubmissions,
+            includeGitlabData,
+            includePoints,
             useAnonymization,
             gdprExerciseId,
             gdprFieldName,
@@ -224,6 +250,8 @@ with APlusFetcherResponseHandler
                     includeModules = includeModules,
                     includeExercises = includeExercises,
                     includeSubmissions = includeSubmissions,
+                    includeGitlabData = includeGitlabData,
+                    includePoints = includePoints,
                     useAnonymization = useAnonymization,
                     gdprExerciseId = gdprExerciseId,
                     gdprFieldName = gdprFieldName,

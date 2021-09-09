@@ -22,6 +22,8 @@ abstract class CourseSpecificFetchOptions {
     val includeModules: Boolean
     val includeExercises: Boolean
     val includeSubmissions: Boolean
+    val includePoints: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -31,6 +33,7 @@ abstract class ModuleSpecificFetchOptions {
     val parseNames: Boolean
     val includeExercises: Boolean
     val includeSubmissions: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -40,6 +43,7 @@ abstract class ExerciseSpecificFetchOptions {
     val exerciseId: Option[Int]
     val parseNames: Boolean
     val includeSubmissions: Boolean
+    val includeGitlabData: Boolean
     val useAnonymization: Boolean
 }
 
@@ -52,12 +56,21 @@ abstract class SubmissionSpecificFetchOptions {
     val useAnonymization: Boolean
 }
 
+abstract class PointSpecificFetchOptions {
+    val courseId: Int
+    val userId: Option[Int]
+    val parseNames: Boolean
+    val useAnonymization: Boolean
+}
+
 final case class CourseSpecificFetchParameters(
     courseId: Option[Int],
     parseNames: Boolean,
     includeModules: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includePoints: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -69,6 +82,7 @@ final case class ModuleSpecificFetchParameters(
     parseNames: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -80,6 +94,7 @@ final case class ExerciseSpecificFetchParameters(
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -96,6 +111,15 @@ final case class SubmissionSpecificFetchParameters(
 )
 extends SubmissionSpecificFetchOptions
 
+final case class PointSpecificFetchParameters(
+    courseId: Int,
+    userId: Option[Int],
+    parseNames: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: GdprOptions
+)
+extends PointSpecificFetchOptions
+
 final case class APlusCourseOptions(
     hostServer: APlusServer,
     mongoDatabase: Option[MongoDatabase],
@@ -104,6 +128,8 @@ final case class APlusCourseOptions(
     includeModules: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includePoints: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -117,6 +143,7 @@ final case class APlusModuleOptions(
     parseNames: Boolean,
     includeExercises: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -130,6 +157,7 @@ final case class APlusExerciseOptions(
     exerciseId: Option[Int],
     parseNames: Boolean,
     includeSubmissions: Boolean,
+    includeGitlabData: Boolean,
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
@@ -142,6 +170,17 @@ final case class APlusSubmissionOptions(
     exerciseId: Int,
     submissionId: Option[Int],
     parseGitAnswers: Boolean,
+    parseNames: Boolean,
+    useAnonymization: Boolean,
+    gdprOptions: GdprOptions
+)
+extends APlusFetchOptions
+
+final case class APlusPointOptions(
+    hostServer: APlusServer,
+    mongoDatabase: Option[MongoDatabase],
+    courseId: Int,
+    userId: Option[Int],
     parseNames: Boolean,
     useAnonymization: Boolean,
     gdprOptions: GdprOptions

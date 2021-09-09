@@ -61,7 +61,7 @@ with APlusFetcherResponseHandler
             new Parameter(
                 name = APlusServerConstants.ModuleId,
                 in = ParameterIn.QUERY,
-                required = true,
+                required = false,
                 description = APlusServerConstants.ParameterDescriptionModuleId,
                 schema = new Schema(
                     implementation = classOf[Int]
@@ -95,6 +95,17 @@ with APlusFetcherResponseHandler
                 schema = new Schema(
                     implementation = classOf[String],
                     defaultValue = APlusServerConstants.DefaultIncludeSubmissions,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
+            ),
+            new Parameter(
+                name = APlusServerConstants.IncludeGitlabData,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = APlusServerConstants.ParameterDescriptionIncludeGitlabData,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = APlusServerConstants.DefaultIncludeGitlabData,
                     allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
                 )
             ),
@@ -195,6 +206,7 @@ with APlusFetcherResponseHandler
             APlusServerConstants.ExerciseId.optional,
             APlusServerConstants.ParseNames.withDefault(APlusServerConstants.DefaultParseNames),
             APlusServerConstants.IncludeSubmissions.withDefault(APlusServerConstants.DefaultIncludeSubmissions),
+            APlusServerConstants.IncludeGitlabData.withDefault(APlusServerConstants.DefaultIncludeGitlabData),
             APlusServerConstants.UseAnonymization.withDefault(APlusServerConstants.DefaultUseAnonymization),
             APlusServerConstants.GDPRExerciseId.optional,
             APlusServerConstants.GDPRFieldName.withDefault(APlusServerConstants.DefaultGDPRFieldName),
@@ -207,6 +219,7 @@ with APlusFetcherResponseHandler
             exerciseId,
             parseNames,
             includeSubmissions,
+            includeGitlabData,
             useAnonymization,
             gdprExerciseId,
             gdprFieldName,
@@ -220,6 +233,7 @@ with APlusFetcherResponseHandler
                     exerciseId = exerciseId,
                     parseNames = parseNames,
                     includeSubmissions = includeSubmissions,
+                    includeGitlabData = includeGitlabData,
                     useAnonymization = useAnonymization,
                     gdprExerciseId = gdprExerciseId,
                     gdprFieldName = gdprFieldName,

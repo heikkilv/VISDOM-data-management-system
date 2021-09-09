@@ -21,12 +21,12 @@ final case class FetchersResponse(
     def toJsObject(): JsObject = {
         JsObject({
             Map[String, JsValue](
-                AttributeConstants.AttributeComponentName -> JsString(componentName),
-                AttributeConstants.AttributeFetcherType -> JsString(fetcherType),
-                AttributeConstants.AttributeVersion -> JsString(version),
-                AttributeConstants.AttributeApiAddress -> JsString(apiAddress),
-                AttributeConstants.AttributeSwaggerDefinition -> JsString(swaggerDefinition),
-                AttributeConstants.AttributeInformation -> information
+                AttributeConstants.ComponentName -> JsString(componentName),
+                AttributeConstants.FetcherType -> JsString(fetcherType),
+                AttributeConstants.Version -> JsString(version),
+                AttributeConstants.ApiAddress -> JsString(apiAddress),
+                AttributeConstants.SwaggerDefinition -> JsString(swaggerDefinition),
+                AttributeConstants.Information -> information
             )
         })
     }
@@ -44,6 +44,30 @@ object FetchersResponse {
     def fromDocument(document: Document): Option[FetchersResponse] = {
         val documentKeys: Set[String] = document.keySet
 
+        def getFetcherInformation(fetcherType: String) = {
+            fetcherType match {
+                case ComponentConstants.GitlabFetcherType => {
+                    documentKeys.intersect(GitlabFetcherInformation.requiredKeys).size match {
+                        case n: Int if n < GitlabFetcherInformation.requiredKeys.size => JsObject()
+                        case _ => GitlabFetcherInformation(
+                            sourceServer = document.getString(SnakeCaseConstants.SourceServer),
+                            database = document.getString(SnakeCaseConstants.Database)
+                        ).toJsObject()
+                    }
+                }
+                case ComponentConstants.APlusFetcherType => {
+                    documentKeys.intersect(APlusFetcherInformation.requiredKeys).size match {
+                        case n: Int if n < APlusFetcherInformation.requiredKeys.size => JsObject()
+                        case _ => APlusFetcherInformation(
+                            sourceServer = document.getString(SnakeCaseConstants.SourceServer),
+                            database = document.getString(SnakeCaseConstants.Database)
+                        ).toJsObject()
+                    }
+                }
+                case _ => JsObject()
+            }
+        }
+
         documentKeys.intersect(requiredKeys).size match {
             case m: Int if m < requiredKeys.size => None
             case _ => Some({
@@ -59,27 +83,7 @@ object FetchersResponse {
                         document.getString(SnakeCaseConstants.ApiAddress),
                     swaggerDefinition =
                         document.getString(SnakeCaseConstants.SwaggerDefinition),
-                    information = fetcherType match {
-                        case ComponentConstants.GitlabFetcherType => {
-                            documentKeys.intersect(GitlabFetcherInformation.requiredKeys).size match {
-                                case n: Int if n < GitlabFetcherInformation.requiredKeys.size => JsObject()
-                                case _ => GitlabFetcherInformation(
-                                    gitlabServer = document.getString(SnakeCaseConstants.GitlabServer),
-                                    database = document.getString(SnakeCaseConstants.Database)
-                                ).toJsObject()
-                            }
-                        }
-                        case ComponentConstants.APlusFetcherType => {
-                            documentKeys.intersect(APlusFetcherInformation.requiredKeys).size match {
-                                case n: Int if n < APlusFetcherInformation.requiredKeys.size => JsObject()
-                                case _ => APlusFetcherInformation(
-                                    sourceServer = document.getString(SnakeCaseConstants.SourceServer),
-                                    database = document.getString(SnakeCaseConstants.Database)
-                                ).toJsObject()
-                            }
-                        }
-                        case _ => JsObject()
-                    }
+                    information = getFetcherInformation(fetcherType)
                 )
             })
         }

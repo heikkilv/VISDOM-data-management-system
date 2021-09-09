@@ -6,17 +6,17 @@ import java.time.ZonedDateTime
 import org.mongodb.scala.bson.collection.immutable.Document
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import visdom.http.server.CommonHelpers
-import visdom.http.server.ResponseUtils
-import visdom.http.server.fetcher.aplus.ExerciseDataQueryOptions
-import visdom.http.server.response.StatusResponse
-import visdom.http.server.services.constants.APlusFetcherDescriptions
 import visdom.fetchers.aplus.APlusExerciseOptions
 import visdom.fetchers.aplus.FetcherValues
 import visdom.fetchers.aplus.ExerciseFetcher
 import visdom.fetchers.aplus.ExerciseSpecificFetchParameters
 import visdom.fetchers.aplus.GdprOptions
-import visdom.http.server.ServerConstants
+import visdom.http.server.CommonHelpers
+import visdom.http.server.ResponseUtils
+import visdom.http.server.fetcher.aplus.ExerciseDataQueryOptions
+import visdom.http.server.response.StatusResponse
+import visdom.http.server.services.constants.APlusFetcherDescriptions
+import visdom.http.server.services.constants.APlusServerConstants
 import visdom.utils.WartRemoverConstants
 
 
@@ -46,6 +46,15 @@ class ExerciseActor extends Actor with ActorLogging {
 
 object ExerciseActor {
     def checkQueryOptions(queryOptions: ExerciseDataQueryOptions): Option[String] = {
+        val nonBooleanParameter: Option[(String, String)] = CommonHelpers.getNonBooleanParameter(
+            Seq(
+                (APlusServerConstants.ParseNames, queryOptions.parseNames),
+                (APlusServerConstants.IncludeSubmissions, queryOptions.includeSubmissions),
+                (APlusServerConstants.IncludeGitlabData, queryOptions.includeGitlabData),
+                (APlusServerConstants.UseAnonymization, queryOptions.useAnonymization)
+            )
+        )
+
         if (!CommonHelpers.isCourseId(Some(queryOptions.courseId))) {
             Some(s"'${queryOptions.courseId}' is not a valid course id")
         }
@@ -58,8 +67,8 @@ object ExerciseActor {
         else if (!queryOptions.moduleId.isDefined && !queryOptions.exerciseId.isDefined) {
             Some("Either moduleId or exerciseId must be defined")
         }
-        else if (!ServerConstants.BooleanStrings.contains(queryOptions.parseNames)) {
-            Some(s"'${queryOptions.parseNames}' is not a valid value for parseNames")
+        else if (nonBooleanParameter.isDefined) {
+            nonBooleanParameter.map({case (name, value) => s"'${value}' is not a valid value for ${name}"})
         }
         else if (!CommonHelpers.areGdprOptions(
             queryOptions.gdprExerciseId,
@@ -92,6 +101,7 @@ object ExerciseActor {
                         },
                         parseNames = queryOptions.parseNames.toBoolean,
                         includeSubmissions = queryOptions.includeSubmissions.toBoolean,
+                        includeGitlabData = queryOptions.includeGitlabData.toBoolean,
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         gdprOptions = queryOptions.gdprExerciseId match {
                             case Some(gdprExerciseIdString: String) => Some(
@@ -118,6 +128,7 @@ object ExerciseActor {
             exerciseId = fetchParameters.exerciseId,
             parseNames = fetchParameters.parseNames,
             includeSubmissions = fetchParameters.includeSubmissions,
+            includeGitlabData = fetchParameters.includeGitlabData,
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )

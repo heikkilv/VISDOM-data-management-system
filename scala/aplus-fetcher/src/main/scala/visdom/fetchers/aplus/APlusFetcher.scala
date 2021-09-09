@@ -6,12 +6,16 @@ import akka.http.scaladsl.Http
 import scala.concurrent.Future
 import scala.sys.ShutdownHookThread
 import visdom.http.server.ServerConstants
+import visdom.utils.TaskUtils
 
 
 object APlusFetcher extends App
 {
     // create or update a metadata document and start periodic updates
     Metadata.startMetadataTask()
+
+    // start the periodic execution of tasks related to GitLab data fetching
+    TaskUtils.startTaskLoop(FetcherValues.gitlabTaskList)
 
     implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
     val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
