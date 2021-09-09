@@ -624,6 +624,198 @@
                 }
             }
         },
+        "/multi": {
+            "get": {
+                "summary": "Fetch commit and file data from a GitLab repositories.",
+                "description": "Starts a fetching process for commit and file data from the given GitLab repositories.\n        All additional metadata and link data will be included. Only fetches data from the master branches.",
+                "operationId": "getMultiRoute",
+                "parameters": [
+                    {
+                        "name": "projectNames",
+                        "in": "query",
+                        "description": "a comma-separated list for GitLab project names",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "group/project-name1,group/project-name2"
+                    },
+                    {
+                        "name": "filePath",
+                        "in": "query",
+                        "description": "the path inside repository to allow getting content of subdirectories",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "recursive",
+                        "in": "query",
+                        "description": "whether to use recursive search or not",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "the earliest timestamp for the fetched data given in ISO 8601 format with timezone",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "the latest timestamp for the fetched data given in ISO 8601 format with timezone",
+                        "schema": {
+                            "type": "string",
+                            "format": "date-time"
+                        }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the data has started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the data has been started",
+                                            "options": {
+                                                "projectNames": "group/project-name1,group/project-name2",
+                                                "filePath": "folder",
+                                                "recursive": "true",
+                                                "startDate": "2020-01-01T00:00:00.000Z",
+                                                "endDate": "2021-01-01T00:00:00.000Z",
+                                                "useAnonymization": "false",
+                                                "projects": {
+                                                    "allowed": [
+                                                        "group/project-name1"
+                                                    ],
+                                                    "unauthorized": [ ],
+                                                    "notFound": [
+                                                        "group/project-name2"
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained invalid or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid project name list": {
+                                        "description": "Invalid project name list",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'name1,,name3'' is not a valid comma-separated list of project names"
+                                        }
+                                    },
+                                    "Invalid start time example": {
+                                        "description": "Invalid start time example",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'2020-13-13T00:00' is not valid datetime in ISO 8601 format with timezone"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "No access allowed to the wanted GitLab project",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Unauthorized response example": {
+                                        "description": "Unauthorized response example",
+                                        "value": {
+                                            "status": "Unauthorized",
+                                            "description": "No available projects found. Access to projects 'group/secret' not allowed"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "The asked project or reference was not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "No projects found example": {
+                                        "description": "No projects found example",
+                                        "value": {
+                                            "status": "NotFound",
+                                            "description": "No available projects found"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [10 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/pipelines": {
             "get": {
                 "summary": "Fetch pipeline data from a GitLab repository.",

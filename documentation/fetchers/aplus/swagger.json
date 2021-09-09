@@ -116,6 +116,19 @@
                         }
                     },
                     {
+                        "name": "includeGitlabData",
+                        "in": "query",
+                        "description": "Whether to also fetch GitLab data related to the exercise submissions.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "false"
+                        }
+                    },
+                    {
                         "name": "includePoints",
                         "in": "query",
                         "description": "Whether to also fetch the points data for all students in the course.",
@@ -189,6 +202,7 @@
                                                 "includeModules": "true",
                                                 "includeExercises": "true",
                                                 "includeSubmissions": "false",
+                                                "includeGitlabData": "false",
                                                 "includePoints": "false",
                                                 "useAnonymization": "true",
                                                 "gdprExerciseId": "12345",
@@ -262,7 +276,6 @@
                         "name": "moduleId",
                         "in": "query",
                         "description": "The id number for the module in the chosen course instance. Must be a positive integer.",
-                        "required": true,
                         "schema": {
                             "type": "integer",
                             "format": "int32"
@@ -294,6 +307,19 @@
                         "name": "includeSubmissions",
                         "in": "query",
                         "description": "Whether to also fetch all the submissions for the exercises.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "false"
+                        }
+                    },
+                    {
+                        "name": "includeGitlabData",
+                        "in": "query",
+                        "description": "Whether to also fetch GitLab data related to the exercise submissions.",
                         "schema": {
                             "type": "string",
                             "enum": [
@@ -364,6 +390,7 @@
                                                 "exerciseId": "5555",
                                                 "parseNames": "true",
                                                 "includeSubmissions": "false",
+                                                "includeGitlabData": "false",
                                                 "useAnonymization": "true",
                                                 "gdprExerciseId": "12345",
                                                 "gdprFieldName": "field_0",
@@ -481,6 +508,19 @@
                         }
                     },
                     {
+                        "name": "includeGitlabData",
+                        "in": "query",
+                        "description": "Whether to also fetch GitLab data related to the exercise submissions.",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "false"
+                        }
+                    },
+                    {
                         "name": "useAnonymization",
                         "in": "query",
                         "description": "Whether to anonymize the user information.",
@@ -541,6 +581,7 @@
                                                 "parseNames": "true",
                                                 "includeExercises": "true",
                                                 "includeSubmissions": "false",
+                                                "includeGitlabData": "false",
                                                 "useAnonymization": "true",
                                                 "gdprExerciseId": "12345",
                                                 "gdprFieldName": "field_0",
