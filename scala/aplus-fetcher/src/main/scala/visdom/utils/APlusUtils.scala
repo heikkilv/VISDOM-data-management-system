@@ -7,6 +7,7 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonString
 import scala.collection.JavaConverters.asScalaBufferConverter
 import visdom.fetchers.aplus.APlusConstants
+import visdom.fetchers.aplus.FetcherValues
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils
@@ -290,22 +291,46 @@ object APlusUtils {
         }
     }
 
+    private def handleProjectsDocument(fetcherAddress: String, projectsDocument: BsonDocument): Unit = {
+        projectsDocument.getArrayOption(AttributeConstants.Allowed) match {
+            case Some(allowedProjects: BsonArray) => {
+                println(
+                    s"GitLab fetcher at ${fetcherAddress} allowed data fetching for " +
+                    s"${allowedProjects.size()} projects"
+                )
+            }
+            case None => println(s"No allowed projects found in the response from ${fetcherAddress}")
+        }
+
+        val disallowedProjects = (
+            JsonUtils.bsonArrayOptionToSeq(projectsDocument.getArrayOption(AttributeConstants.Unauthorized)) ++
+            JsonUtils.bsonArrayOptionToSeq(projectsDocument.getArrayOption(AttributeConstants.NotFound))
+        )
+            .map(x =>
+                x.isString() match {
+                    case true => Some(x.asString().getValue())
+                    case false => None
+                }
+            )
+            .flatten
+        disallowedProjects.size match {
+            case n if n > 0 => println(s"The disallowed projects: ${disallowedProjects}")
+            case _ =>
+        }
+    }
+
     private def makeGitlabFetcherQueryInternal(
         fetcherAddress: String,
         queryOptions: GitlabFetcherQueryOptions
     ): Unit = {
-        def handleProjectsDocument(projectsDocument: BsonDocument): Unit = {
-            projectsDocument.getArrayOption(AttributeConstants.Allowed) match {
-                case Some(allowedProjects: BsonArray) =>
-                    println(
-                        s"GitLab fetcher at ${fetcherAddress} allowed data fetching for projects: " +
-                        s"${allowedProjects.toJson()}"
-                    )
-                case None => println(s"No allowed projects found in the response from ${fetcherAddress}")
-            }
+        val lastProject: String = queryOptions.projectNames.lastOption match {
+            case Some(projectName: String) => projectName
+            case None => CommonConstants.EmptyString
         }
-
-        println(s"Sending query to GitLab fetcher at ${fetcherAddress} for projects: ${queryOptions.projectNames}")
+        println(
+            s"Sending query to GitLab fetcher at ${fetcherAddress} for " +
+            s"${queryOptions.projectNames.size} projects, last project: ${lastProject}"
+        )
         val response: Option[BsonDocument] = HttpUtils.getRequestDocument(
             request =
                 HttpUtils.getSimpleRequest(
@@ -322,7 +347,8 @@ object APlusUtils {
                 responseDocument.getDocumentOption(AttributeConstants.Options) match {
                     case Some(optionsDocument: BsonDocument) =>
                         optionsDocument.getDocumentOption(AttributeConstants.Projects) match {
-                            case Some(projectsDocument: BsonDocument) => handleProjectsDocument(projectsDocument)
+                            case Some(projectsDocument: BsonDocument) =>
+                                handleProjectsDocument(fetcherAddress, projectsDocument)
                             case None => println(s"No projects found in the response from ${fetcherAddress}")
                         }
                     case None => println(s"No options found in the response from ${fetcherAddress}")
@@ -334,7 +360,7 @@ object APlusUtils {
     def makeGitlabFetcherQuery(fetcherAddress: String, queryOptions: GitlabFetcherQueryOptions): Unit = {
         makeGitlabFetcherTestQuery(fetcherAddress) match {
             case true =>
-                TaskUtils.startTaskSequence(
+                FetcherValues.gitlabTaskList.addTasks(
                     divideProjectNames(queryOptions.projectNames)
                         .map(
                             projectNames => (

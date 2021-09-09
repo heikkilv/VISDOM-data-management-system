@@ -251,6 +251,12 @@ object JsonUtils {
     }
     // scalastyle:on cyclomatic.complexity
 
+    def bsonArrayOptionToSeq(arrayOption: Option[BsonArray]): Seq[BsonValue] = {
+        arrayOption
+            .map(arrayElement => arrayElement.getValues().asScala)
+            .getOrElse(Seq.empty)
+    }
+
     def removeAttribute(document: BsonDocument, attributeName: String): BsonDocument = {
         document.containsKey(attributeName) match {
             case true => {

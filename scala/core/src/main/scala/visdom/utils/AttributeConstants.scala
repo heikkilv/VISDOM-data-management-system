@@ -20,11 +20,13 @@ object AttributeConstants {
     val Links: String = "_links"
     val Metadata: String = "metadata"
     val Modules: String = "modules"
+    val NotFound: String = "notFound"
     val Options: String = "options"
     val Projects: String = "projects"
     val Recursive: String = "recursive"
     val SourceServer: String = "sourceServer"
     val StartDate: String = "startDate"
     val SwaggerDefinition: String = "swaggerDefinition"
+    val Unauthorized: String = "unauthorized"
     val Version: String = "version"
 }

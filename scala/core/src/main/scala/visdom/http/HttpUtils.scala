@@ -53,7 +53,10 @@ object HttpUtils {
                 HttpConstants.DefaultWaitDuration
             )
         } catch {
-             case _: TimeoutException => None
+             case timeoutException: TimeoutException => {
+                println(timeoutException)
+                None
+             }
         }
     }
 

@@ -32,6 +32,8 @@ import visdom.utils.EnvironmentVariables.EnvironmentApplicationName
 import visdom.utils.EnvironmentVariables.EnvironmentHostName
 import visdom.utils.EnvironmentVariables.EnvironmentHostPort
 import visdom.utils.EnvironmentVariables.getEnvironmentVariable
+import visdom.utils.GitlabFetcherQueryOptions
+import visdom.utils.TaskList
 
 
 object FetcherValues {
@@ -66,6 +68,8 @@ object FetcherValues {
 
     val FetcherType: String = ComponentConstants.APlusFetcherType
     val FetcherVersion: String = "0.1"
+
+    val gitlabTaskList = new TaskList[GitlabFetcherQueryOptions]()
 
     val AdditionalMetadataFilename: String = getEnvironmentVariable(EnvironmentAdditionalMetadata, APlusVariableMap)
 

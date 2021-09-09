@@ -38,6 +38,13 @@ object GeneralUtils {
         }
     }
 
+    def zonedDateTimeToString(dateTimeOption: Option[ZonedDateTime]): String = {
+        dateTimeOption match {
+            case Some(dateTime: ZonedDateTime) => dateTime.toString()
+            case None => CommonConstants.EmptyString
+        }
+    }
+
     val ShaFunction: String = "SHA-512/256"
     val Encoding: String = "UTF-8"
     val MessageDigester: MessageDigest = MessageDigest.getInstance(ShaFunction)
