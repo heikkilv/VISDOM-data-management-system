@@ -29,6 +29,8 @@ abstract class DataHandler(options: FetchOptions) {
 
     val createMetadataDocument: Boolean = true
 
+    def getOptions(): FetchOptions = options
+
     def getOptionsDocument(): BsonDocument = {
         BsonDocument()
     }

@@ -10,6 +10,7 @@ import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.GitlabPipelinesHandler
 import visdom.fetchers.gitlab.GitlabPipelinesOptions
 import visdom.fetchers.gitlab.PipelinesSpecificFetchParameters
+import visdom.fetchers.gitlab.Routes.fetcherList
 import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
 import visdom.fetchers.gitlab.queries.CommonHelpers
@@ -118,11 +119,6 @@ object PipelinesActor {
             includeJobLogs = fetchParameters.includeJobLogs,
             useAnonymization = fetchParameters.useAnonymization
         )
-        val pipelineFetcher = new GitlabPipelinesHandler(pipelineFetcherOptions)
-        val pipelineCount = pipelineFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-        println(s"Found ${pipelineCount} pipelines from project '${fetchParameters.projectName}'")
+        fetcherList.addFetcher(new GitlabPipelinesHandler(pipelineFetcherOptions))
     }
 }

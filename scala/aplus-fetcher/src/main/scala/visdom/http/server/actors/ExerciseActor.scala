@@ -132,27 +132,6 @@ object ExerciseActor {
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )
-        val exerciseFetcher = new ExerciseFetcher(exerciseFetcherOptions)
-        val exerciseCount = exerciseFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-
-        fetchParameters.moduleId match {
-            case Some(moduleIdInt: Int) =>
-                println(
-                    s"Found ${exerciseCount} exercises from A+ instance at ${FetcherValues.targetServer.hostName} " +
-                    s"for course with id ${fetchParameters.courseId} and module with id ${moduleIdInt}"
-                )
-            case None => fetchParameters.exerciseId match {
-                case Some(exerciseIdInt: Int) =>
-                    println(
-                        s"Found ${exerciseCount} exercises from A+ instance at ${FetcherValues.targetServer.hostName} " +
-                        s"for course with id ${fetchParameters.courseId} that matched exercise with id ${exerciseIdInt}"
-                    )
-                case None =>
-                    println("Called exercise fetcher with without module or exercise id!")
-            }
-        }
+        FetcherValues.fetcherList.addFetcher(new ExerciseFetcher(exerciseFetcherOptions))
     }
 }

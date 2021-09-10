@@ -49,8 +49,21 @@ final case class GitlabCommitOptions(
     includeFileLinks: Boolean,
     includeReferenceLinks: Boolean,
     useAnonymization: Boolean
-) extends GitlabFetchOptions
-
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            projectName,
+            reference,
+            startDate,
+            endDate,
+            filePath,
+            includeStatistics,
+            includeFileLinks,
+            includeReferenceLinks,
+            useAnonymization
+        ).toString()
+    }
+}
 
 abstract class FileSpecificFetchOptions {
     val projectName: String
@@ -79,7 +92,18 @@ final case class GitlabFileOptions(
     recursive: Boolean,
     includeCommitLinks: Boolean,
     useAnonymization: Boolean
-) extends GitlabFetchOptions
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            projectName,
+            reference,
+            filePath,
+            recursive,
+            includeCommitLinks,
+            useAnonymization
+        ).toString()
+    }
+}
 
 final case class GitlabCommitLinkOptions(
     hostServer: GitlabServer,
@@ -164,7 +188,20 @@ final case class GitlabPipelinesOptions(
     includeJobs: Boolean,
     includeJobLogs: Boolean,
     useAnonymization: Boolean
-) extends GitlabFetchOptions
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            projectName,
+            reference,
+            startDate,
+            endDate,
+            includeReports,
+            includeJobs,
+            includeJobLogs,
+            useAnonymization
+        ).toString()
+    }
+}
 
 final case class GitlabPipelineOptions(
     hostServer: GitlabServer,
@@ -173,7 +210,16 @@ final case class GitlabPipelineOptions(
     pipelineId: Int,
     includeJobLogs: Boolean,
     useAnonymization: Boolean
-) extends GitlabFetchOptions
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            projectName,
+            pipelineId,
+            includeJobLogs,
+            useAnonymization
+        ).toString()
+    }
+}
 
 final case class PipelinesSpecificFetchParameters(
     projectName: String,
