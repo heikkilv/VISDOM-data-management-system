@@ -41,5 +41,5 @@ object HttpConstants {
     val DefaultWaitDuration: Duration = Duration(DefaultWaitDurationSeconds, TimeUnit.SECONDS)
 
     val MaxUriLength: Int = 1024
-    val FutureTaskDelayMs: Int = 1000
+    val FutureTaskDelayMs: Int = 3000
 }
