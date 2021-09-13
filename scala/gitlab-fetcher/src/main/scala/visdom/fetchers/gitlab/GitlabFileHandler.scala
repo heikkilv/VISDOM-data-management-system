@@ -77,15 +77,13 @@ class GitlabFileHandler(options: GitlabFileOptions)
     }
 
     override def processDocument(document: BsonDocument): BsonDocument = {
-        val resultFailCheck: Boolean = !options.recursive && (
-            options.filePath match {
-                case Some(filePath: String) => document.getStringOption(GitlabConstants.AttributePath) match {
-                    case Some(documentPath: String) => !documentPath.startsWith(filePath)
-                    case None => true  // result document did not contain string valued path attribute
-                }
-                case None => false
+        val resultFailCheck: Boolean = options.filePath match {
+            case Some(filePath: String) => document.getStringOption(GitlabConstants.AttributePath) match {
+                case Some(documentPath: String) => !documentPath.startsWith(filePath)
+                case None => true  // result document did not contain string valued path attribute
             }
-        )
+            case None => false  // all documents are accepted if filePath options is not used
+        }
 
         if (resultFailCheck) {
             BsonDocument()  // empty result will be discarded
@@ -231,21 +229,12 @@ class GitlabFileHandler(options: GitlabFileOptions)
     }
 
     private def processOptionalParameters(request: HttpRequest): HttpRequest = {
-        @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
-        var paramMap: Seq[(String, String)] = Seq.empty
-
-        options.filePath match {
+        val paramMap: Seq[(String, String)] =  options.filePath match {
             case Some(filePath: String) => {
-                paramMap = paramMap ++ Seq((
-                    GitlabConstants.ParamPath, options.recursive match {
-                        case true => filePath
-                        case false =>
-                            // if trying to get data for a single file, GitLab API returns an empty response
-                            GeneralUtils.getUpperFolder(filePath)
-                    }
-                ))
+                // use the upper folder (and result filtering) to also get the target file or folder as a response
+                Seq((GitlabConstants.ParamPath, GeneralUtils.getUpperFolder(filePath)))
             }
-            case None =>
+            case None => Seq.empty
         }
 
         request.params(paramMap)
