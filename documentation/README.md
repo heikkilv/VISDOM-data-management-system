@@ -42,3 +42,4 @@ The data source specific pages contain installation instructions and more detail
 The following data adapters have been implemented:
 
 - [GitLab data adapter](adapters/gitlab)
+- [Programming course data adapter](adapters/course)

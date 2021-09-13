@@ -1,0 +1,89 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8790"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/info": {
+            "get": {
+                "summary": "Returns course adapter info.",
+                "description": "Returns information about the course data adapter.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CourseAdapterInfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "adapter-course",
+                                            "componentType": "adapter",
+                                            "adapterType": "Course",
+                                            "version": "0.1",
+                                            "startTime": "2021-09-01T12:00:00.000Z",
+                                            "apiAddress": "localhost:8790",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "CourseAdapterInfoResponse": {
+                "required": [
+                    "adapterType",
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "adapterType": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
