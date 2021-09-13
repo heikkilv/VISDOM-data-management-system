@@ -125,11 +125,6 @@ object CourseActor {
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )
-        val courseFetcher = new CoursesFetcher(courseFetcherOptions)
-        val courseCount = courseFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-        println(s"Found ${courseCount} courses from A+ instance at ${FetcherValues.targetServer.hostName}")
+        FetcherValues.fetcherList.addFetcher(new CoursesFetcher(courseFetcherOptions))
     }
 }

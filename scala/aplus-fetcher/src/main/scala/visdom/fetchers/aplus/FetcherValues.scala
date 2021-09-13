@@ -8,6 +8,7 @@ import org.mongodb.scala.MongoDatabase
 import scala.concurrent.ExecutionContextExecutor
 import visdom.constants.ComponentConstants
 import visdom.database.mongodb.MongoConnection
+import visdom.fetchers.FetcherList
 import visdom.http.HttpConstants
 import visdom.http.server.ServerConstants
 import visdom.http.server.actors.APlusInfoActor
@@ -69,6 +70,7 @@ object FetcherValues {
     val FetcherType: String = ComponentConstants.APlusFetcherType
     val FetcherVersion: String = "0.1"
 
+    val fetcherList: FetcherList = new FetcherList()
     val gitlabTaskList = new TaskList[GitlabFetcherQueryOptions]()
 
     val AdditionalMetadataFilename: String = getEnvironmentVariable(EnvironmentAdditionalMetadata, APlusVariableMap)

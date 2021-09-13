@@ -124,14 +124,6 @@ object ModuleActor {
             useAnonymization = fetchParameters.useAnonymization,
             gdprOptions = fetchParameters.gdprOptions
         )
-        val moduleFetcher = new ModuleFetcher(moduleFetcherOptions)
-        val moduleCount = moduleFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-        println(
-            s"Found ${moduleCount} modules from A+ instance at ${FetcherValues.targetServer.hostName} " +
-            s"for course with id ${fetchParameters.courseId}"
-        )
+        FetcherValues.fetcherList.addFetcher(new ModuleFetcher(moduleFetcherOptions))
     }
 }

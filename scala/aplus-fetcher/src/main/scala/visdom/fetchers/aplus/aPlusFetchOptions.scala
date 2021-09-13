@@ -14,7 +14,15 @@ final case class GdprOptions(
     fieldName: String,
     acceptedAnswer: String,
     users: Option[Set[Int]]
-)
+) {
+    override def toString(): String = {
+        (
+            exerciseId,
+            fieldName,
+            acceptedAnswer
+        ).toString()
+    }
+}
 
 abstract class CourseSpecificFetchOptions {
     val courseId: Option[Int]
@@ -133,7 +141,21 @@ final case class APlusCourseOptions(
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
-extends APlusFetchOptions
+extends APlusFetchOptions {
+    override def toString(): String = {
+        (
+            courseId,
+            parseNames,
+            includeModules,
+            includeExercises,
+            includeSubmissions,
+            includePoints,
+            includeGitlabData,
+            useAnonymization,
+            gdprOptions
+        ).toString()
+    }
+}
 
 final case class APlusModuleOptions(
     hostServer: APlusServer,
@@ -147,7 +169,20 @@ final case class APlusModuleOptions(
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
-extends APlusFetchOptions
+extends APlusFetchOptions {
+    override def toString(): String = {
+        (
+            courseId,
+            moduleId,
+            parseNames,
+            includeExercises,
+            includeSubmissions,
+            includeGitlabData,
+            useAnonymization,
+            gdprOptions
+        ).toString()
+    }
+}
 
 final case class APlusExerciseOptions(
     hostServer: APlusServer,
@@ -161,7 +196,20 @@ final case class APlusExerciseOptions(
     useAnonymization: Boolean,
     gdprOptions: Option[GdprOptions]
 )
-extends APlusFetchOptions
+extends APlusFetchOptions {
+    override def toString(): String = {
+        (
+            courseId,
+            moduleId,
+            exerciseId,
+            parseNames,
+            includeSubmissions,
+            includeGitlabData,
+            useAnonymization,
+            gdprOptions
+        ).toString()
+    }
+}
 
 final case class APlusSubmissionOptions(
     hostServer: APlusServer,
@@ -174,7 +222,19 @@ final case class APlusSubmissionOptions(
     useAnonymization: Boolean,
     gdprOptions: GdprOptions
 )
-extends APlusFetchOptions
+extends APlusFetchOptions {
+    override def toString(): String = {
+        (
+            courseId,
+            exerciseId,
+            submissionId,
+            parseNames,
+            parseGitAnswers,
+            useAnonymization,
+            gdprOptions
+        ).toString()
+    }
+}
 
 final case class APlusPointOptions(
     hostServer: APlusServer,

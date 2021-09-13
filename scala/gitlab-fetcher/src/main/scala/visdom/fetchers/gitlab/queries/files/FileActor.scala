@@ -9,6 +9,7 @@ import visdom.fetchers.gitlab.FileSpecificFetchParameters
 import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.GitlabFileHandler
 import visdom.fetchers.gitlab.GitlabFileOptions
+import visdom.fetchers.gitlab.Routes.fetcherList
 import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
 import visdom.fetchers.gitlab.queries.CommonHelpers
@@ -102,11 +103,6 @@ object FileActor {
             includeCommitLinks = fetchParameters.includeCommitLinks,
             useAnonymization = fetchParameters.useAnonymization
         )
-        val commitFetcher = new GitlabFileHandler(fileFetcherOptions)
-        val commitCount = commitFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-        println(s"Found ${commitCount} files from project '${fetchParameters.projectName}'")
+        fetcherList.addFetcher(new GitlabFileHandler(fileFetcherOptions))
     }
 }

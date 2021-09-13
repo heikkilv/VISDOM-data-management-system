@@ -13,6 +13,7 @@ import visdom.database.mongodb.MongoConnection.applicationName
 import visdom.database.mongodb.MongoConnection.mongoClient
 import visdom.database.mongodb.MongoConnection.storeDocument
 import visdom.database.mongodb.MongoConstants
+import visdom.fetchers.FetcherList
 import visdom.http.HttpConstants
 import visdom.http.server.ServerConstants
 import visdom.utils.CommonConstants
@@ -70,24 +71,6 @@ object Routes {
     private val metadataDatabase: MongoDatabase = mongoClient.getDatabase(metadataDatabaseName)
     val targetDatabase: MongoDatabase = mongoClient.getDatabase(databaseName)
 
-    private def handleData(
-        fetchOptions: GitlabFetchOptions
-    ): Int = {
-        val dataHandlerOption: Option[GitlabDataHandler] = fetchOptions match {
-            case commitFetchOption: GitlabCommitOptions => Some(new GitlabCommitHandler(commitFetchOption))
-            case fileFetcherOptions: GitlabFileOptions => Some(new GitlabFileHandler(fileFetcherOptions))
-            case _ => None
-        }
-        val documentsOption: Option[Array[Document]] = dataHandlerOption match {
-            case Some(dataHandler: GitlabDataHandler) => dataHandler.process()
-            case None => None
-        }
-        documentsOption match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-    }
-
     def storeMetadata(): Unit = {
         val metadataDocument: Document = Document(
             BsonDocument(
@@ -133,4 +116,6 @@ object Routes {
     def stopMetadataTask(): Unit = {
         val _ = metadataTask.cancel()
     }
+
+    val fetcherList: FetcherList = new FetcherList()
 }

@@ -10,6 +10,7 @@ import visdom.fetchers.gitlab.CommitSpecificFetchParameters
 import visdom.fetchers.gitlab.GitlabCommitHandler
 import visdom.fetchers.gitlab.GitlabCommitOptions
 import visdom.fetchers.gitlab.GitlabConstants
+import visdom.fetchers.gitlab.Routes.fetcherList
 import visdom.fetchers.gitlab.Routes.server
 import visdom.fetchers.gitlab.Routes.targetDatabase
 import visdom.fetchers.gitlab.queries.CommonHelpers
@@ -123,11 +124,6 @@ object CommitActor {
             includeReferenceLinks = fetchParameters.includeReferenceLinks,
             useAnonymization = fetchParameters.useAnonymization
         )
-        val commitFetcher = new GitlabCommitHandler(commitFetcherOptions)
-        val commitCount = commitFetcher.process() match {
-            case Some(documents: Array[Document]) => documents.size
-            case None => 0
-        }
-        println(s"Found ${commitCount} commits from project '${fetchParameters.projectName}'")
+        fetcherList.addFetcher(new GitlabCommitHandler(commitFetcherOptions))
     }
 }

@@ -40,19 +40,19 @@ object FetcherUtils {
         def handleDataFetchingInternal(fetchersWithParameters: Seq[(Parameters => Unit, Parameters)]): Unit = {
             fetchersWithParameters.headOption match {
                 case Some((fetcher, parameters)) => {
-                    println(s"Starting fetching process with parameters: ${parameters}")
+                    // println(s"Starting fetching process with parameters: ${parameters}")
                     val fetcherFuture: Future[Unit] = Future(fetcher(parameters))
                     fetcherFuture.onComplete({
                         case Success(_) => handleDataFetchingInternal(fetchersWithParameters.drop(1))
                         case Failure(error: Throwable) => println(s"Error: ${error.getMessage()}")
                     })
                 }
-                case None => println("Data fetching sequence was completed successfully.")
+                case None =>  // println("Data fetching sequence was completed successfully.")
             }
         }
 
         val dataFetchersWithParameters: Seq[(Parameters => Unit, Parameters)] = dataFetchers.zip(fetchParameters)
-        println(s"Started data fetching sequence with ${dataFetchersWithParameters.size} fetchers.")
+        // println(s"Started data fetching sequence with ${dataFetchersWithParameters.size} fetchers.")
         handleDataFetchingInternal(dataFetchersWithParameters)
     }
 }
