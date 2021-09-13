@@ -1,5 +1,5 @@
 name := "aplus-fetcher"
-version := "0.1"
+version := "0.2"
 
 val MainAPlusFetcher: String = "visdom.fetchers.aplus.APlusFetcher"
 

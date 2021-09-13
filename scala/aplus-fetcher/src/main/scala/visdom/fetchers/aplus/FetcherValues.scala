@@ -68,7 +68,7 @@ object FetcherValues {
     val targetDatabase: MongoDatabase = MongoConnection.mongoClient.getDatabase(targetDatabaseName)
 
     val FetcherType: String = ComponentConstants.APlusFetcherType
-    val FetcherVersion: String = "0.1"
+    val FetcherVersion: String = "0.2"
 
     val fetcherList: FetcherList = new FetcherList()
     val gitlabTaskList = new TaskList[GitlabFetcherQueryOptions]()

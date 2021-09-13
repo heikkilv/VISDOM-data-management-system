@@ -6,7 +6,7 @@ services:
         build:
             context: ../../scala
             dockerfile: Dockerfile-fetcher-aplus
-        image: visdom/aplus-fetcher:0.1
+        image: visdom/aplus-fetcher:0.2
         container_name: ${APPLICATION_NAME}
         restart: "no"
         ports:
