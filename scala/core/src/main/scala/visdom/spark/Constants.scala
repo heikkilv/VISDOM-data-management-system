@@ -1,5 +1,7 @@
 package visdom.spark
 
+import visdom.utils.CommonConstants
+
 
 object Constants {
     // The names for the environment variables
@@ -23,8 +25,8 @@ object Constants {
 
     val DefaultMongoHost: String = "mongodb"
     val DefaultMongoPort: String = "27017"
-    val DefaultMongoUsername: String = ""
-    val DefaultMongoPassword: String = ""
+    val DefaultMongoUsername: String = CommonConstants.EmptyString
+    val DefaultMongoPassword: String = CommonConstants.EmptyString
     val DefaultMongoDatabase: String = "metadata"
     val DefaultMongoCollection: String = "metadata"
     val DefaultMetadataDatabase: String = "metadata"
@@ -32,7 +34,7 @@ object Constants {
     val MongoInputUriSetting: String = "spark.mongodb.input.uri"
     val MongoOutputUriSetting: String = "spark.mongodb.output.uri"
 
-    val UriConnectionCharacter: String = ":"
+    val UriConnectionCharacter: String = CommonConstants.DoubleDot
     val SparkConnectionStringBase: String = "spark://"
     val MongoConnectionStringBase: String = "mongodb://"
 
@@ -54,20 +56,20 @@ object Constants {
         {
             val username: String = sys.env.getOrElse(EnvironmentMongoUsername, DefaultMongoUsername)
             username.isEmpty() match {
-                case true => ""
+                case true => CommonConstants.EmptyString
                 case false => Seq(
                     username,
                     sys.env.getOrElse(EnvironmentMongoPassword, DefaultMongoPassword)
-                ).mkString(UriConnectionCharacter) + "@"
+                ).mkString(UriConnectionCharacter) + CommonConstants.AtSign
             }
         },
         Seq(
             sys.env.getOrElse(EnvironmentMongoHost, DefaultMongoHost),
             sys.env.getOrElse(EnvironmentMongoPort, DefaultMongoPort)
         ).mkString(UriConnectionCharacter),
-        "/",
+        CommonConstants.Slash,
         DefaultMetadataDatabase,
-        ".",
+        CommonConstants.Dot,
         DefaultMongoCollection
     ).mkString
 }
