@@ -14,7 +14,7 @@ final case class PointSchema(
     id: Int,
     full_name: String,
     course_id: Int,
-    modules: Seq[ModuleSchema]
+    modules: Seq[ModulePointSchema]
 )
 extends BaseSchema
 
@@ -34,10 +34,10 @@ object PointSchema extends BaseSchemaTrait[PointSchema] {
                 (value: Any) => toIntOption(value),
                 (value: Any) => toStringOption(value),
                 (value: Any) => toIntOption(value),
-                (value: Any) => toSeqOption(value, ModuleSchema.fromAny)
+                (value: Any) => toSeqOption(value, ModulePointSchema.fromAny)
             )
         ) match {
-            case Some((id: Int, full_name: String, course_id: Int, modules: Seq[ModuleSchema])) =>
+            case Some((id: Int, full_name: String, course_id: Int, modules: Seq[ModulePointSchema])) =>
                 Some(
                     PointSchema(
                         id,

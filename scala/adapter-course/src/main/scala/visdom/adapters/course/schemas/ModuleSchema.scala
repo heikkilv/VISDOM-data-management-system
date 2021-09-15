@@ -2,43 +2,76 @@ package visdom.adapters.course.schemas
 
 import visdom.spark.FieldDataType
 import visdom.utils.GeneralUtils.EnrichedWithToTuple
+import visdom.utils.GeneralUtils.toBooleanOption
 import visdom.utils.GeneralUtils.toIntOption
 import visdom.utils.GeneralUtils.toOption
-import visdom.utils.GeneralUtils.toSeqOption
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.WartRemoverConstants
 
 
 final case class ModuleSchema(
     id: Int,
-    name: NameSchema,
-    exercises: Seq[ExercisePointsSchema]
+    display_name: NameSchema,
+    is_open: Boolean,
+    course_id: Int,
+    metadata: MetadataSchema,
+    _links: Option[ModuleLinksSchema]
 )
 extends BaseSchema
 
 object ModuleSchema extends BaseSchemaTrait[ModuleSchema] {
     def fields: Seq[FieldDataType] = Seq(
         FieldDataType(SnakeCaseConstants.Id, false),
-        FieldDataType(SnakeCaseConstants.Name, false),
-        FieldDataType(SnakeCaseConstants.Exercises, false)
+        FieldDataType(SnakeCaseConstants.DisplayName, false),
+        FieldDataType(SnakeCaseConstants.IsOpen, false),
+        FieldDataType(SnakeCaseConstants.CourseId, false),
+        FieldDataType(SnakeCaseConstants.Metadata, false),
+        FieldDataType(SnakeCaseConstants.Links, true)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def transformValues(valueOptions: Seq[Option[Any]]): Option[ModuleSchema] = {
+        val (
+            idOption,
+            displayPathOption,
+            isOpenOption,
+            courseIdOption,
+            metadataOption,
+            linksOption
+        ) = valueOptions.toTuple6
         toOption(
-            valueOptions.toTuple3,
+            (
+                idOption,
+                displayPathOption,
+                isOpenOption,
+                courseIdOption,
+                metadataOption
+            ),
             (
                 (value: Any) => toIntOption(value),
                 (value: Any) => NameSchema.fromAny(value),
-                (value: Any) => toSeqOption(value, ExercisePointsSchema.fromAny)
-            )
+                (value: Any) => toBooleanOption(value),
+                (value: Any) => toIntOption(value),
+                (value: Any) => MetadataSchema.fromAny(value)
+                )
         ) match {
-            case Some((id: Int, name: NameSchema, exercises: Seq[ExercisePointsSchema])) =>
+            case Some(
+                (
+                    id: Int,
+                    displayName: NameSchema,
+                    isOpen: Boolean,
+                    courseId: Int,
+                    metadata: MetadataSchema,
+                )
+            ) =>
                 Some(
                     ModuleSchema(
                         id,
-                        name,
-                        exercises
+                        displayName,
+                        isOpen,
+                        courseId,
+                        metadata,
+                        ModuleLinksSchema.fromAny(linksOption)
                     )
                 )
             case _ => None

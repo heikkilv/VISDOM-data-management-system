@@ -2,9 +2,9 @@ package visdom.utils
 
 import java.math.BigInteger
 import java.security.MessageDigest
+import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
-
 
 object GeneralUtils {
     def toInt(stringValue: String): Option[Int] = {
@@ -29,8 +29,33 @@ object GeneralUtils {
         value match {
             case stringValue: String => Some(stringValue)
             case numberValue: Number => Some(numberValue.toString())
+            case instantValue: Instant => Some(instantValue.toString())
+            case zonedDateTimeValue: ZonedDateTime => Some(zonedDateTimeValue.toString())
             case Some(someValue: Any) => toStringOption(someValue)
             case _ => None
+        }
+    }
+
+    def toStringOption(value: Any, transformInstant: Boolean): Option[String] = {
+        value match {
+            case stringValue: String => {
+                (transformInstant && stringValue.contains(CommonConstants.Date)) match {
+                    case true => {
+                        stringValue.split(CommonConstants.WhiteSpace).lastOption match {
+                            case Some(stringPart: String) =>
+                                Some(
+                                    Instant.ofEpochMilli(
+                                        stringPart.substring(0, stringPart.size - 1).toLong
+                                    ).toString()
+                                )
+                            case None => Some(stringValue)
+                        }
+                    }
+                    case false => Some(stringValue)
+                }
+            }
+            case Some(someValue: Any) => toStringOption(someValue, transformInstant)
+            case _ => toStringOption(value)
         }
     }
 
@@ -39,6 +64,16 @@ object GeneralUtils {
             case booleanValue: Boolean => Some(booleanValue)
             case stringValue: String => Some(stringValue.toBoolean)
             case Some(someValue: Any) => toBooleanOption(someValue)
+            case _ => None
+        }
+    }
+
+    def toInstantOption(value: Any): Option[Instant] = {
+        value match {
+            case instantValue: Instant => Some(instantValue)
+            case zonedDateTimeValue: ZonedDateTime => Some(zonedDateTimeValue.toInstant())
+            case stringValue: String => toInstantOption(toZonedDateTime(Some(stringValue)))
+            case Some(someValue: Any) => toInstantOption(someValue)
             case _ => None
         }
     }

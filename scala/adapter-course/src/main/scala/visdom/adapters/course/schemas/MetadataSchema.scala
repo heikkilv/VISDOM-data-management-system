@@ -6,7 +6,7 @@ import visdom.utils.WartRemoverConstants
 
 
 final case class MetadataSchema(
-    other: Option[FolderLocationSchema]
+    other: Option[MetadataOtherSchema]
 )
 extends BaseSchema
 
@@ -21,10 +21,7 @@ object MetadataSchema extends BaseSchemaTrait[MetadataSchema] {
             MetadataSchema(
                 valueOptions.headOption match {
                     case Some(otherOption) => otherOption match {
-                        case Some(other) => FolderLocationSchema.fromAny(other) match {
-                            case Some(location: FolderLocationSchema) => Some(location)
-                            case _ => None
-                        }
+                        case Some(other) => MetadataOtherSchema.fromAny(other)
                         case None => None
                     }
                     case None => None

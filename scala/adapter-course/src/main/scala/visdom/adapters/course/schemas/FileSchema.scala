@@ -41,10 +41,7 @@ object FileSchema extends BaseSchemaTrait[FileSchema] {
                         path,
                         project_name,
                         host_name,
-                        CommitIdListSchema.fromAny(linksOption) match {
-                            case Some(links: CommitIdListSchema) => Some(links)
-                            case _ => None
-                        }
+                        CommitIdListSchema.fromAny(linksOption)
                     )
                 )
             case _ => None

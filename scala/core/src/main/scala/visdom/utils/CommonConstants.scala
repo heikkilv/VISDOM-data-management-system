@@ -16,6 +16,7 @@ object CommonConstants {
     final val WhiteSpace: String = " "
 
     final val Code: String = "code"
+    final val Date: String = "date"
     final val Http: String = "http"
     final val Https: String = "https"
     final val Git: String = "git"

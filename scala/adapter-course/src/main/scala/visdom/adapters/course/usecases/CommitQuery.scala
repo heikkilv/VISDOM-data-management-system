@@ -10,11 +10,13 @@ import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.options.CommitQueryOptions
 import visdom.adapters.course.schemas.CommitSchema
+import visdom.adapters.course.schemas.CourseLinksSchema
 import visdom.adapters.course.schemas.CourseSchema
 import visdom.adapters.course.schemas.ExercisePointsSchema
 import visdom.adapters.course.schemas.ExerciseSchema
 import visdom.adapters.course.schemas.FileSchema
 import visdom.adapters.course.schemas.GitSubmissionSchema
+import visdom.adapters.course.schemas.ModuleSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.adapters.course.schemas.SubmissionSchema
 import visdom.adapters.course.output.CommitOutput
@@ -29,6 +31,7 @@ import visdom.utils.SnakeCaseConstants
 class CommitQuery(queryOptions: CommitQueryOptions) {
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newProductEncoder
+    // sparkSession.sparkContext.hadoopConfiguration.
 
     def getSubmissionIds(): Seq[Int] = {
         // returns the submission ids (for this user-exercise pair)
@@ -174,21 +177,24 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
             .flatMap(row => ExerciseSchema.fromRow(row))
             .map(exercise => exercise.metadata.other.map(folder => folder.path))
             .flatten match {
-                case Some(exercisePath: String) => {
-                    val gitProject: Option[(String, String)] = getGitProject(getSubmissionIds())
-                    val commitOutputs: Seq[CommitOutput] =
-                        getCommitOutputs(gitProject, getCommitIds(exercisePath, gitProject))
+                case Some(exercisePathOption: Option[String]) => exercisePathOption match {
+                    case Some(exercisePath: String) => {
+                        val gitProject: Option[(String, String)] = getGitProject(getSubmissionIds())
+                        val commitOutputs: Seq[CommitOutput] =
+                            getCommitOutputs(gitProject, getCommitIds(exercisePath, gitProject))
 
-                    Some(
-                        ExerciseCommitsOutput(
-                            name = exercisePath.split(CommonConstants.Slash).lastOption match {
-                                case Some(simplifiedName: String) => simplifiedName
-                                case None => exercisePath
-                            },
-                            commit_count = commitOutputs.size,
-                            commit_meta = commitOutputs
+                        Some(
+                            ExerciseCommitsOutput(
+                                name = exercisePath.split(CommonConstants.Slash).lastOption match {
+                                    case Some(simplifiedName: String) => simplifiedName
+                                    case None => exercisePath
+                                },
+                                commit_count = commitOutputs.size,
+                                commit_meta = commitOutputs
+                            )
                         )
-                    )
+                    }
+                    case None => None
                 }
                 case None => None
             }
@@ -208,7 +214,44 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
             .flatMap(row => CourseSchema.fromRow(row))
     }
 
+    def getModuleIds(courseSchemaOption: Option[CourseSchema]): Seq[Int] = {
+        courseSchemaOption match {
+            case Some(courseSchema: CourseSchema) => {
+                courseSchema._links match {
+                        case Some(courseLinks: CourseLinksSchema) => {
+                            courseLinks.modules match {
+                                case Some(modulesIds: Seq[Int]) => modulesIds
+                                case None => Seq.empty
+                            }
+                        }
+                        case None => Seq.empty
+                    }
+            }
+            case None => Seq.empty
+        }
+    }
+
+    def getModuleData(moduleIds: Seq[Int]): Seq[ModuleSchema] = {
+        // returns the module information for modules that match the given module ids
+        MongoSpark
+            .load[ModuleSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(sparkSession, aPlusDatabaseName, MongoConstants.CollectionModules)
+            )
+            .cache()
+            .filter(column(SnakeCaseConstants.Id).isInCollection(moduleIds))
+            .filter(column(SnakeCaseConstants.CourseId) === queryOptions.courseId)
+            .collect()
+            .flatMap(row => ModuleSchema.fromRow(row))
+    }
+
     def getResults(): JsObject = {
+        val courseData = getCourseData()
+        val moduleIds = getModuleIds(courseData)
+        val moduleData = getModuleData(moduleIds)
+        println(courseData)
+        moduleData.foreach(module => println(module))
+
         getExerciseCommitsData() match {
             case Some(exerciseData: ExerciseCommitsOutput) => exerciseData.toJsObject()
             case None => JsObject()
