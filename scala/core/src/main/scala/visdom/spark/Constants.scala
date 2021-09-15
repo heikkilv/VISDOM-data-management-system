@@ -38,6 +38,26 @@ object Constants {
     val SparkConnectionStringBase: String = "spark://"
     val MongoConnectionStringBase: String = "mongodb://"
 
+    val SparkCoresMax: String = "spark.cores.max"
+    val SparkSchedulerMode: String = "spark.scheduler.mode"
+    val SparkDynamicAllocationEnabled: String = "spark.dynamicAllocation.enabled"
+    val SparkDynamicAllocationShuffleTrackingEnabled: String = "spark.dynamicAllocation.shuffleTracking.enabled"
+    val SparkDynamicAllocationExecutorIdleTimeout: String = "spark.dynamicAllocation.executorIdleTimeout"
+    val SparkDynamicAllocationExecutorAllocationRatio: String = "spark.dynamicAllocation.executorAllocationRatio"
+    val SparkDynamicAllocationInitialExecutors: String = "spark.dynamicAllocation.initialExecutors"
+    val SparkDynamicAllocationMinExecutors: String = "spark.dynamicAllocation.minExecutors"
+    val SparkDynamicAllocationMaxExecutors: String = "spark.dynamicAllocation.maxExecutors"
+
+    val SparkCoresMaxDefault: Int = 6
+    val SparkSchedulerModeDefault: String = "FAIR"
+    val SparkDynamicAllocationEnabledDefault: Boolean = true
+    val SparkDynamicAllocationShuffleTrackingEnabledDefault: Boolean = true
+    val SparkDynamicAllocationExecutorIdleTimeoutDefault: String = "10s"
+    val SparkDynamicAllocationExecutorAllocationRatioDefault: Double = 0.5
+    val SparkDynamicAllocationInitialExecutorsDefault: Int = 1
+    val SparkDynamicAllocationMinExecutorsDefault: Int = 1
+    val SparkDynamicAllocationMaxExecutorsDefault: Int = 6
+
     val ApplicationName: String = sys.env.getOrElse(EnvironmentApplicationName, DefaultApplicationName)
 
     val DefaultDatabaseName: String = sys.env.getOrElse(EnvironmentMongoDatabase, DefaultMongoDatabase)

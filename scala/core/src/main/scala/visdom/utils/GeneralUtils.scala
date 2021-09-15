@@ -15,6 +15,67 @@ object GeneralUtils {
         }
     }
 
+    def toIntOption(value: Any): Option[Int] = {
+        value match {
+            case intValue: Int => Some(intValue)
+            case numberValue: Number => Some(numberValue.intValue())
+            case stringValue: String => toInt(stringValue)
+            case Some(someValue: Any) => toIntOption(someValue)
+            case _ => None
+        }
+    }
+
+    def toStringOption(value: Any): Option[String] = {
+        value match {
+            case stringValue: String => Some(stringValue)
+            case numberValue: Number => Some(numberValue.toString())
+            case Some(someValue: Any) => toStringOption(someValue)
+            case _ => None
+        }
+    }
+
+    def toBooleanOption(value: Any): Option[Boolean] = {
+        value match {
+            case booleanValue: Boolean => Some(booleanValue)
+            case stringValue: String => Some(stringValue.toBoolean)
+            case Some(someValue: Any) => toBooleanOption(someValue)
+            case _ => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def toStringSeqOption(value: Any): Option[Seq[String]] = {
+        toSeqOption(value, toStringOption(_))
+    }
+
+    def toSeqOption[T](value: Any, transformation: (Any) => Option[T]): Option[Seq[T]] = {
+        value match {
+            case sequence: Seq[_] => Some(sequence.map(singleValue => transformation(singleValue)).flatten)
+            case array: Array[_] => toSeqOption(array.toSeq, transformation)
+            case Some(someValue: Any) => toSeqOption(someValue, transformation)
+            case _ => None
+        }
+    }
+
+    def isIdNumber(idNumberString: String): Boolean = {
+        val idNumber: Int =
+            try {
+                idNumberString.toInt
+            }
+            catch {
+                case _: NumberFormatException => -1
+            }
+
+        idNumber > 0
+    }
+
+    def isIdNumber(idNumberOption: Option[String]): Boolean = {
+        idNumberOption match {
+            case Some(idString: String) => isIdNumber(idString)
+            case None => true
+        }
+    }
+
     def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
         dateTimeStringOption match {
             case Some(dateTimeString: String) =>
@@ -68,6 +129,114 @@ object GeneralUtils {
         def toTuple4: (A, A, A, A) = elements match {case Seq(a, b, c, d) => (a, b, c, d)}
         def toTuple5: (A, A, A, A, A) = elements match {case Seq(a, b, c, d, e) => (a, b, c, d, e)}
         def toTuple6: (A, A, A, A, A, A) = elements match {case Seq(a, b, c, d, e, f) => (a, b, c, d, e, f)}
+    }
+
+    def toOption[A, B](
+        values: (Any, Any),
+        transformations: ((Any) => Option[A], (Any) => Option[B])
+    ): Option[(A, B)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => transformations._2(values._2) match {
+                case Some(value2) => Some(value1, value2)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toOption[A, B, C](
+        values: (Any, Any, Any),
+        transformations: ((Any) => Option[A], (Any) => Option[B], (Any) => Option[C])
+    ): Option[(A, B, C)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => transformations._2(values._2) match {
+                case Some(value2) => transformations._3(values._3) match {
+                    case Some(value3) => Some(value1, value2, value3)
+                    case None => None
+                }
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toOption[A, B, C, D](
+        values: (Any, Any, Any, Any),
+        transformations: ((Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D])
+    ): Option[(A, B, C, D)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => transformations._2(values._2) match {
+                case Some(value2) => transformations._3(values._3) match {
+                    case Some(value3) => transformations._4(values._4) match {
+                        case Some(value4) => Some(value1, value2, value3, value4)
+                        case None => None
+                    }
+                    case None => None
+                }
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toOption[A, B, C, D, E](
+        values: (Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A],
+            (Any) => Option[B],
+            (Any) => Option[C],
+            (Any) => Option[D],
+            (Any) => Option[E]
+        )
+    ): Option[(A, B, C, D, E)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => transformations._2(values._2) match {
+                case Some(value2) => transformations._3(values._3) match {
+                    case Some(value3) => transformations._4(values._4) match {
+                        case Some(value4) => transformations._5(values._5) match {
+                            case Some(value5) => Some(value1, value2, value3, value4, value5)
+                            case None => None
+                        }
+                        case None => None
+                    }
+                    case None => None
+                }
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toOption[A, B, C, D, E, F](
+        values: (Any, Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A],
+            (Any) => Option[B],
+            (Any) => Option[C],
+            (Any) => Option[D],
+            (Any) => Option[E],
+            (Any) => Option[F]
+            )
+    ): Option[(A, B, C, D, E, F)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => transformations._2(values._2) match {
+                case Some(value2) => transformations._3(values._3) match {
+                    case Some(value3) => transformations._4(values._4) match {
+                        case Some(value4) => transformations._5(values._5) match {
+                            case Some(value5) => transformations._6(values._6) match {
+                                case Some(value6) => Some(value1, value2, value3, value4, value5, value6)
+                                case None => None
+                            }
+                            case None => None
+                        }
+                        case None => None
+                    }
+                    case None => None
+                }
+                case None => None
+            }
+            case None => None
+        }
     }
 
     def getUpperFolder(path: String): String = {

@@ -6,17 +6,14 @@ import java.util.concurrent.TimeoutException
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
-import spray.json.JsObject
-import visdom.adapter.gitlab.Adapter
 import visdom.adapter.gitlab.CommitQuery
 import visdom.adapter.gitlab.queries.CommonHelpers
 import visdom.adapter.gitlab.queries.Constants
 import visdom.http.server.response.BaseResponse
 import visdom.http.server.response.JsonResponse
-import java.util.Date
-import java.time.ZonedDateTime
 import visdom.http.server.adapter.gitlab.CommitDataQueryOptions
 import visdom.http.server.ResponseUtils
+import visdom.spark.Session
 
 
 class CommitDataActor extends Actor with ActorLogging {
@@ -36,7 +33,7 @@ class CommitDataActor extends Actor with ActorLogging {
                     val sparkResponse: BaseResponse = try {
                         Await.result(
                             Future(
-                                JsonResponse(CommitQuery.getResult(Adapter.sparkSession, queryOptions))
+                                JsonResponse(CommitQuery.getResult(Session.getSparkSession(), queryOptions))
                             ),
                             Constants.DefaultWaitDuration
                         )

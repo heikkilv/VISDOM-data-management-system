@@ -42,4 +42,6 @@ object HttpConstants {
 
     val MaxUriLength: Int = 1024
     val FutureTaskDelayMs: Int = 3000
+
+    val ResponseDefaultNotFound: String = "No results found for the query"
 }

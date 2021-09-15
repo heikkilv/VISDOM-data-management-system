@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
     "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
     "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
+    "org.mongodb.spark" %% "mongo-spark-connector" % MongoConnectorVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalaj" %% "scalaj-http" % ScalajVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",

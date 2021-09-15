@@ -30,6 +30,9 @@ object ServerConstants {
     final val ExercisesRootPath = "/exercises"
     final val ExercisesPath = "exercises"
 
+    final val PointsRootPath = "/points"
+    final val PointsPath = "points"
+
     final val FalseString = "false"
     final val TrueString = "true"
     final val BooleanStrings: Set[String] = Set(FalseString, TrueString)

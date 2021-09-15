@@ -21,4 +21,5 @@ object CommonConstants {
     final val Git: String = "git"
     final val Json: String = "json"
     final val Name: String = "name"
+    final val Org: String = "org"
 }

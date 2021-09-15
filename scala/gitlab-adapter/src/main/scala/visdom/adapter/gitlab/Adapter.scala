@@ -34,12 +34,10 @@ object Adapter extends App {
     // create or update a metadata document and start periodic updates
     Metadata.startMetadataTask()
 
-    val sparkSession: SparkSession = Session.sparkSession
-
     implicit val system: ActorSystem = ActorSystem("akka-http-sample")
     val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
         val termination: Future[Terminated] = {
-            Session.sparkSession.stop()
+            Session.getSparkSession().stop()
             Metadata.stopMetadataTask()
             system.terminate()
         }
