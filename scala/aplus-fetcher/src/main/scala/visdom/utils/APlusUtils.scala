@@ -207,7 +207,7 @@ object APlusUtils {
                     APlusConstants.AttributeProjectName -> projectName,
                     APlusConstants.AttributeRaw -> answer
                 )
-            case None => BsonString(answer)
+            case None => BsonDocument(APlusConstants.AttributeRaw -> answer)
         }
     }
 

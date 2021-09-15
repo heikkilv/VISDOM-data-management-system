@@ -90,7 +90,11 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeEmail),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeFullName),
                     Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeProjectName),
-                    Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeRaw)
+                    Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeRaw),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeUsername),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeStudentId),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeEmail),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeFullName)
                 )
             )
             case false => None
