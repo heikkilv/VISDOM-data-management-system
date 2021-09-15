@@ -16,6 +16,7 @@ import visdom.adapters.course.schemas.ExercisePointsSchema
 import visdom.adapters.course.schemas.ExerciseSchema
 import visdom.adapters.course.schemas.FileSchema
 import visdom.adapters.course.schemas.GitSubmissionSchema
+import visdom.adapters.course.schemas.ModuleLinksSchema
 import visdom.adapters.course.schemas.ModuleSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.adapters.course.schemas.SubmissionSchema
@@ -245,12 +246,31 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
             .flatMap(row => ModuleSchema.fromRow(row))
     }
 
+    def getExerciseIds(moduleData: Seq[ModuleSchema]): Map[Int, Seq[Int]] = {
+        moduleData
+            .map(
+                module => (
+                    module.id,
+                    module._links match {
+                        case Some(links: ModuleLinksSchema) => links.exercises match {
+                            case Some(exerciseIds: Seq[Int]) => exerciseIds
+                            case None => Seq.empty
+                        }
+                        case None => Seq.empty
+                    }
+                )
+            )
+            .toMap
+    }
+
     def getResults(): JsObject = {
         val courseData = getCourseData()
         val moduleIds = getModuleIds(courseData)
         val moduleData = getModuleData(moduleIds)
+        val exerciseIds = getExerciseIds(moduleData)
         println(courseData)
         moduleData.foreach(module => println(module))
+        println(exerciseIds)
 
         getExerciseCommitsData() match {
             case Some(exerciseData: ExerciseCommitsOutput) => exerciseData.toJsObject()
