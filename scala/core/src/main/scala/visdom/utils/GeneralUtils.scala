@@ -195,25 +195,25 @@ object GeneralUtils {
         }
     }
 
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def toOption[A, B, C, D](
         values: (Any, Any, Any, Any),
         transformations: ((Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D])
     ): Option[(A, B, C, D)] = {
         transformations._1(values._1) match {
-            case Some(value1) => transformations._2(values._2) match {
-                case Some(value2) => transformations._3(values._3) match {
-                    case Some(value3) => transformations._4(values._4) match {
-                        case Some(value4) => Some(value1, value2, value3, value4)
-                        case None => None
-                    }
-                    case None => None
-                }
+            case Some(value1) => toOption(
+                (values._2, values._3, values._4),
+                (transformations._2, transformations._3, transformations._4)
+            ) match {
+                case Some((value2, value3, value4)) =>
+                    Some(value1, value2, value3, value4)
                 case None => None
             }
             case None => None
         }
     }
 
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def toOption[A, B, C, D, E](
         values: (Any, Any, Any, Any, Any),
         transformations: (
@@ -225,23 +225,19 @@ object GeneralUtils {
         )
     ): Option[(A, B, C, D, E)] = {
         transformations._1(values._1) match {
-            case Some(value1) => transformations._2(values._2) match {
-                case Some(value2) => transformations._3(values._3) match {
-                    case Some(value3) => transformations._4(values._4) match {
-                        case Some(value4) => transformations._5(values._5) match {
-                            case Some(value5) => Some(value1, value2, value3, value4, value5)
-                            case None => None
-                        }
-                        case None => None
-                    }
-                    case None => None
-                }
+            case Some(value1) => toOption(
+                (values._2, values._3, values._4, values._5),
+                (transformations._2, transformations._3, transformations._4, transformations._5)
+            ) match {
+                case Some((value2, value3, value4, value5)) =>
+                    Some(value1, value2, value3, value4, value5)
                 case None => None
             }
             case None => None
         }
     }
 
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def toOption[A, B, C, D, E, F](
         values: (Any, Any, Any, Any, Any, Any),
         transformations: (
@@ -254,20 +250,12 @@ object GeneralUtils {
             )
     ): Option[(A, B, C, D, E, F)] = {
         transformations._1(values._1) match {
-            case Some(value1) => transformations._2(values._2) match {
-                case Some(value2) => transformations._3(values._3) match {
-                    case Some(value3) => transformations._4(values._4) match {
-                        case Some(value4) => transformations._5(values._5) match {
-                            case Some(value5) => transformations._6(values._6) match {
-                                case Some(value6) => Some(value1, value2, value3, value4, value5, value6)
-                                case None => None
-                            }
-                            case None => None
-                        }
-                        case None => None
-                    }
-                    case None => None
-                }
+            case Some(value1) => toOption(
+                (values._2, values._3, values._4, values._5, values._6),
+                (transformations._2, transformations._3, transformations._4, transformations._5, transformations._6)
+            ) match {
+                case Some((value2, value3, value4, value5, value6)) =>
+                    Some(value1, value2, value3, value4, value5, value6)
                 case None => None
             }
             case None => None

@@ -61,7 +61,7 @@ object ModuleSchema extends BaseSchemaTrait[ModuleSchema] {
                     displayName: NameSchema,
                     isOpen: Boolean,
                     courseId: Int,
-                    metadata: MetadataSchema,
+                    metadata: MetadataSchema
                 )
             ) =>
                 Some(

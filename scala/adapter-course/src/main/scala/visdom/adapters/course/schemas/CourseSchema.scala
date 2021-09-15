@@ -61,7 +61,7 @@ object CourseSchema extends BaseSchemaTrait[CourseSchema] {
                     name: CourseNameSchema,
                     instance_name: String,
                     starting_time: String,
-                    ending_time: String,
+                    ending_time: String
                 )
             ) =>
                 Some(
