@@ -14,7 +14,7 @@ extends BaseSchema
 object CommitIdListSchema extends BaseSchemaTrait[CommitIdListSchema] {
     def fields: Seq[FieldDataType] = Seq(
         FieldDataType(SnakeCaseConstants.Commits, true)
-        )
+    )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def transformValues(valueOptions: Seq[Option[Any]]): Option[CommitIdListSchema] = {

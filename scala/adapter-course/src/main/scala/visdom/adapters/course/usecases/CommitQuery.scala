@@ -10,6 +10,7 @@ import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.options.CommitQueryOptions
 import visdom.adapters.course.schemas.CommitSchema
+import visdom.adapters.course.schemas.CourseSchema
 import visdom.adapters.course.schemas.ExercisePointsSchema
 import visdom.adapters.course.schemas.ExerciseSchema
 import visdom.adapters.course.schemas.FileSchema
@@ -143,6 +144,7 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
                 .filter(column(SnakeCaseConstants.ProjectName) === projectName)
                 .filter(column(SnakeCaseConstants.HostName) === hostName)
                 .filter(column(SnakeCaseConstants.Id).isInCollection(commitIds))
+                .orderBy(column(SnakeCaseConstants.CommittedDate).asc)
                 .collect()
                 .flatMap(row => CommitSchema.fromRow(row))
                 .map(
@@ -190,6 +192,20 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
                 }
                 case None => None
             }
+    }
+
+    def getCourseData(): Option[CourseSchema] = {
+        // returns the course information
+        MongoSpark
+            .load[CourseSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(sparkSession, aPlusDatabaseName, MongoConstants.CollectionCourses)
+            )
+            .cache()
+            .filter(column(SnakeCaseConstants.Id) === queryOptions.courseId)
+            .collect()
+            .headOption
+            .flatMap(row => CourseSchema.fromRow(row))
     }
 
     def getResults(): JsObject = {
