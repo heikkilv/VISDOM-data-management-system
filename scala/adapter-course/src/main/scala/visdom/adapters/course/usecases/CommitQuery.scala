@@ -496,7 +496,7 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
                 }
             )
         })
-        .filter({case (_, exercises) => exercises.size > 0})
+        .filter({case (_, exercises) => exercises.nonEmpty})
         .sortBy({case (moduleName, _) => moduleName})
     }
 
