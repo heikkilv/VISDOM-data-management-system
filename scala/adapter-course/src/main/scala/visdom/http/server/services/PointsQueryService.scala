@@ -69,7 +69,7 @@ with CourseAdapterResponseHandler
             new Parameter(
                 name = CourseAdapterConstants.ExerciseId,
                 in = ParameterIn.QUERY,
-                required = true,
+                required = false,
                 description = CourseAdapterConstants.DescriptionExerciseId,
                 schema = new Schema(
                     implementation = classOf[String]
@@ -129,7 +129,7 @@ with CourseAdapterResponseHandler
         parameters(
             CourseAdapterConstants.FullName.withDefault(CommonConstants.EmptyString),
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString),
-            CourseAdapterConstants.ExerciseId.withDefault(CommonConstants.EmptyString)
+            CourseAdapterConstants.ExerciseId.optional
         )
     ) {
         (

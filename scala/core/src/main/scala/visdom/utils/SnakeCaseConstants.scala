@@ -16,6 +16,7 @@ object SnakeCaseConstants {
     val En: String = "en"
     val EndDate: String = "end_date"
     val EndingTime: String = "ending_time"
+    val ExerciseId: String = "exercise_id"
     val Exercises: String = "exercises"
     val FetcherType: String = "fetcher_type"
     val Fi: String = "fi"

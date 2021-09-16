@@ -7,13 +7,13 @@ import visdom.utils.GeneralUtils
 final case class CommitQueryOptions(
     fullName: String,
     courseId: Int,
-    exerciseId: Int
+    exerciseId: Option[Int]
 )
 
 final case class CommitQueryInput(
     fullName: String,
     courseId: String,
-    exerciseId: String
+    exerciseId: Option[String]
 )
 extends QueryOptionsBase
 {
@@ -23,7 +23,7 @@ extends QueryOptionsBase
                 CommitQueryOptions(
                     fullName = fullName,
                     courseId = courseId.toInt,
-                    exerciseId = exerciseId.toInt
+                    exerciseId = exerciseId.map(id => id.toInt)
                 )
             )
             case false => None

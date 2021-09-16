@@ -16,6 +16,7 @@ object CommonConstants {
     final val WhiteSpace: String = " "
 
     final val Code: String = "code"
+    final val Data: String = "data"
     final val Date: String = "date"
     final val Http: String = "http"
     final val Https: String = "https"
@@ -23,4 +24,5 @@ object CommonConstants {
     final val Json: String = "json"
     final val Name: String = "name"
     final val Org: String = "org"
+    final val Unknown: String = "unknown"
 }
