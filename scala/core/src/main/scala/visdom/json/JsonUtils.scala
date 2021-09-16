@@ -338,4 +338,48 @@ object JsonUtils {
             case None => None
         }
     }
+
+    def sortJs(jsonValue: JsValue, recursive: Boolean): JsValue = {
+        jsonValue match {
+            case JsObject(fields: Map[String, JsValue]) => JsObject(
+                fields
+                    .toList
+                    .sortBy({case (key, _) => key})
+                    .map({
+                        case (key, value) => (
+                            key,
+                            recursive match {
+                                case true => sortJs(value, recursive)
+                                case false => value
+                            }
+                        )
+                    })
+            )
+            case JsArray(array: Vector[JsValue]) => recursive match {
+                case true => JsArray(array.map(element => sortJs(element, recursive)))
+                case false => JsArray(array)
+            }
+            case _ => jsonValue
+        }
+    }
+
+    def sortJs(jsonValue: JsValue): JsValue = {
+        sortJs(jsonValue, true)
+    }
+
+    implicit class EnrichedJsObject(jsObject: JsObject) {
+        def sort(): JsObject = {
+            sortJs(jsObject) match {
+                case JsObject(fields: Map[String,JsValue]) => JsObject(fields)
+                case _ => jsObject
+            }
+        }
+
+        def sort(recursive: Boolean): JsObject = {
+            sortJs(jsObject, recursive) match {
+                case JsObject(fields: Map[String,JsValue]) => JsObject(fields)
+                case _ => jsObject
+            }
+        }
+    }
 }

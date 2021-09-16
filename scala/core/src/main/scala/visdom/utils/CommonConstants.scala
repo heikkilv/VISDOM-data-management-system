@@ -14,6 +14,7 @@ object CommonConstants {
     final val SquareBracketEnd: String = "]"
     final val TempString: String = "temp"
     final val WhiteSpace: String = " "
+    final val ZeroChar: Char = '0'
 
     final val Code: String = "code"
     final val Data: String = "data"

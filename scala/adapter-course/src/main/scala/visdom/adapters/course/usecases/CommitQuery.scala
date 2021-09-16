@@ -9,6 +9,7 @@ import org.apache.spark.sql.functions.column
 import org.apache.spark.sql.functions.udf
 import spray.json.JsArray
 import spray.json.JsObject
+import spray.json.JsString
 import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.schemas.CommitIdListSchema
@@ -451,24 +452,72 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
             .toMap
     }
 
+    def getModuleNames(moduleData: Seq[ModuleSchema]): Map[Int,String] = {
+        moduleData.map(
+            module => (
+                module.id,
+                module.display_name.number match {
+                    case Some(moduleNumber: String) =>
+                        moduleNumber.substring(0, moduleNumber.size - 1)
+                            .reverse
+                            .padTo(2, CommonConstants.ZeroChar)
+                            .reverse
+                    case None => module.display_name.raw
+                }
+            )
+        )
+        .toMap
+    }
+
+    def getModuleCommitData(
+        moduleDataNames: Map[Int,String],
+        exerciseIdMap: Map[Int,Seq[Int]],
+        exerciseCommitData: Map[Int,Option[ExerciseCommitsOutput]]
+    ): List[(String, List[ExerciseCommitsOutput])] = {
+        exerciseIdMap.toList.map({
+            case (moduleId, exerciseIds) => (
+                moduleDataNames.getOrElse(moduleId, CommonConstants.Unknown),
+                {
+                    exerciseIds.map(
+                        exerciseId => exerciseCommitData.get(exerciseId) match {
+                            case Some(commitDataOption) => commitDataOption match {
+                                case Some(commitData: ExerciseCommitsOutput) => Some(commitData)
+                                case None => None
+                            }
+                            case None => None
+                        }
+                    )
+                    .toList
+                    .flatten
+                    .sortBy(exerciseCommit => exerciseCommit.name)
+                }
+            )
+        })
+        .filter({case (_, exercises) => exercises.size > 0})
+        .sortBy({case (moduleName, _) => moduleName})
+    }
+
     def getResults(): JsObject = {
         val courseData = getCourseData()
         val moduleIds = getModuleIds(courseData)
         val moduleData = getModuleData(moduleIds)
+        val moduleDataNames = getModuleNames(moduleData)
         val exerciseIdMap = getExerciseIds(moduleData)
         val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
+        val exerciseCommitData = getExerciseCommitsData(exerciseIds)
+        val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
 
         JsObject(
-            Map(CommonConstants.Data ->
-                JsArray(
-                    getExerciseCommitsData(exerciseIds)
-                        .mapValues(exerciseCommitDataOption => exerciseCommitDataOption match {
-                            case Some(exerciseCommitData: ExerciseCommitsOutput) => exerciseCommitData.toJsObject()
-                            case None => JsObject()
-                        }
-                    )
-                    .toList
-                    .map({case (_, commitData) => commitData})
+            Map(
+                SnakeCaseConstants.Commits -> JsArray(
+                    moduleCommitData.map({
+                        case (name, exercises) => JsObject(
+                            SnakeCaseConstants.ModuleName -> JsString(name),
+                            SnakeCaseConstants.Projects -> JsArray(
+                                exercises.map(exercise => exercise.toJsObject())
+                            )
+                        )
+                    })
                 )
             )
         )
