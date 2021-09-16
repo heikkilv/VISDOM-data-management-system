@@ -350,6 +350,17 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         })
     }
 
+    def getSimplifiedExerciseNames(exercisePaths: Map[Int,Option[String]]): Map[Int,String] = {
+        exercisePaths.mapValues({
+            case Some(exercisePath: String) =>
+                exercisePath.split(CommonConstants.Slash).lastOption match {
+                    case Some(simplifiedName: String) => simplifiedName
+                    case None => exercisePath
+                }
+            case None => CommonConstants.Unknown
+        })
+    }
+
     def getExerciseCommitsData(exerciseIds: Seq[Int]): Map[Int, Option[ExerciseCommitsOutput]] = {
         // returns an exercise commits objects for the considered student and the given exerciseId-list
         val exerciseData = getExerciseData(exerciseIds)
@@ -360,15 +371,7 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         val gitCommitIds = getCommitIds(gitLocations)
         val commitsWithProjects = getCommitIdsWithProjects(gitProjects, gitCommitIds)
         val commitOutputs = getCommitOutputs(commitsWithProjects)
-
-        val simplifiedExerciseNames = exercisePaths.mapValues({
-            case Some(exercisePath: String) =>
-                exercisePath.split(CommonConstants.Slash).lastOption match {
-                    case Some(simplifiedName: String) => simplifiedName
-                    case None => exercisePath
-                }
-            case None => CommonConstants.Unknown
-        })
+        val simplifiedExerciseNames = getSimplifiedExerciseNames(exercisePaths)
 
         commitOutputs.map({
             case (exerciseId, outputs) => (
