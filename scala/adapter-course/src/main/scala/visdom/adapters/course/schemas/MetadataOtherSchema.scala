@@ -2,11 +2,11 @@ package visdom.adapters.course.schemas
 
 import java.time.Instant
 import visdom.spark.FieldDataType
-import visdom.utils.GeneralUtils.EnrichedWithToTuple
 import visdom.utils.GeneralUtils.toBooleanOption
 import visdom.utils.GeneralUtils.toInstantOption
 import visdom.utils.GeneralUtils.toStringOption
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 

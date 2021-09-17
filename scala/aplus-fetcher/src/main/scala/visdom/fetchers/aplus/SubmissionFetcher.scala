@@ -19,7 +19,7 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils.EnrichedWithToTuple
+import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 

@@ -245,7 +245,8 @@ object JsonUtils {
             case Some(optionValue) => toJsonValue(optionValue)
             case seqValue: Seq[_] => JsArray(seqValue.map(content => toJsonValue(content)).toList)
             case mapValue: Map[_, _] =>
-                JsObject(mapValue.map({ case (key, content) => (key.toString(), toJsonValue(content)) }))
+                JsObject(mapValue.map({case (key, content) => (key.toString(), toJsonValue(content))}))
+            case jsonObjectConvertible: JsonObjectConvertible => jsonObjectConvertible.toJsObject()
             case _ => JsNull
         }
     }

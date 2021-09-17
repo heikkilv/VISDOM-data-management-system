@@ -1,9 +1,9 @@
 package visdom.adapters.course.schemas
 
 import visdom.spark.FieldDataType
-import visdom.utils.GeneralUtils.EnrichedWithToTuple
 import visdom.utils.GeneralUtils.toStringOption
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 

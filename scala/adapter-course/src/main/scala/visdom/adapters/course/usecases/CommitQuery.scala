@@ -14,6 +14,11 @@ import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.schemas.CommitIdListSchema
 import visdom.adapters.course.options.CommitQueryOptions
+import visdom.adapters.course.output.CommitOutput
+import visdom.adapters.course.output.ExerciseCommitsOutput
+import visdom.adapters.course.output.FullCourseOutput
+import visdom.adapters.course.output.ModuleCommitsOutput
+import visdom.adapters.course.output.StudentCourseOutput
 import visdom.adapters.course.schemas.CommitSchema
 import visdom.adapters.course.schemas.CourseLinksSchema
 import visdom.adapters.course.schemas.CourseSchema
@@ -26,8 +31,6 @@ import visdom.adapters.course.schemas.ModuleLinksSchema
 import visdom.adapters.course.schemas.ModuleSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.adapters.course.schemas.SubmissionSchema
-import visdom.adapters.course.output.CommitOutput
-import visdom.adapters.course.output.ExerciseCommitsOutput
 import visdom.database.mongodb.MongoConstants
 import visdom.spark.ConfigUtils
 import visdom.spark.Session
@@ -40,9 +43,7 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
 
-    def getSubmissionIds(exerciseIds: Seq[Int]): Map[Int, Seq[Int]] = {
-        // returns the submission ids (for the considered user) for the given exercises
-        // the returned ids are sorted so that the id for the best submission is the first id in the sequence
+    def getPointsDocument(): Option[PointSchema] = {
         MongoSpark
             .load[PointSchema](
                 sparkSession,
@@ -54,30 +55,36 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
             .filter(column(SnakeCaseConstants.CourseId) === queryOptions.courseId)
             .collect()
             .headOption
-            .flatMap(row => PointSchema.fromRow(row)) match {
-                case Some(points: PointSchema) => {
-                    points.modules
-                        .map(module => module.exercises.filter(exercise => exerciseIds.contains(exercise.id)))
-                        .flatten
-                        .map(
-                            exercisePoints => (
-                                exercisePoints.id,
-                                exercisePoints
-                                    .submissions_with_points
-                                    .sortWith(
-                                        (submission1, submission2) => (
-                                            submission1.grade > submission2.grade || (
-                                                submission1.grade == submission2.grade &&
-                                                submission1.submission_time < submission2.submission_time
-                                            )
+            .flatMap(row => PointSchema.fromRow(row))
+    }
+
+    def getSubmissionIds(pointsData: Option[PointSchema], exerciseIds: Seq[Int]): Map[Int, Seq[Int]] = {
+        // returns the submission ids (for the considered user) for the given exercises
+        // the returned ids are sorted so that the id for the best submission is the first id in the sequence
+        pointsData match {
+            case Some(points: PointSchema) => {
+                points.modules
+                    .map(module => module.exercises.filter(exercise => exerciseIds.contains(exercise.id)))
+                    .flatten
+                    .map(
+                        exercisePoints => (
+                            exercisePoints.id,
+                            exercisePoints
+                                .submissions_with_points
+                                .sortWith(
+                                    (submission1, submission2) => (
+                                        submission1.grade > submission2.grade || (
+                                            submission1.grade == submission2.grade &&
+                                            submission1.submission_time < submission2.submission_time
                                         )
                                     )
-                                    .map(submission => submission.id)
                                 )
-                        )
-                        .toMap
-                }
-                case None => exerciseIds.map(exerciseId => (exerciseId, Seq.empty)).toMap
+                                .map(submission => submission.id)
+                            )
+                    )
+                    .toMap
+            }
+            case None => exerciseIds.map(exerciseId => (exerciseId, Seq.empty)).toMap
         }
     }
 
@@ -361,11 +368,14 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         })
     }
 
-    def getExerciseCommitsData(exerciseIds: Seq[Int]): Map[Int, Option[ExerciseCommitsOutput]] = {
+    def getExerciseCommitsData(
+        pointsData: Option[PointSchema],
+        exerciseIds: Seq[Int]
+    ): Map[Int, Option[ExerciseCommitsOutput]] = {
         // returns an exercise commits objects for the considered student and the given exerciseId-list
         val exerciseData = getExerciseData(exerciseIds)
         val exercisePaths = getExercisePaths(exerciseData.toSeq.map({case (_, exercise) => exercise}).flatten)
-        val submissionIds = getSubmissionIds(exerciseIds)
+        val submissionIds = getSubmissionIds(pointsData, exerciseIds)
         val gitProjects = getGitProjects(submissionIds)
         val gitLocations = getGitLocations(exercisePaths, gitProjects)
         val gitCommitIds = getCommitIds(gitLocations)
@@ -476,7 +486,7 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         moduleDataNames: Map[Int,String],
         exerciseIdMap: Map[Int,Seq[Int]],
         exerciseCommitData: Map[Int,Option[ExerciseCommitsOutput]]
-    ): List[(String, List[ExerciseCommitsOutput])] = {
+    ): Seq[ModuleCommitsOutput] = {
         exerciseIdMap.toList.map({
             case (moduleId, exerciseIds) => (
                 moduleDataNames.getOrElse(moduleId, CommonConstants.Unknown),
@@ -490,14 +500,28 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
                             case None => None
                         }
                     )
-                    .toList
                     .flatten
                     .sortBy(exerciseCommit => exerciseCommit.name)
                 }
             )
         })
-        .filter({case (_, exercises) => exercises.nonEmpty})
-        .sortBy({case (moduleName, _) => moduleName})
+        .map({case (moduleName, exercises) => ModuleCommitsOutput(moduleName, exercises)})
+        .filter(module => module.projects.nonEmpty)
+        .sortBy(module => module.module_name)
+    }
+
+    def getFullOutput(
+        pointsData: Option[PointSchema],
+        moduleCommitData: Seq[ModuleCommitsOutput]
+    ): FullCourseOutput = {
+        pointsData match {
+            case Some(points: PointSchema) => FullCourseOutput(
+                Seq(
+                    StudentCourseOutput.fromSchemas(points, moduleCommitData)
+                )
+            )
+            case None => FullCourseOutput(Seq.empty)
+        }
     }
 
     def getResults(): JsObject = {
@@ -507,22 +531,14 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         val moduleDataNames = getModuleNames(moduleData)
         val exerciseIdMap = getExerciseIds(moduleData)
         val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
-        val exerciseCommitData = getExerciseCommitsData(exerciseIds)
+        println(exerciseIds)
+        val pointsData = getPointsDocument()
+        println(pointsData)
+        val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
+        println(exerciseCommitData)
         val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
+        println(moduleCommitData)
 
-        JsObject(
-            Map(
-                SnakeCaseConstants.Commits -> JsArray(
-                    moduleCommitData.map({
-                        case (name, exercises) => JsObject(
-                            SnakeCaseConstants.ModuleName -> JsString(name),
-                            SnakeCaseConstants.Projects -> JsArray(
-                                exercises.map(exercise => exercise.toJsObject())
-                            )
-                        )
-                    })
-                )
-            )
-        )
+        getFullOutput(pointsData, moduleCommitData).toJsObject()
     }
 }

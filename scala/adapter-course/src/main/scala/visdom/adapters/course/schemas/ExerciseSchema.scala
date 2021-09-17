@@ -1,9 +1,10 @@
 package visdom.adapters.course.schemas
 
 import visdom.spark.FieldDataType
-import visdom.utils.GeneralUtils.EnrichedWithToTuple
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.TupleUtils.toOption
+import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 
@@ -25,7 +26,7 @@ object ExerciseSchema extends BaseSchemaTrait[ExerciseSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def transformValues(valueOptions: Seq[Option[Any]]): Option[ExerciseSchema] = {
-        GeneralUtils.toOption(
+        toOption(
             valueOptions.toTuple4,
             (
                 (value: Any) => GeneralUtils.toIntOption(value),

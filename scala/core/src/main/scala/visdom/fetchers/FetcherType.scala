@@ -3,7 +3,7 @@ package visdom.fetchers
 import org.mongodb.scala.bson.BsonDocument
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.utils.AttributeConstants
-import visdom.utils.GeneralUtils.EnrichedWithToTuple
+import visdom.utils.TupleUtils.EnrichedWithToTuple
 
 
 final case class FetcherType(

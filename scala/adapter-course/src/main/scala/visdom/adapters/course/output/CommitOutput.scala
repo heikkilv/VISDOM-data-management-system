@@ -1,7 +1,9 @@
 package visdom.adapters.course.output
 
 import spray.json.JsObject
+import visdom.json.JsonObjectConvertible
 import visdom.json.JsonUtils
+import visdom.utils.SnakeCaseConstants
 
 
 final case class CommitOutput(
@@ -9,15 +11,13 @@ final case class CommitOutput(
     message: String,
     commit_date: String,
     committer_email: String
-) {
+) extends JsonObjectConvertible {
     def toJsObject(): JsObject = {
         JsObject(
-            Map(
-                Constants.Hash -> JsonUtils.toJsonValue(hash),
-                Constants.Message -> JsonUtils.toJsonValue(message),
-                Constants.CommitDate -> JsonUtils.toJsonValue(commit_date),
-                Constants.CommitterEmail -> JsonUtils.toJsonValue(committer_email)
-            )
+            SnakeCaseConstants.Hash -> JsonUtils.toJsonValue(hash),
+            SnakeCaseConstants.Message -> JsonUtils.toJsonValue(message),
+            SnakeCaseConstants.CommitDate -> JsonUtils.toJsonValue(commit_date),
+            SnakeCaseConstants.CommitterEmail -> JsonUtils.toJsonValue(committer_email)
         )
     }
 }
