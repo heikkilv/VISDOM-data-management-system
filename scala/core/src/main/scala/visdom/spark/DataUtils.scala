@@ -8,6 +8,7 @@ object DataUtils {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def getValues(fields: Seq[FieldDataType], row: Row): Option[Seq[Option[Any]]] = {
+        val rowFields: Seq[String] = row.schema.fields.map(rowField => rowField.name)
 
         def getFieldValue(field: FieldDataType, index: Int): Option[Option[Any]] = {
             row.isNullAt(index) match {
@@ -20,7 +21,6 @@ object DataUtils {
         }
 
         def getValuesInternal(fieldSeq: Seq[FieldDataType], values: Seq[Option[Any]]): Option[Seq[Option[Any]]] = {
-            val rowFields: Seq[String] = row.schema.fields.map(rowField => rowField.name)
             fieldSeq.headOption match {
                 case Some(field: FieldDataType) => rowFields.contains(field.name) match {
                     case true => {
@@ -28,10 +28,13 @@ object DataUtils {
                         getFieldValue(field, index) match {
                             case Some(fieldValueOption: Option[Any]) =>
                                 getValuesInternal(fieldSeq.drop(1), values ++ Seq(fieldValueOption))
-                            case None => None
+                            case None => None  // value that is not nullable was not found
                         }
                     }
-                    case false => None
+                    case false => field.nullable match {
+                        case true => getValuesInternal(fieldSeq.drop(1), values ++ Seq(None))
+                        case false => None  // value that is not nullable was not found
+                    }
                 }
                 case None => Some(values)
             }

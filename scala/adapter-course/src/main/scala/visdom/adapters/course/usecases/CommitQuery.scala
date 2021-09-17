@@ -531,13 +531,9 @@ class CommitQuery(queryOptions: CommitQueryOptions) {
         val moduleDataNames = getModuleNames(moduleData)
         val exerciseIdMap = getExerciseIds(moduleData)
         val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
-        println(exerciseIds)
         val pointsData = getPointsDocument()
-        println(pointsData)
         val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
-        println(exerciseCommitData)
         val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
-        println(moduleCommitData)
 
         getFullOutput(pointsData, moduleCommitData).toJsObject()
     }
