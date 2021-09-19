@@ -63,7 +63,7 @@ object APlusUtils {
     }
 
     def parseDocument(document: BsonDocument, attributes: Seq[Seq[String]]): BsonDocument = {
-        document.transformAttributes(attributes, nameStringTransformer(_))
+        document.transformAttributes(attributes, JsonUtils.valueTransform(nameStringTransformer(_)))
     }
 
     def parseCourseName(fullCourseName: String, languages: Seq[String]): Map[String, BsonValue] = {
@@ -114,7 +114,7 @@ object APlusUtils {
             case Some(languages: Seq[String]) =>
                 courseDocument.transformAttributes(
                     Seq(Seq(APlusConstants.AttributeName)),
-                    courseNameTransformer(_, languages)
+                    JsonUtils.valueTransform(courseNameTransformer(_, languages))
                 )
             case None => courseDocument
         }
@@ -219,13 +219,16 @@ object APlusUtils {
     }
 
     def parseDoubleArrayAttribute(document: BsonDocument, attribute: String): BsonDocument = {
-        document.transformAttribute(attribute, JsonUtils.transformDoubleArray(_))
+        document.transformAttribute(
+            attribute,
+            JsonUtils.valueTransform(JsonUtils.transformDoubleArray(_))
+        )
     }
 
     def parseGitAnswer(document: BsonDocument): BsonDocument = {
         document.transformAttribute(
             Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git),
-            getParsedGitAnswer(_)
+            JsonUtils.valueTransform(getParsedGitAnswer(_))
         )
     }
 

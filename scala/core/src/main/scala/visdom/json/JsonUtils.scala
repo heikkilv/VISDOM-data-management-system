@@ -116,16 +116,29 @@ object JsonUtils {
             }
         }
 
-        def transformAttribute(key: String, transformFunction: BsonValue => BsonValue): BsonDocument = {
-            document.getOption(key) match {
-                case Some(value: BsonValue) => document.append(key, transformFunction(value))
-                case None => document
+        def transformAttribute(
+            key: String,
+            transformFunction: (String, BsonValue) => (String, BsonValue)
+        ): BsonDocument = {
+            key == CommonConstants.Dot match {
+                case true => transformAttributes(
+                    document.keySet().asScala.toSeq.map(subKey => Seq(subKey)),
+                    transformFunction
+                )
+                case false => document.containsKey(key) match {
+                    case true => {
+                        val originalValue: BsonValue = document.remove(key)
+                        val (newKey: String, newValue: BsonValue) = transformFunction(key, originalValue)
+                        document.append(newKey, newValue)
+                    }
+                    case false => document
+                }
             }
         }
 
         def transformAttribute(
             keySequence: Seq[String],
-            transformFunction: BsonValue => BsonValue
+            transformFunction: (String, BsonValue) => (String, BsonValue)
         ): BsonDocument = {
             def transformAttributeInternal(value: BsonValue, tailKeys: Seq[String]): BsonValue = {
                 value.getBsonType() match {
@@ -164,7 +177,7 @@ object JsonUtils {
 
         def transformAttributes(
             targetAttributes: Seq[Seq[String]],
-            transformFunction: BsonValue => BsonValue
+            transformFunction: (String, BsonValue) => (String, BsonValue)
         ): BsonDocument = {
             targetAttributes.headOption match {
                 case Some(attributeSequence: Seq[String]) =>
@@ -178,7 +191,7 @@ object JsonUtils {
         def anonymize(hashableAttributes: Option[Seq[Seq[String]]]): BsonDocument = {
             hashableAttributes match {
                 case Some(attributes: Seq[Seq[String]]) =>
-                    transformAttributes(attributes, JsonUtils.anonymizeValue(_))
+                    transformAttributes(attributes, JsonUtils.valueTransform(JsonUtils.anonymizeValue(_)))
                 case None => document
             }
         }
@@ -204,6 +217,14 @@ object JsonUtils {
                 .toIntMap()
                 .filter({case (_, value) => value.isDocument()})
                 .mapValues(value => value.asDocument())
+        }
+
+        def addPrefixToKeys(targetAttributes: Seq[Seq[String]], prefix: String): BsonDocument = {
+            transformAttributes(
+                // add dot to the end of each sequence to indicate all subattributes
+                targetAttributes.map(keySequence => keySequence ++ Seq(CommonConstants.Dot)),
+                JsonUtils.keyTransform(key => prefix + key)
+            )
         }
     }
 
@@ -231,6 +252,18 @@ object JsonUtils {
 
     def toBsonArray[T](values: Seq[T]): BsonArray = {
         BsonArray(values.map(value => toBsonValue(value)))
+    }
+
+    def valueTransform(transformFunction: BsonValue => BsonValue): (String, BsonValue) => (String, BsonValue) = {
+        {
+            case (key: String, value: BsonValue) => (key, transformFunction(value))
+        }
+    }
+
+    def keyTransform(transformFunction: String => String): (String, BsonValue) => (String, BsonValue) = {
+        {
+            case (key: String, value: BsonValue) => (transformFunction(key), value)
+        }
     }
 
     // scalastyle:off cyclomatic.complexity

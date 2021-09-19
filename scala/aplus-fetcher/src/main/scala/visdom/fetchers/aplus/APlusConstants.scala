@@ -69,6 +69,7 @@ object APlusConstants {
     val AttributeParseNames: String = "parse_names"
     val AttributePath: String = "path"
     val AttributePoints: String = "points"
+    val AttributePointsByDifficulty: String = "points_by_difficulty"
     val AttributeProjectName: String = "project_name"
     val AttributeRaw: String = "raw"
     val AttributeResults: String = "results"

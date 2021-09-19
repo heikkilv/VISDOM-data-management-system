@@ -5,6 +5,7 @@ import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConstants
+import visdom.fetchers.FetcherConstants
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
@@ -112,7 +113,12 @@ extends APlusDataHandler(options) {
                     case false => detailedDocument
                 }
 
-                addIdentifierAttributes(parsedDocumentNames)
+                addIdentifierAttributes(
+                    parsedDocumentNames.addPrefixToKeys(
+                        getPrefixAttributes(),
+                        FetcherConstants.PointsByDifficultyPrefix
+                    )
+                )
                     .append(AttributeConstants.Metadata, getMetadata())
             }
             // no data fetching allowed for the given user id => return empty document
@@ -160,6 +166,13 @@ extends APlusDataHandler(options) {
                 APlusConstants.AttributeExercises,
                 APlusConstants.AttributeName
             )
+        )
+    }
+
+    def getPrefixAttributes(): Seq[Seq[String]] = {
+        Seq(
+            Seq(APlusConstants.AttributePointsByDifficulty),
+            Seq(APlusConstants.AttributeModules, APlusConstants.AttributePointsByDifficulty)
         )
     }
 
