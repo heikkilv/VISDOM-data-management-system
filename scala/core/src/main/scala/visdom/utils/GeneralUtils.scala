@@ -151,11 +151,19 @@ object GeneralUtils {
         String.format(s"%0${digest.length * 2}x", new BigInteger(1, digest))
     }
 
+    def getHash(inputNumber: Int): String = {
+        getHash(inputNumber.toString())
+    }
+
     def getHash(inputString: String, useHash: Boolean): String = {
         useHash match {
             case true => getHash(inputString)
             case false => inputString
         }
+    }
+
+    def getHash(inputNumber: Int, useHash: Boolean): String = {
+        getHash(inputNumber.toString(), useHash)
     }
 
     def getUpperFolder(path: String): String = {
