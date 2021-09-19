@@ -12,6 +12,7 @@ import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.ServerAddress
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.connection.ClusterSettings
@@ -23,7 +24,6 @@ import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.Await
-import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.utils.EnvironmentVariables.EnvironmentMetadataDatabase
 import visdom.utils.EnvironmentVariables.getEnvironmentVariable
 import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
@@ -107,8 +107,12 @@ object MongoConnection {
                 case _: TimeoutException => None
             }
         ) match {
-            case Some(document: Document) =>
-                document.toBsonDocument.getInstantOption(MongoConstants.AttributeTimestamp)
+            case Some(document: Document) => {
+                document.get(MongoConstants.AttributeTimestamp) match {
+                    case Some(timestamp: BsonDateTime) => Some(Instant.ofEpochMilli(timestamp.getValue()))
+                    case _ => None
+                }
+            }
             case None => None
         }
     }

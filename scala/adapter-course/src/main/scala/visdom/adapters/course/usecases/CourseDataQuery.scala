@@ -570,7 +570,10 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
 
     def getResults(): JsObject = {
         AdapterValues.cache.getResult(queryCode, queryOptions) match {
-            case Some(cachedResult: JsObject) => cachedResult
+            case Some(cachedResult: JsObject) => {
+                println(s"Using result from cache for query ${queryCode} with ${queryOptions}")
+                cachedResult
+            }
             case None => {
                 val courseData = getCourseData()
                 val moduleIds = getModuleIds(courseData)
