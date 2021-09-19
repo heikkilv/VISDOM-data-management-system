@@ -30,8 +30,8 @@ object ServerConstants {
     final val ExercisesRootPath = "/exercises"
     final val ExercisesPath = "exercises"
 
-    final val PointsRootPath = "/points"
-    final val PointsPath = "points"
+    final val DataRootPath = "/data"
+    final val DataPath = "data"
 
     final val FalseString = "false"
     final val TrueString = "true"

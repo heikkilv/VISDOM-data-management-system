@@ -4,25 +4,25 @@ import visdom.http.server.QueryOptionsBase
 import visdom.utils.GeneralUtils
 
 
-final case class CommitQueryOptions(
-    fullName: String,
+final case class CourseDataQueryOptions(
     courseId: Int,
+    fullName: Option[String],
     exerciseId: Option[Int]
 )
 
-final case class CommitQueryInput(
-    fullName: String,
+final case class CourseDataQueryInput(
     courseId: String,
+    fullName: Option[String],
     exerciseId: Option[String]
 )
 extends QueryOptionsBase
 {
-    def toCommitQueryOptions(): Option[CommitQueryOptions] = {
+    def toCourseDataQueryOptions(): Option[CourseDataQueryOptions] = {
         (GeneralUtils.isIdNumber(courseId) && GeneralUtils.isIdNumber(exerciseId)) match {
             case true => Some(
-                CommitQueryOptions(
-                    fullName = fullName,
+                CourseDataQueryOptions(
                     courseId = courseId.toInt,
+                    fullName = fullName,
                     exerciseId = exerciseId.map(id => id.toInt)
                 )
             )

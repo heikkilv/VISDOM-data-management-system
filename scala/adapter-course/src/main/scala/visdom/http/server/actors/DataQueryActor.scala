@@ -6,9 +6,9 @@ import java.util.concurrent.TimeoutException
 import scala.concurrent.Await
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
-import visdom.adapters.course.options.CommitQueryInput
-import visdom.adapters.course.options.CommitQueryOptions
-import visdom.adapters.course.usecases.CommitQuery
+import visdom.adapters.course.options.CourseDataQueryInput
+import visdom.adapters.course.options.CourseDataQueryOptions
+import visdom.adapters.course.usecases.CourseDataQuery
 import visdom.http.HttpConstants
 import visdom.http.server.ResponseUtils
 import visdom.http.server.response.BaseResponse
@@ -17,21 +17,21 @@ import visdom.http.server.services.constants.CourseAdapterDescriptions
 import visdom.utils.WartRemoverConstants
 
 
-class PointsQueryActor extends Actor with ActorLogging {
+class DataQueryActor extends Actor with ActorLogging {
     implicit val ec: ExecutionContext = ExecutionContext.global
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
-        case queryOptions: CommitQueryInput => {
-            log.info(s"Received points query with options: ${queryOptions.toString()}")
+        case queryOptions: CourseDataQueryInput => {
+            log.info(s"Received data query with options: ${queryOptions.toString()}")
 
-            val response: BaseResponse = queryOptions.toCommitQueryOptions() match {
-                case Some(commitQueryOptions: CommitQueryOptions) => {
+            val response: BaseResponse = queryOptions.toCourseDataQueryOptions() match {
+                case Some(courseDataQueryOptions: CourseDataQueryOptions) => {
                     val sparkResponse: BaseResponse = try {
                         Await.result(
                             Future(
                                 JsonResponse(
-                                    (new CommitQuery(commitQueryOptions)).getResults()
+                                    (new CourseDataQuery(courseDataQueryOptions)).getResults()
                                 )
                             ),
                             HttpConstants.DefaultWaitDuration

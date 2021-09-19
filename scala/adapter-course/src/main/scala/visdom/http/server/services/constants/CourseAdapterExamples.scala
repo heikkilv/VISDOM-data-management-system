@@ -13,7 +13,7 @@ object CourseAdapterExamples {
     }"""
 
     final val ResponseExampleOkName = "example response"
-    final val PointsResponseExampleOk = """{
+    final val DataResponseExampleOk = """{
         "name": "problem",
         "commit_count": 1,
         "commit_meta": [

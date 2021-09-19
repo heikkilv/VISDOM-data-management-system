@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json.JsObject
-import visdom.adapters.course.options.CommitQueryInput
+import visdom.adapters.course.options.CourseDataQueryInput
 import visdom.http.HttpConstants
 import visdom.http.server.CourseAdapterResponseHandler
 import visdom.http.server.ServerConstants
@@ -33,35 +33,35 @@ import visdom.utils.WarningConstants
 
 // scalastyle:off method.length
 @SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
-@Path(ServerConstants.PointsRootPath)
-class PointsQueryService(pointsDataActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(ServerConstants.DataRootPath)
+class DataQueryService(dataActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with CourseAdapterResponseHandler
 {
     val route: Route = (
-        getPointsDataRoute
+        getDataRoute
     )
 
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = CourseAdapterDescriptions.PointsQueryEndpointSummary,
-        description = CourseAdapterDescriptions.PointsQueryEndpointDescription,
+        summary = CourseAdapterDescriptions.DataQueryEndpointSummary,
+        description = CourseAdapterDescriptions.DataQueryEndpointDescription,
         parameters = Array(
-            new Parameter(
-                name = CourseAdapterConstants.FullName,
-                in = ParameterIn.QUERY,
-                required = true,
-                description = CourseAdapterConstants.DescriptionFullName,
-                schema = new Schema(
-                    implementation = classOf[String]
-                )
-            ),
             new Parameter(
                 name = CourseAdapterConstants.CourseId,
                 in = ParameterIn.QUERY,
                 required = true,
                 description = CourseAdapterConstants.DescriptionCourseId,
+                schema = new Schema(
+                    implementation = classOf[String]
+                )
+            ),
+            new Parameter(
+                name = CourseAdapterConstants.FullName,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = CourseAdapterConstants.DescriptionFullName,
                 schema = new Schema(
                     implementation = classOf[String]
                 )
@@ -79,14 +79,14 @@ with CourseAdapterResponseHandler
         responses = Array(
             new ApiResponse(
                 responseCode = HttpConstants.StatusOkCode,
-                description = CourseAdapterDescriptions.PointsStatusOkDescription,
+                description = CourseAdapterDescriptions.DataStatusOkDescription,
                 content = Array(
                     new Content(
                         schema = new Schema(implementation = classOf[JsObject]),
                         examples = Array(
                             new ExampleObject(
                                 name = CourseAdapterExamples.ResponseExampleOkName,
-                                value = CourseAdapterExamples.PointsResponseExampleOk
+                                value = CourseAdapterExamples.DataResponseExampleOk
                             )
                         )
                     )
@@ -124,24 +124,24 @@ with CourseAdapterResponseHandler
             )
         )
     )
-    def getPointsDataRoute: RequestContext => Future[RouteResult] = (
-        path(ServerConstants.PointsPath) &
+    def getDataRoute: RequestContext => Future[RouteResult] = (
+        path(ServerConstants.DataPath) &
         parameters(
-            CourseAdapterConstants.FullName.withDefault(CommonConstants.EmptyString),
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString),
+            CourseAdapterConstants.FullName.optional,
             CourseAdapterConstants.ExerciseId.optional
         )
     ) {
         (
-            fullName,
             courseId,
+            fullName,
             exerciseId
         ) => get {
             getRoute(
-                pointsDataActor,
-                CommitQueryInput(
-                    fullName = fullName,
+                dataActor,
+                CourseDataQueryInput(
                     courseId = courseId,
+                    fullName = fullName,
                     exerciseId = exerciseId
                 )
             )

@@ -3,7 +3,7 @@ package visdom.http.server.swagger
 import com.github.swagger.akka.model.Info
 import visdom.adapters.course.AdapterValues
 import visdom.http.server.services.CourseAdapterInfoService
-import visdom.http.server.services.PointsQueryService
+import visdom.http.server.services.DataQueryService
 
 
 object SwaggerCourseAdapterDocService extends SwaggerDocService {
@@ -11,6 +11,6 @@ object SwaggerCourseAdapterDocService extends SwaggerDocService {
     override val info: Info = Info(version = AdapterValues.Version)
     override val apiClasses: Set[Class[_]] = Set(
         classOf[CourseAdapterInfoService],
-        classOf[PointsQueryService]
+        classOf[DataQueryService]
     )
 }

@@ -13,7 +13,7 @@ import spray.json.JsString
 import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.schemas.CommitIdListSchema
-import visdom.adapters.course.options.CommitQueryOptions
+import visdom.adapters.course.options.CourseDataQueryOptions
 import visdom.adapters.course.output.CommitOutput
 import visdom.adapters.course.output.ExerciseCommitsOutput
 import visdom.adapters.course.output.FullCourseOutput
@@ -38,7 +38,7 @@ import visdom.utils.CommonConstants
 import visdom.utils.SnakeCaseConstants
 
 
-class CommitQuery(queryOptions: CommitQueryOptions) {
+class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
