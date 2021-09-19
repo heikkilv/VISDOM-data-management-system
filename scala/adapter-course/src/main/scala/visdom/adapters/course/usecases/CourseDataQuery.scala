@@ -127,6 +127,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
         }
     }
 
+    // scalastyle:off method.length
     def getSubmissionData(
         exerciseSubmissionIds: Map[(Int, Int), Seq[Int]]
     ): Dataset[((Int, Int), Option[SubmissionSchema])] = {
@@ -191,6 +192,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .map({case (identifier, row) => (identifier, SubmissionSchema.fromRow(row))})
             .cache()
     }
+    // scalastyle:on method.length
 
     def getGitProjects(exerciseSubmissionIds: Map[(Int, Int), Seq[Int]]): Map[(Int, Int), Option[(String, String)]] = {
         // returns the (hostName, projectName) for each (userId, exerciseId) pair
