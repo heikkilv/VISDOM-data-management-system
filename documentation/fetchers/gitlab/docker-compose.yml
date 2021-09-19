@@ -24,6 +24,7 @@ services:
             - GITLAB_HOST=${GITLAB_HOST}
             - GITLAB_TOKEN=${GITLAB_TOKEN}
             - GITLAB_INSECURE_CONNECTION=${GITLAB_INSECURE_CONNECTION}
+            - SECRET_WORD=${SECRET_WORD}
         networks:
             - visdom-mongodb-network
 
