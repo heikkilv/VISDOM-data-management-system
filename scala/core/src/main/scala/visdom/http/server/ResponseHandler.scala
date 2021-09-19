@@ -8,17 +8,20 @@ import akka.http.scaladsl.server.StandardRoute
 import akka.pattern.ask
 import java.util.concurrent.TimeoutException
 import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import spray.json.JsObject
 
 
 trait ResponseHandler extends ServerProtocol {
     def handleOtherResponses(receivedResponse: response.BaseResponse): StandardRoute
 
+    val DefaultMaxResponseDelay: Duration = ServerConstants.DefaultMaxResponseDelay
+
     def getRoute(actorReference: ActorRef, queryOptions: QueryOptionsBase): StandardRoute = {
         val receivedResponse: response.BaseResponse = try {
             Await.result(
                 (actorReference ? queryOptions).mapTo[response.BaseResponse],
-                ServerConstants.DefaultMaxResponseDelay
+                DefaultMaxResponseDelay
             )
         } catch  {
             case error: TimeoutException => ResponseUtils.getErrorResponse(error.getMessage())

@@ -43,7 +43,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
 
-    def getPointsDocument(): Option[PointSchema] = {
+    def getPointsDocuments(userIds: Seq[Int]): Seq[PointSchema] = {
         MongoSpark
             .load[PointSchema](
                 sparkSession,
@@ -51,24 +51,23 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
 
             )
             .cache()
-            .filter(column(SnakeCaseConstants.FullName) === queryOptions.fullName)
+            .filter(column(SnakeCaseConstants.Id).isInCollection(userIds))
             .filter(column(SnakeCaseConstants.CourseId) === queryOptions.courseId)
             .collect()
-            .headOption
             .flatMap(row => PointSchema.fromRow(row))
     }
 
-    def getSubmissionIds(pointsData: Option[PointSchema], exerciseIds: Seq[Int]): Map[Int, Seq[Int]] = {
-        // returns the submission ids (for the considered user) for the given exercises
+    def getSubmissionIds(pointsData: Seq[PointSchema], exerciseIds: Seq[Int]): Map[(Int, Int), Seq[Int]] = {
+        // returns the submission ids for each considered (userId, exerciseId) pair
         // the returned ids are sorted so that the id for the best submission is the first id in the sequence
-        pointsData match {
-            case Some(points: PointSchema) => {
+        pointsData.map(
+            points =>
                 points.modules
                     .map(module => module.exercises.filter(exercise => exerciseIds.contains(exercise.id)))
                     .flatten
                     .map(
                         exercisePoints => (
-                            exercisePoints.id,
+                            (points.id, exercisePoints.id),
                             exercisePoints
                                 .submissions_with_points
                                 .sortWith(
@@ -83,15 +82,17 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                             )
                     )
                     .toMap
-            }
-            case None => exerciseIds.map(exerciseId => (exerciseId, Seq.empty)).toMap
+        )
+        .reduceOption((map1, map2) => map1 ++ map2) match {
+            case Some(result: Map[(Int, Int), Seq[Int]]) => result
+            case _ => Map.empty
         }
     }
 
-    def getExerciseIdFromFileData(
+    def getUserAndExerciseIdFromFileData(
         fileData: FileSchema,
-        gitLocations: Map[Int, Option[(String, String, String)]]
-    ): Int = {
+        gitLocations: Map[(Int, Int), Option[(String, String, String)]]
+    ): (Int, Int) = {
         gitLocations.find({
             case (_, gitOption) => gitOption match {
                 case Some((hostName: String, projectName: String, path: String)) => (
@@ -102,15 +103,15 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                 case None => false
             }
         }) match {
-            case Some((exerciseId: Int, _)) => exerciseId
-            case None => 0
+            case Some(((userId: Int, exerciseId: Int), _)) => (userId, exerciseId)
+            case None => (0, 0)
         }
     }
 
     def getExerciseIdFromCommitData(
         commitData: CommitSchema,
-        gitCommitsWithProjects: Map[Int, Option[(String, String, Seq[String])]]
-    ): Int = {
+        gitCommitsWithProjects: Map[(Int, Int), Option[(String, String, Seq[String])]]
+    ): (Int, Int) = {
         gitCommitsWithProjects.find({
             case (_, gitOption) => gitOption match {
                 case Some((hostName: String, projectName: String, commitIdSeq: Seq[String])) => (
@@ -121,13 +122,15 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                 case None => false
             }
         }) match {
-            case Some((exerciseId: Int, _)) => exerciseId
-            case None => 0
+            case Some(((userId: Int, exerciseId: Int), _)) => (userId, exerciseId)
+            case None => (0, 0)
         }
     }
 
-    def getSubmissionData(exerciseSubmissionIds: Map[Int, Seq[Int]]): Dataset[(Int, Option[SubmissionSchema])] = {
-        // Returns the best submission for the given exercises. The best submission is
+    def getSubmissionData(
+        exerciseSubmissionIds: Map[(Int, Int), Seq[Int]]
+    ): Dataset[((Int, Int), Option[SubmissionSchema])] = {
+        // Returns the best submission for the given (userId, exerciseId) pairs. The best submission is
         // the first submission id in the list for which the submission contains submission data
         def submissionIds: Seq[Int] = exerciseSubmissionIds.flatMap({case (_, ids) => ids}).toSeq
         def submissionIdIndex: Int => Option[Int] = {
@@ -142,12 +145,22 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
         val exerciseId: Int => Option[Int] = {
             submissionId => exerciseSubmissionIds
                 .find({case (_, subId) => subId.contains(submissionId)})
-                .map({case (exerciseId, _) => exerciseId})
+                .map({case ((_, exerciseId), _) => exerciseId})
         }
         val exerciseIdUdf: UserDefinedFunction = udf[Option[Int], Int](exerciseId)
 
-        def rowToExerciseId(row: Row): Int = {
-            row.getInt(row.schema.fieldIndex(SnakeCaseConstants.ExerciseId))
+        val userId: Int => Option[Int] = {
+            submissionId => exerciseSubmissionIds
+                .find({case (_, subId) => subId.contains(submissionId)})
+                .map({case ((userId, _), _) => userId})
+        }
+        val userIdUdf: UserDefinedFunction = udf[Option[Int], Int](userId)
+
+        def rowToUserAndExerciseId(row: Row): (Int, Int) = {
+            (
+                row.getInt(row.schema.fieldIndex(SnakeCaseConstants.UserId)),
+                row.getInt(row.schema.fieldIndex(SnakeCaseConstants.ExerciseId))
+            )
         }
 
         def getBetterSubmission(row1: Row, row2: Row): Row = {
@@ -168,17 +181,19 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .filter(column(SnakeCaseConstants.Id).isInCollection(submissionIds))
             .filter(column(SnakeCaseConstants.SubmissionData).isNotNull)
             .withColumn(SnakeCaseConstants.Index, submissionIndexUfd(column(SnakeCaseConstants.Id)))
+            .withColumn(SnakeCaseConstants.UserId, userIdUdf(column(SnakeCaseConstants.Id)))
             .withColumn(SnakeCaseConstants.ExerciseId, exerciseIdUdf(column(SnakeCaseConstants.Id)))
             .filter(column(SnakeCaseConstants.Index).isNotNull)
+            .filter(column(SnakeCaseConstants.UserId).isNotNull)
             .filter(column(SnakeCaseConstants.ExerciseId).isNotNull)
-            .groupByKey(row => rowToExerciseId(row))
+            .groupByKey(row => rowToUserAndExerciseId(row))
             .reduceGroups((row1, row2) => getBetterSubmission(row1, row2))
-            .map({case (exerciseId, row) => (exerciseId, SubmissionSchema.fromRow(row))})
+            .map({case (identifier, row) => (identifier, SubmissionSchema.fromRow(row))})
             .cache()
     }
 
-    def getGitProjects(exerciseSubmissionIds: Map[Int, Seq[Int]]): Map[Int, Option[(String, String)]] = {
-        // returns the (hostName, projectName) for each exercise
+    def getGitProjects(exerciseSubmissionIds: Map[(Int, Int), Seq[Int]]): Map[(Int, Int), Option[(String, String)]] = {
+        // returns the (hostName, projectName) for each (userId, exerciseId) pair
         // uses the first submission id in the list for which the submission contains submission data
         getSubmissionData(exerciseSubmissionIds)
             .collect()
@@ -198,20 +213,21 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             })
     }
 
-    def getCommitIds(gitLocations: Map[Int, Option[(String, String, String)]]): Map[Int, Seq[String]] = {
+    def getCommitIds(gitLocations: Map[(Int, Int), Option[(String, String, String)]]): Map[(Int, Int), Seq[String]] = {
         // returns the commit ids for each project with the given path
         val (hostNames: Seq[String], projectNames: Seq[String], paths: Seq[String]) = gitLocations
             .flatMap({
                 case (_, gitOption) => gitOption match {
-                    case Some((hostName: String, projectName: String, path: String)) => Some((hostName, projectName, path))
+                    case Some((hostName: String, projectName: String, path: String)) =>
+                        Some((hostName, projectName, path))
                     case None => None
                 }}
             )
             .toSeq
             .unzip3
 
-        def getExerciseId(fileData: FileSchema): Int = {
-            getExerciseIdFromFileData(fileData, gitLocations)
+        def getUserAndExerciseIds(fileData: FileSchema): (Int, Int) = {
+            getUserAndExerciseIdFromFileData(fileData, gitLocations)
         }
 
         MongoSpark
@@ -226,7 +242,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .flatMap(row => FileSchema.fromRow(row))
             .cache()
             .collect()
-            .map(file => (getExerciseId(file), file._links match {
+            .map(file => (getUserAndExerciseIds(file), file._links match {
                 case Some(commitIdList: CommitIdListSchema) => commitIdList.commits match {
                     case Some(commitIds: Seq[String]) => commitIds
                     case None => Seq.empty
@@ -237,7 +253,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getCommitData(
-        gitCommitsWithProjects: Map[Int, Option[(String, String, Seq[String])]]
+        gitCommitsWithProjects: Map[(Int, Int), Option[(String, String, Seq[String])]]
     ): Dataset[CommitSchema] = {
         val (hostNames: Seq[String], projectNames: Seq[String], commitIdSeq: Seq[Seq[String]]) = gitCommitsWithProjects
             .flatMap({
@@ -266,10 +282,10 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getCommitOutputs(
-        gitCommitsWithProjects: Map[Int, Option[(String, String, Seq[String])]]
-    ): Map[Int, Seq[CommitOutput]] = {
+        gitCommitsWithProjects: Map[(Int, Int), Option[(String, String, Seq[String])]]
+    ): Map[(Int, Int), Seq[CommitOutput]] = {
         // transforms the given commit ids to commit output objects
-        def getExerciseId(commitData: CommitSchema): Int = {
+        def getUserAndExerciseIds(commitData: CommitSchema): (Int, Int) = {
             getExerciseIdFromCommitData(commitData, gitCommitsWithProjects)
         }
 
@@ -277,7 +293,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .collect()
             .map(
                 commit => (
-                    getExerciseId(commit),
+                    getUserAndExerciseIds(commit),
                     CommitOutput(
                         hash = commit.id,
                         message = commit.message,
@@ -286,7 +302,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                     )
                 )
             )
-            .groupBy({case (exerciseId, _) => exerciseId})
+            .groupBy({case ((userId, exerciseId), _) => (userId, exerciseId)})
             .mapValues(outputArray => outputArray.map({case (_, commitOutput) => commitOutput}))
     }
 
@@ -320,15 +336,15 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
 
     def getGitLocations(
         exercisePaths: Map[Int, Option[String]],
-        gitProjects: Map[Int, Option[(String, String)]]
-    ): Map[Int, Option[(String, String, String)]] = {
-        exercisePaths.map({
-            case (exerciseId, pathOption) => (
-                exerciseId,
-                pathOption match {
-                    case Some(path: String) => gitProjects.get(exerciseId) match {
-                        case Some(gitProjectOption: Option[(String, String)]) => gitProjectOption match {
-                            case Some((hostName: String, projectName: String)) => Some(hostName, projectName, path)
+        gitProjects: Map[(Int, Int), Option[(String, String)]]
+    ): Map[(Int, Int), Option[(String, String, String)]] = {
+        gitProjects.map({
+            case ((userId, exerciseId), gitProject) => (
+                (userId, exerciseId),
+                exercisePaths.get(exerciseId) match {
+                    case Some(pathOption: Option[String]) => pathOption match {
+                        case Some(path: String) => gitProject match {
+                            case Some((hostName: String, projectName: String)) => Some((hostName, projectName, path))
                             case None => None
                         }
                         case None => None
@@ -340,14 +356,14 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getCommitIdsWithProjects(
-        gitProjects: Map[Int, Option[(String, String)]],
-        commitIds: Map[Int, Seq[String]]
-    ): Map[Int, Option[(String, String, Seq[String])]] = {
+        gitProjects: Map[(Int, Int), Option[(String, String)]],
+        commitIds: Map[(Int, Int), Seq[String]]
+    ): Map[(Int, Int), Option[(String, String, Seq[String])]] = {
         gitProjects.map({
-            case (exerciseId, gitOption) => (
-                exerciseId,
+            case ((userId, exerciseId), gitOption) => (
+                (userId, exerciseId),
                 gitOption match {
-                    case Some((hostName: String, projectName: String)) => commitIds.get(exerciseId) match {
+                    case Some((hostName: String, projectName: String)) => commitIds.get((userId, exerciseId)) match {
                         case Some(commitIds: Seq[String]) => Some(hostName, projectName, commitIds)
                         case None => None
                     }
@@ -369,9 +385,9 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getExerciseCommitsData(
-        pointsData: Option[PointSchema],
+        pointsData: Seq[PointSchema],
         exerciseIds: Seq[Int]
-    ): Map[Int, Option[ExerciseCommitsOutput]] = {
+    ): Map[(Int, Int), Option[ExerciseCommitsOutput]] = {
         // returns an exercise commits objects for the considered student and the given exerciseId-list
         val exerciseData = getExerciseData(exerciseIds)
         val exercisePaths = getExercisePaths(exerciseData.toSeq.map({case (_, exercise) => exercise}).flatten)
@@ -384,8 +400,8 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
         val simplifiedExerciseNames = getSimplifiedExerciseNames(exercisePaths)
 
         commitOutputs.map({
-            case (exerciseId, outputs) => (
-                exerciseId,
+            case ((userId, exerciseId), outputs) => (
+                (userId, exerciseId),
                 outputs.isEmpty match {
                     case false => Some(
                         ExerciseCommitsOutput(
@@ -483,44 +499,68 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getModuleCommitData(
-        moduleDataNames: Map[Int,String],
-        exerciseIdMap: Map[Int,Seq[Int]],
-        exerciseCommitData: Map[Int,Option[ExerciseCommitsOutput]]
-    ): Seq[ModuleCommitsOutput] = {
-        exerciseIdMap.toList.map({
-            case (moduleId, exerciseIds) => (
-                moduleDataNames.getOrElse(moduleId, CommonConstants.Unknown),
-                {
-                    exerciseIds.map(
-                        exerciseId => exerciseCommitData.get(exerciseId) match {
-                            case Some(commitDataOption) => commitDataOption match {
-                                case Some(commitData: ExerciseCommitsOutput) => Some(commitData)
-                                case None => None
-                            }
-                            case None => None
-                        }
+        moduleDataNames: Map[Int, String],
+        exerciseIdMap: Map[Int, Seq[Int]],
+        exerciseCommitData: Map[(Int, Int), Option[ExerciseCommitsOutput]]
+    ): Map[Int, Seq[ModuleCommitsOutput]] = {
+        // returns a mapping from userId to a list of module specific commit data
+        def getModuleId(exerciseId: Int): Int = {
+            exerciseIdMap.find({case (moduleId, exerciseIds) => exerciseIds.contains(exerciseId)}) match {
+                case Some((moduleId: Int, _)) => moduleId
+                case None => 0
+            }
+        }
+
+        exerciseCommitData
+            .map({
+                case ((userId, exerciseId), commitData) => (
+                    (userId, getModuleId(exerciseId), exerciseId),
+                    commitData
+                )
+            })
+            .groupBy({case ((userId, moduleId, _), _) => (userId, moduleId)})
+            .mapValues(data => data.toSeq.map({case (_, commitData) => commitData}))
+            .map({
+                case ((userId, moduleId), commitData) => (
+                    (userId, moduleId),
+                    ModuleCommitsOutput(
+                        moduleDataNames.getOrElse(moduleId, CommonConstants.Unknown),
+                        commitData.flatten
                     )
-                    .flatten
-                    .sortBy(exerciseCommit => exerciseCommit.name)
-                }
+                )
+            })
+            .groupBy({case ((userId, _), _) => userId})
+            .mapValues(data => data.toSeq.map({case (_, moduleData) => moduleData}))
+            .mapValues(
+                modules =>
+                    modules
+                        .filter(module => module.projects.nonEmpty)
+                        .sortBy(module => module.module_name)
             )
-        })
-        .map({case (moduleName, exercises) => ModuleCommitsOutput(moduleName, exercises)})
-        .filter(module => module.projects.nonEmpty)
-        .sortBy(module => module.module_name)
     }
 
     def getFullOutput(
-        pointsData: Option[PointSchema],
-        moduleCommitData: Seq[ModuleCommitsOutput]
+        pointsData: Seq[PointSchema],
+        moduleCommitData: Map[Int, Seq[ModuleCommitsOutput]]
     ): FullCourseOutput = {
-        pointsData match {
-            case Some(points: PointSchema) => FullCourseOutput(
-                Seq(
-                    StudentCourseOutput.fromSchemas(points, moduleCommitData)
-                )
+        FullCourseOutput(
+            pointsData.map(
+                points =>
+                    StudentCourseOutput.fromSchemas(points, moduleCommitData.getOrElse(points.id, Seq.empty))
             )
-            case None => FullCourseOutput(Seq.empty)
+        )
+    }
+
+    def getUserIds(courseData: Option[CourseSchema]): Seq[Int] = {
+        courseData match {
+            case Some(course: CourseSchema) => course._links match {
+                case Some(courseLinks: CourseLinksSchema) => courseLinks.points match {
+                    case Some(pointLinks: Seq[Int]) => pointLinks
+                    case None => Seq.empty
+                }
+                case None => Seq.empty
+            }
+            case None => Seq.empty
         }
     }
 
@@ -531,7 +571,8 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
         val moduleDataNames = getModuleNames(moduleData)
         val exerciseIdMap = getExerciseIds(moduleData)
         val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
-        val pointsData = getPointsDocument()
+        val userIds = getUserIds(courseData)
+        val pointsData = getPointsDocuments(userIds)
         val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
         val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
 

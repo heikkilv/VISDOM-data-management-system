@@ -76,6 +76,7 @@ object SnakeCaseConstants {
     val SummaryHtml: String = "summary_html"
     val SwaggerDefinition: String = "swagger_definition"
     val Url: String = "url"
+    val UserId: String = "user_id"
     val Username: String = "username"
     val Version: String = "version"
 }

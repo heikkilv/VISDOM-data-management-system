@@ -2,8 +2,8 @@ package visdom.http.server.services.constants
 
 
 object CourseAdapterConstants {
-    final val FullName = "fullName"
-    final val DescriptionFullName = "the full name of the student"
+    final val Username = "username"
+    final val DescriptionUsername = "the username of the student"
 
     final val CourseId = "courseId"
     final val DescriptionCourseId = "the course id (must be a positive integer)"

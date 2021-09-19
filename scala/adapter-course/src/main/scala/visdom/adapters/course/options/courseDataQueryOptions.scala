@@ -6,13 +6,13 @@ import visdom.utils.GeneralUtils
 
 final case class CourseDataQueryOptions(
     courseId: Int,
-    fullName: Option[String],
+    username: Option[String],
     exerciseId: Option[Int]
 )
 
 final case class CourseDataQueryInput(
     courseId: String,
-    fullName: Option[String],
+    username: Option[String],
     exerciseId: Option[String]
 )
 extends QueryOptionsBase
@@ -22,7 +22,7 @@ extends QueryOptionsBase
             case true => Some(
                 CourseDataQueryOptions(
                     courseId = courseId.toInt,
-                    fullName = fullName,
+                    username = username,
                     exerciseId = exerciseId.map(id => id.toInt)
                 )
             )

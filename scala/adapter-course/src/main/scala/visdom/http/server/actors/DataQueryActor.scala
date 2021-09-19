@@ -34,7 +34,7 @@ class DataQueryActor extends Actor with ActorLogging {
                                     (new CourseDataQuery(courseDataQueryOptions)).getResults()
                                 )
                             ),
-                            HttpConstants.DefaultWaitDuration
+                            10 * HttpConstants.DefaultWaitDuration
                         )
                     } catch  {
                         case error: TimeoutException => ResponseUtils.getErrorResponse(error.getMessage())

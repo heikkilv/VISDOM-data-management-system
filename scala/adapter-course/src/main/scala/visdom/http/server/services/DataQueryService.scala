@@ -58,10 +58,10 @@ with CourseAdapterResponseHandler
                 )
             ),
             new Parameter(
-                name = CourseAdapterConstants.FullName,
+                name = CourseAdapterConstants.Username,
                 in = ParameterIn.QUERY,
                 required = false,
-                description = CourseAdapterConstants.DescriptionFullName,
+                description = CourseAdapterConstants.DescriptionUsername,
                 schema = new Schema(
                     implementation = classOf[String]
                 )
@@ -128,20 +128,20 @@ with CourseAdapterResponseHandler
         path(ServerConstants.DataPath) &
         parameters(
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString),
-            CourseAdapterConstants.FullName.optional,
+            CourseAdapterConstants.Username.optional,
             CourseAdapterConstants.ExerciseId.optional
         )
     ) {
         (
             courseId,
-            fullName,
+            username,
             exerciseId
         ) => get {
             getRoute(
                 dataActor,
                 CourseDataQueryInput(
                     courseId = courseId,
-                    fullName = fullName,
+                    username = username,
                     exerciseId = exerciseId
                 )
             )
