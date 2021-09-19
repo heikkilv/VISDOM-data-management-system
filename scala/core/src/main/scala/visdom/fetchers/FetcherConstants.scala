@@ -2,5 +2,5 @@ package visdom.fetchers
 
 
 object FetcherConstants {
-    val PointsByDifficultyPrefix: String = "cat_"
+    val PointsByDifficultyPrefix: String = "category"
 }

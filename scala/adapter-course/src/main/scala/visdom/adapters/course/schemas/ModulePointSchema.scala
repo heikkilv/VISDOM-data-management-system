@@ -36,6 +36,7 @@ object ModulePointSchema extends BaseSchemaTrait[ModulePointSchema] {
         FieldDataType(SnakeCaseConstants.Exercises, false)
     )
 
+    // scalastyle:off method.length
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def transformValues(valueOptions: Seq[Option[Any]]): Option[ModulePointSchema] = {
         val (
@@ -47,7 +48,7 @@ object ModulePointSchema extends BaseSchemaTrait[ModulePointSchema] {
             pointsOption,
             pointsByDifficultyOption,
             passedOption,
-            exercisesOption,
+            exercisesOption
         ) = valueOptions.toTuple9
 
         toOption(
@@ -59,7 +60,7 @@ object ModulePointSchema extends BaseSchemaTrait[ModulePointSchema] {
                 submissionCountOption,
                 pointsOption,
                 passedOption,
-                exercisesOption,
+                exercisesOption
             ),
             (
                 (value: Any) => toIntOption(value),
@@ -98,4 +99,5 @@ object ModulePointSchema extends BaseSchemaTrait[ModulePointSchema] {
             case _ => None
         }
     }
+    // scalastyle:off method.length
 }

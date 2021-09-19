@@ -415,5 +415,22 @@ object JsonUtils {
                 case _ => jsObject
             }
         }
+
+        def removeNulls(): JsObject = {
+            def constructJsObject(fields: Map[String, JsValue], nonNullFields: Map[String, JsValue]): JsObject = {
+                fields.headOption match {
+                    case Some((key: String, value: JsValue)) => {
+                        val nextNonNullFields = value match {
+                            case JsNull => nonNullFields
+                            case _ => nonNullFields ++ Map(key -> value)
+                        }
+                        constructJsObject(fields.drop(1), nextNonNullFields)
+                    }
+                    case None => JsObject(nonNullFields)
+                }
+            }
+
+            constructJsObject(jsObject.fields, Map.empty)
+        }
     }
 }

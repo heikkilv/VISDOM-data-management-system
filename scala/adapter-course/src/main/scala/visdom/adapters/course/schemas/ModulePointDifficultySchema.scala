@@ -3,24 +3,23 @@ package visdom.adapters.course.schemas
 import visdom.spark.FieldDataType
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils.toIntOption
-import visdom.utils.PascalCaseConstants
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 
 final case class ModulePointDifficultySchema(
-    empty: Option[Int],
-    G: Option[Int],
-    P: Option[Int]
+    category: Option[Int],
+    categoryG: Option[Int],
+    categoryP: Option[Int]
 )
 extends BaseSchema
 
 object ModulePointDifficultySchema extends BaseSchemaTrait[ModulePointDifficultySchema] {
     def fields: Seq[FieldDataType] = Seq(
-        FieldDataType(SnakeCaseConstants.Empty, true),
-        FieldDataType(PascalCaseConstants.G, true),
-        FieldDataType(PascalCaseConstants.P, true)
+        FieldDataType(SnakeCaseConstants.Category, true),
+        FieldDataType(SnakeCaseConstants.CategoryG, true),
+        FieldDataType(SnakeCaseConstants.CategoryP, true)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
