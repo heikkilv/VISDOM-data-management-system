@@ -202,7 +202,7 @@ object JsonUtils {
         def anonymize(hashableAttributes: Option[Seq[Seq[String]]]): BsonDocument = {
             hashableAttributes match {
                 case Some(attributes: Seq[Seq[String]]) =>
-                    transformAttributes(attributes, JsonUtils.valueTransform(JsonUtils.anonymizeValue(_)))
+                    transformAttributes(attributes, valueTransform(anonymizeValue(_)))
                 case None => document
             }
         }
@@ -314,18 +314,22 @@ object JsonUtils {
     }
 
     def anonymizeValue(value: BsonValue): BsonValue = {
-        value.isString() match {
-            case true => {
+        value.getBsonType() match {
+            case BsonType.ARRAY => BsonArray(
+                value
+                    .asArray()
+                    .getValues
+                    .asScala.map(originalValue => anonymizeValue(originalValue))
+            )
+            case BsonType.STRING => {
                 val stringValue: String = value.asString().getValue()
                 stringValue.nonEmpty match {
                     case true => toBsonValue(GeneralUtils.getHash(stringValue))
                     case false => value  // empty string are not hashed
                 }
             }
-            case false => value.isInt32() match {
-                case true => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
-                case false => value  // values other than strings or integers are not hashed
-            }
+            case BsonType.INT32 => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
+            case _ => value  // values other than strings or integers are not hashed
         }
     }
 
