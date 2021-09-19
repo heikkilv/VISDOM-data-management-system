@@ -50,6 +50,8 @@ object AdapterValues {
     val aPlusDatabaseName: String = getEnvironmentVariable(EnvironmentAPlusDatabase, CourseAdapterVariableMap)
     val gitlabDatabaseName: String = getEnvironmentVariable(EnvironmentGitlabDatabase, CourseAdapterVariableMap)
 
+    val cache: QueryCache = new QueryCache(Seq(aPlusDatabaseName, gitlabDatabaseName))
+
     val AdapterType: String = ComponentConstants.CourseAdapterType
     val Version: String = "0.1"
 

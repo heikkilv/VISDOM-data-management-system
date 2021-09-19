@@ -141,6 +141,15 @@ object GeneralUtils {
         }
     }
 
+    def getLaterInstant(time1: Instant, time2: Instant): Instant = {
+        if (time1.compareTo(time2) > 0) {
+            time1
+        }
+        else {
+            time2
+        }
+    }
+
     val ShaFunction: String = "SHA-512/256"
     val Encoding: String = "UTF-8"
     val MessageDigester: MessageDigest = MessageDigest.getInstance(ShaFunction)

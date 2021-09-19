@@ -9,6 +9,7 @@ final case class CourseDataQueryOptions(
     username: Option[String],
     exerciseId: Option[Int]
 )
+extends BaseQueryOptions
 
 final case class CourseDataQueryInput(
     courseId: String,

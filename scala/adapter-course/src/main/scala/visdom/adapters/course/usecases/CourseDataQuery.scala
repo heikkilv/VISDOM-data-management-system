@@ -36,9 +36,11 @@ import visdom.spark.ConfigUtils
 import visdom.spark.Session
 import visdom.utils.CommonConstants
 import visdom.utils.SnakeCaseConstants
+import visdom.adapters.course.AdapterValues
 
 
 class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
+    val queryCode: Int = 1
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
@@ -567,17 +569,24 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     }
 
     def getResults(): JsObject = {
-        val courseData = getCourseData()
-        val moduleIds = getModuleIds(courseData)
-        val moduleData = getModuleData(moduleIds)
-        val moduleDataNames = getModuleNames(moduleData)
-        val exerciseIdMap = getExerciseIds(moduleData)
-        val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
-        val userIds = getUserIds(courseData)
-        val pointsData = getPointsDocuments(userIds)
-        val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
-        val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
+        AdapterValues.cache.getResult(queryCode, queryOptions) match {
+            case Some(cachedResult: JsObject) => cachedResult
+            case None => {
+                val courseData = getCourseData()
+                val moduleIds = getModuleIds(courseData)
+                val moduleData = getModuleData(moduleIds)
+                val moduleDataNames = getModuleNames(moduleData)
+                val exerciseIdMap = getExerciseIds(moduleData)
+                val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
+                val userIds = getUserIds(courseData)
+                val pointsData = getPointsDocuments(userIds)
+                val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
+                val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
 
-        getFullOutput(pointsData, moduleCommitData).toJsObject()
+                val result = getFullOutput(pointsData, moduleCommitData).toJsObject()
+                AdapterValues.cache.addResult(queryCode, queryOptions, result)
+                result
+            }
+        }
     }
 }

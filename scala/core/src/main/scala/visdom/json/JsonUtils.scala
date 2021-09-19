@@ -1,5 +1,6 @@
 package visdom.json
 
+import java.time.Instant
 import java.time.ZonedDateTime
 import org.bson.BSONException
 import org.bson.BsonType
@@ -60,6 +61,16 @@ object JsonUtils {
             document.getOption(key) match {
                 case Some(value: BsonValue) => value.isDouble() match {
                     case true => Some(value.asDouble().getValue())
+                    case false => None
+                }
+                case None => None
+            }
+        }
+
+        def getInstantOption(key: Any): Option[Instant] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isTimestamp() match {
+                    case true => Some(Instant.ofEpochMilli(value.asTimestamp().getValue()))
                     case false => None
                 }
                 case None => None
