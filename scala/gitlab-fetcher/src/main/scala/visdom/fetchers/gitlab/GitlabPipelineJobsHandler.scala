@@ -56,6 +56,7 @@ extends GitlabDataHandler(options) {
         options.useAnonymization match {
             case true => Some(
                 Seq(
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeId),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),

@@ -15,6 +15,7 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.SnakeCaseConstants._
 
 
 class PointFetcher(options: APlusPointOptions)
@@ -65,9 +66,9 @@ extends APlusDataHandler(options) {
 
     override def getIdentifierAttributes(): Array[String] = {
         Array(
-            APlusConstants.AttributeId,
-            APlusConstants.AttributeCourseId,
-            APlusConstants.AttributeHostName
+            Id,
+            CourseId,
+            HostName
         )
     }
 
@@ -75,10 +76,16 @@ extends APlusDataHandler(options) {
         options.useAnonymization match {
             case true => Some(
                 Seq(
-                    Seq(APlusConstants.AttributeUsername),
-                    Seq(APlusConstants.AttributeStudentId),
-                    Seq(APlusConstants.AttributeEmail),
-                    Seq(APlusConstants.AttributeFullName)
+                    Seq(Id),
+                    Seq(Url),
+                    Seq(Username),
+                    Seq(StudentId),
+                    Seq(Email),
+                    Seq(FullName),
+                    Seq(Modules, Exercises, BestSubmission),
+                    Seq(Modules, Exercises, Submissions),
+                    Seq(Modules, Exercises, SubmissionsWithPoints, Id),
+                    Seq(Modules, Exercises, SubmissionsWithPoints, Url)
                 )
             )
             case false => None

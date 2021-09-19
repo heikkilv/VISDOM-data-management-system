@@ -85,12 +85,19 @@ class SubmissionFetcher(options: APlusSubmissionOptions)
         options.useAnonymization match {
             case true => Some(
                 Seq(
+                    Seq(APlusConstants.AttributeId),
+                    Seq(APlusConstants.AttributeUrl),
+                    Seq(APlusConstants.AttributeHtmlUrl),
+                    Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeId),
+                    Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeUrl),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeUsername),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeStudentId),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeEmail),
                     Seq(APlusConstants.AttributeSubmitters, APlusConstants.AttributeFullName),
                     Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeProjectName),
                     Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git, APlusConstants.AttributeRaw),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeId),
+                    Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeUrl),
                     Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeUsername),
                     Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeStudentId),
                     Seq(APlusConstants.AttributeGrader, APlusConstants.AttributeEmail),

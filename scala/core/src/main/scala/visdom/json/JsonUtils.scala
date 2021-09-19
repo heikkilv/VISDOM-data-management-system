@@ -306,12 +306,15 @@ object JsonUtils {
         value.isString() match {
             case true => {
                 val stringValue: String = value.asString().getValue()
-                stringValue.isEmpty() match {
-                    case false => BsonString(GeneralUtils.getHash(stringValue))
-                    case true => value
+                stringValue.nonEmpty match {
+                    case true => toBsonValue(GeneralUtils.getHash(stringValue))
+                    case false => value  // empty string are not hashed
                 }
             }
-            case false => value
+            case false => value.isInt32() match {
+                case true => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
+                case false => value  // values other than strings or integers are not hashed
+            }
         }
     }
 

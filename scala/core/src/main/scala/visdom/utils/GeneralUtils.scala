@@ -151,8 +151,8 @@ object GeneralUtils {
         String.format(s"%0${digest.length * 2}x", new BigInteger(1, digest))
     }
 
-    def getHash(inputNumber: Int): String = {
-        getHash(inputNumber.toString())
+    def getHash(inputNumber: Int): Int = {
+        getHash(inputNumber.toString()).hashCode()
     }
 
     def getHash(inputString: String, useHash: Boolean): String = {
@@ -162,8 +162,8 @@ object GeneralUtils {
         }
     }
 
-    def getHash(inputNumber: Int, useHash: Boolean): String = {
-        getHash(inputNumber.toString(), useHash)
+    def getHash(inputNumber: Int, useHash: Boolean): Int = {
+        getHash(inputNumber.toString(), useHash).hashCode()
     }
 
     def getUpperFolder(path: String): String = {
