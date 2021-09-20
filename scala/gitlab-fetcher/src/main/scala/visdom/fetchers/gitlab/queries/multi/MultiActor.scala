@@ -71,6 +71,9 @@ object MultiActor {
         if (!CommonHelpers.isProjectNameSequence(queryOptions.projectNames)) {
             Some(s"'${queryOptions.projectNames}' is not a valid comma-separated list of project names")
         }
+        else if (!CommonHelpers.isReference(queryOptions.reference)) {
+            Some(s"'${queryOptions.reference}' is not a valid reference for a project")
+        }
         else if (queryOptions.filePath.isDefined && !filePath.isDefined) {
             Some(s"'${queryOptions.filePath.getOrElse("")}' is not valid path for a file or folder")
         }
@@ -105,6 +108,7 @@ object MultiActor {
                 Right(
                     MultiSpecificFetchParameters(
                         projectNames = projectAvailability.allowed,
+                        reference = queryOptions.reference,
                         filePath = queryOptions.filePath,
                         recursive = queryOptions.recursive.toBoolean,
                         startDate = GeneralUtils.toZonedDateTime(queryOptions.startDate),
@@ -136,7 +140,7 @@ object MultiActor {
     def startCommitFetching(fetchParameters: MultiSpecificSingleFetchParameters): Unit = {
         val commitFetchParameters = CommitSpecificFetchParameters(
             projectName = fetchParameters.projectName,
-            reference = Constants.ParameterDefaultReference,
+            reference = fetchParameters.reference,
             filePath = fetchParameters.filePath,
             startDate = fetchParameters.startDate,
             endDate = fetchParameters.endDate,
@@ -151,7 +155,7 @@ object MultiActor {
     def startFileFetching(fetchParameters: MultiSpecificSingleFetchParameters): Unit = {
         val fileFetchParameters = FileSpecificFetchParameters(
             projectName = fetchParameters.projectName,
-            reference = Constants.ParameterDefaultReference,
+            reference = fetchParameters.reference,
             filePath = fetchParameters.filePath,
             recursive = fetchParameters.recursive,
             includeCommitLinks = MultiConstants.ParameterDefaultIncludeCommitLinks,
@@ -169,6 +173,7 @@ object MultiActor {
         val singleProjectParameters = fetchParameters.projectNames.map(
             projectName => MultiSpecificSingleFetchParameters(
                 projectName = projectName,
+                reference = fetchParameters.reference,
                 filePath = fetchParameters.filePath,
                 recursive = fetchParameters.recursive,
                 startDate = fetchParameters.startDate,

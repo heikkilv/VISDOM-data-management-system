@@ -45,6 +45,7 @@ object APlusConstants {
     val AttributeFormI18n: String = "form_i18n"
     val AttributeFullName: String = "full_name"
     val AttributeGdprOptions: String = "gdpr_options"
+    val AttributeGitBranch: String = "git_branch"
     val AttributeGrader: String = "grader"
     val AttributeHierarchicalName: String = "hierarchical_name"
     val AttributeHostName: String = "host_name"

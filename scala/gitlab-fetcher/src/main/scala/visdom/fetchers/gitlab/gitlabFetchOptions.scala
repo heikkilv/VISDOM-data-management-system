@@ -130,6 +130,7 @@ final case class AllDataSpecificFetchParameters(
 
 abstract class MultiSpecificFetchOptions {
     val projectNames: Seq[String]
+    val reference: String
     val filePath: Option[String]
     val recursive: Boolean
     val startDate: Option[ZonedDateTime]
@@ -140,6 +141,7 @@ abstract class MultiSpecificFetchOptions {
 
 abstract class MultiSpecificSingleFetchOptions {
     val projectName: String
+    val reference: String
     val filePath: Option[String]
     val recursive: Boolean
     val startDate: Option[ZonedDateTime]
@@ -149,6 +151,7 @@ abstract class MultiSpecificSingleFetchOptions {
 
 final case class MultiSpecificFetchParameters(
     projectNames: Seq[String],
+    reference: String,
     filePath: Option[String],
     recursive: Boolean,
     startDate: Option[ZonedDateTime],
@@ -159,6 +162,7 @@ final case class MultiSpecificFetchParameters(
 
 final case class MultiSpecificSingleFetchParameters(
     projectName: String,
+    reference: String,
     filePath: Option[String],
     recursive: Boolean,
     startDate: Option[ZonedDateTime],
@@ -168,6 +172,7 @@ final case class MultiSpecificSingleFetchParameters(
     override def toString(): String = {
         (
             projectName,
+            reference,
             filePath.getOrElse(CommonConstants.EmptyString),
             recursive,
             GeneralUtils.zonedDateTimeToString(startDate),

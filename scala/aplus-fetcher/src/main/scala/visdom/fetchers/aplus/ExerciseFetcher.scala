@@ -22,6 +22,7 @@ import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
 import visdom.utils.GitlabFetcherQueryOptions
 import visdom.utils.metadata.APlusMetadata
+import visdom.utils.metadata.CourseMetadata
 import visdom.utils.metadata.ExerciseGitLocation
 
 
@@ -209,6 +210,14 @@ class ExerciseFetcher(options: APlusExerciseOptions)
     }
 
     private def fetchGitlabData(exerciseId: Int, gitProjects: Map[String,Set[String]]): Unit = {
+        val gitReference: String = APlusMetadata.courseMetadata.get(options.courseId) match {
+            case Some(courseMetadata: CourseMetadata) => courseMetadata.gitBranch match {
+                case Some(gitBranch: String) => gitBranch
+                case None => APlusMetadata.DefaultGitBranch
+            }
+            case None => APlusMetadata.DefaultGitBranch
+        }
+
         gitProjects.map({
             case (serverAddress, projectNames) => (
                 (
@@ -220,7 +229,8 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                     .map(
                         gitLocation => GitlabFetcherQueryOptions(
                             projectNames = projectNames.toSeq,
-                            gitLocation = gitLocation
+                            gitLocation = gitLocation,
+                            reference = gitReference
                         )
                     )
             )

@@ -8,6 +8,8 @@ import visdom.utils.AttributeConstants
 
 
 object APlusMetadata {
+    val DefaultGitBranch: String = "master"
+
     val courseMetadata: Map[Int, CourseMetadata] =
         JsonUtils.getBsonDocumentFromFile(FetcherValues.AdditionalMetadataFilename) match {
             case Some(metadataDocument: BsonDocument) =>

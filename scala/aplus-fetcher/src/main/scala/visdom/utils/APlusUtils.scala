@@ -341,6 +341,7 @@ object APlusUtils {
                 )
                     .param(AttributeConstants.ProjectNames, queryOptions.projectNames.mkString(CommonConstants.Comma))
                     .param(AttributeConstants.FilePath, queryOptions.gitLocation.path)
+                    .param(AttributeConstants.Reference, queryOptions.reference)
                     .param(AttributeConstants.Recursive, queryOptions.gitLocation.isFolder.toString()),
             expectedStatusCode = HttpConstants.StatusCodeAccepted
         )
@@ -370,7 +371,8 @@ object APlusUtils {
                                 makeGitlabFetcherQueryInternal(fetcherAddress, _),
                                 GitlabFetcherQueryOptions(
                                     projectNames = projectNames,
-                                    gitLocation = queryOptions.gitLocation
+                                    gitLocation = queryOptions.gitLocation,
+                                    reference = queryOptions.reference
                                 )
                             )
                         )
