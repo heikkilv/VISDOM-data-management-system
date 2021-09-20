@@ -10,8 +10,10 @@ import visdom.http.HttpConstants
 import visdom.http.server.ServerConstants
 import visdom.http.server.actors.CourseAdapterInfoActor
 import visdom.http.server.actors.DataQueryActor
+import visdom.http.server.actors.UsernameQueryActor
 import visdom.http.server.services.CourseAdapterInfoService
 import visdom.http.server.services.DataQueryService
+import visdom.http.server.services.UsernameQueryService
 import visdom.http.server.swagger.SwaggerCourseAdapterDocService
 import visdom.http.server.swagger.SwaggerConstants
 import visdom.http.server.swagger.SwaggerRoutes
@@ -60,6 +62,7 @@ object AdapterValues {
     val routes = Directives.concat(
         new CourseAdapterInfoService(system.actorOf(Props[CourseAdapterInfoActor])).route,
         new DataQueryService(system.actorOf(Props[DataQueryActor])).route,
+        new UsernameQueryService(system.actorOf(Props[UsernameQueryActor])).route,
         SwaggerRoutes.getSwaggerRouter(SwaggerCourseAdapterDocService)
     )
 }

@@ -9,6 +9,7 @@ object CourseAdapterDescriptions {
     final val DataQueryEndpointDescription = "Returns a document related to points achieved by a student."
 
     final val DataStatusOkDescription = "The data successfully fetched"
+    final val UsernameStatusOkDescription = "The usernames successfully fetched"
 
     final val StatusInvalidDescription = "The request contained an invalid parameter"
 
