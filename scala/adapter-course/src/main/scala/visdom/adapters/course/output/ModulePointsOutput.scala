@@ -4,6 +4,7 @@ import spray.json.JsObject
 import visdom.json.JsonObjectConvertible
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
+import visdom.adapters.course.schemas.ExercisePointsSchema
 import visdom.adapters.course.schemas.ModulePointSchema
 
 
@@ -34,7 +35,15 @@ final case class ModulePointsOutput(
 }
 
 object ModulePointsOutput {
-    def fromModulePointSchema(modulePointSchema: ModulePointSchema): ModulePointsOutput = {
+    def fromModulePointSchema(
+        modulePointSchema: ModulePointSchema,
+        exerciseIdOption: Option[Int]
+    ): ModulePointsOutput = {
+        val consideredExercises: Seq[ExercisePointsSchema] = exerciseIdOption match {
+            case Some(exerciseId: Int) => modulePointSchema.exercises.filter(exercise => exercise.id == exerciseId)
+            case None => modulePointSchema.exercises
+        }
+
         ModulePointsOutput(
             id = modulePointSchema.id,
             name = NameOutput.fromNameSchema(modulePointSchema.name),
@@ -48,7 +57,7 @@ object ModulePointsOutput {
                 ),
             passed = modulePointSchema.passed,
             exercises =
-                modulePointSchema.exercises.map(exercise => ExercisePointsOutput.fromExercisePointsSchema(exercise))
+                consideredExercises.map(exercise => ExercisePointsOutput.fromExercisePointsSchema(exercise))
         )
     }
 }

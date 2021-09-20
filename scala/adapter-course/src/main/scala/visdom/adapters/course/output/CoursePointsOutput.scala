@@ -1,6 +1,7 @@
 package visdom.adapters.course.output
 
 import spray.json.JsObject
+import visdom.adapters.course.schemas.ModulePointSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.json.JsonObjectConvertible
 import visdom.json.JsonUtils
@@ -24,13 +25,21 @@ final case class CoursePointsOutput(
 }
 
 object CoursePointsOutput {
-    def fromPointSchema(pointSchema: PointSchema): CoursePointsOutput = {
+    def fromPointSchema(pointSchema: PointSchema, exerciseIdOption: Option[Int]): CoursePointsOutput = {
+        val consideredModules: Seq[ModulePointSchema] = exerciseIdOption match {
+            case Some(exerciseId: Int) =>
+                pointSchema.modules
+                    .filter(module => module.exercises.map(exercise => exercise.id).contains(exerciseId))
+            case None => pointSchema.modules
+        }
+
         CoursePointsOutput(
             submission_count = pointSchema.submission_count,
             points = pointSchema.points,
             points_by_difficulty =
                 PointsByDifficultyOutput.fromPointDifficultySchema(pointSchema.points_by_difficulty),
-            modules = pointSchema.modules.map(module => ModulePointsOutput.fromModulePointSchema(module))
+            modules =
+                consideredModules.map(module => ModulePointsOutput.fromModulePointSchema(module, exerciseIdOption))
         )
     }
 }

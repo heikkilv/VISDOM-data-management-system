@@ -34,7 +34,11 @@ final case class StudentCourseOutput(
 }
 
 object StudentCourseOutput {
-    def fromSchemas(pointSchema: PointSchema, moduleCommitData: Seq[ModuleCommitsOutput]): StudentCourseOutput = {
+    def fromSchemas(
+        pointSchema: PointSchema,
+        moduleCommitData: Seq[ModuleCommitsOutput],
+        exerciseId: Option[Int]
+    ): StudentCourseOutput = {
         StudentCourseOutput(
             id = pointSchema.id,
             url = pointSchema.url,
@@ -43,7 +47,7 @@ object StudentCourseOutput {
             email = pointSchema.email,
             full_name = pointSchema.full_name,
             is_external = pointSchema.is_external,
-            points = CoursePointsOutput.fromPointSchema(pointSchema),
+            points = CoursePointsOutput.fromPointSchema(pointSchema, exerciseId),
             commits = moduleCommitData
         )
     }
