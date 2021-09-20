@@ -10,6 +10,7 @@ import visdom.utils.AttributeConstants
 
 final case class CourseMetadata(
     val lateSubmissionCoefficient: Option[Double],
+    val gitBranch: Option[String],
     val moduleMetadata: Map[Int, ModuleMetadata]
 ) {
     def toBsonValue(): BsonValue = {
@@ -18,6 +19,10 @@ final case class CourseMetadata(
             APlusConstants.AttributeLateSubmissionCoefficient,
             lateSubmissionCoefficient.map(doubleValue => JsonUtils.toBsonValue(doubleValue))
         )
+        .appendOption(
+            APlusConstants.AttributeGitBranch,
+            gitBranch.map(stringValue => JsonUtils.toBsonValue(stringValue))
+        )
     }
 }
 
@@ -25,6 +30,7 @@ object CourseMetadata {
     def toCourseMetadata(courseDocument: BsonDocument): CourseMetadata = {
         CourseMetadata(
             lateSubmissionCoefficient = courseDocument.getDoubleOption(AttributeConstants.LateSubmissionCoefficient),
+            gitBranch = courseDocument.getStringOption(AttributeConstants.GitBranch),
             moduleMetadata = courseDocument.getDocumentOption(AttributeConstants.Modules) match {
                 case Some(moduleDocuments: BsonDocument) => {
                     moduleDocuments.toIntDocumentMap()

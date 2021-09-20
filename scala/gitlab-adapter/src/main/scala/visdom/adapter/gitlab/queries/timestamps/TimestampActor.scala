@@ -15,6 +15,8 @@ import visdom.http.server.adapter.gitlab.TimestampQueryOptionsChecked
 import visdom.http.server.adapter.gitlab.TimestampQueryOptionsInput
 import visdom.http.server.response.BaseResponse
 import visdom.http.server.response.JsonResponse
+import visdom.spark.Session
+import org.apache.spark.sql.SparkSession
 
 
 class TimestampActor extends Actor with ActorLogging {
@@ -31,9 +33,9 @@ class TimestampActor extends Actor with ActorLogging {
                     // get the response for the query using Spark
                     val sparkResponse: BaseResponse = try {
                         Await.result(
-                            Future(
-                                JsonResponse(TimestampQuery.getResult(Adapter.sparkSession, checkedParameters))
-                            ),
+                            Future({
+                                JsonResponse(TimestampQuery.getResult(Session.getSparkSession(), checkedParameters))
+                            }),
                             Constants.DefaultWaitDuration
                         )
                     } catch  {

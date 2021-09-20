@@ -63,7 +63,7 @@ object APlusUtils {
     }
 
     def parseDocument(document: BsonDocument, attributes: Seq[Seq[String]]): BsonDocument = {
-        document.transformAttributes(attributes, nameStringTransformer(_))
+        document.transformAttributes(attributes, JsonUtils.valueTransform(nameStringTransformer(_)))
     }
 
     def parseCourseName(fullCourseName: String, languages: Seq[String]): Map[String, BsonValue] = {
@@ -114,7 +114,7 @@ object APlusUtils {
             case Some(languages: Seq[String]) =>
                 courseDocument.transformAttributes(
                     Seq(Seq(APlusConstants.AttributeName)),
-                    courseNameTransformer(_, languages)
+                    JsonUtils.valueTransform(courseNameTransformer(_, languages))
                 )
             case None => courseDocument
         }
@@ -207,7 +207,7 @@ object APlusUtils {
                     APlusConstants.AttributeProjectName -> projectName,
                     APlusConstants.AttributeRaw -> answer
                 )
-            case None => BsonString(answer)
+            case None => BsonDocument(APlusConstants.AttributeRaw -> answer)
         }
     }
 
@@ -219,13 +219,16 @@ object APlusUtils {
     }
 
     def parseDoubleArrayAttribute(document: BsonDocument, attribute: String): BsonDocument = {
-        document.transformAttribute(attribute, JsonUtils.transformDoubleArray(_))
+        document.transformAttribute(
+            attribute,
+            JsonUtils.valueTransform(JsonUtils.transformDoubleArray(_))
+        )
     }
 
     def parseGitAnswer(document: BsonDocument): BsonDocument = {
         document.transformAttribute(
             Seq(APlusConstants.AttributeSubmissionData, CommonConstants.Git),
-            getParsedGitAnswer(_)
+            JsonUtils.valueTransform(getParsedGitAnswer(_))
         )
     }
 
@@ -338,6 +341,7 @@ object APlusUtils {
                 )
                     .param(AttributeConstants.ProjectNames, queryOptions.projectNames.mkString(CommonConstants.Comma))
                     .param(AttributeConstants.FilePath, queryOptions.gitLocation.path)
+                    .param(AttributeConstants.Reference, queryOptions.reference)
                     .param(AttributeConstants.Recursive, queryOptions.gitLocation.isFolder.toString()),
             expectedStatusCode = HttpConstants.StatusCodeAccepted
         )
@@ -367,7 +371,8 @@ object APlusUtils {
                                 makeGitlabFetcherQueryInternal(fetcherAddress, _),
                                 GitlabFetcherQueryOptions(
                                     projectNames = projectNames,
-                                    gitLocation = queryOptions.gitLocation
+                                    gitLocation = queryOptions.gitLocation,
+                                    reference = queryOptions.reference
                                 )
                             )
                         )

@@ -1,0 +1,57 @@
+FROM openjdk:8u292-jdk AS builder
+
+ENV SBT_VERSION 1.5.2
+RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz | gunzip | tar -x -C /usr/local
+ENV PATH /usr/local/sbt/bin:${PATH}
+
+ENV CORE_FOLDER core
+ENV TARGET_FOLDER adapter-course
+ENV BUILDER_FOLDER builder
+
+ENV CORE_PROJECT core
+ENV TARGET_PROJECT adapterCourse
+
+ENV TARGET_VERSION 0.2
+
+RUN mkdir -p /${BUILDER_FOLDER}/project
+RUN mkdir -p /${BUILDER_FOLDER}/core
+RUN mkdir -p /${BUILDER_FOLDER}/${TARGET_FOLDER}
+WORKDIR /${BUILDER_FOLDER}
+
+COPY build.sbt /${BUILDER_FOLDER}/build.sbt
+COPY project/build.properties /${BUILDER_FOLDER}/project/build.properties
+COPY project/plugins.sbt /${BUILDER_FOLDER}/project/plugins.sbt
+
+COPY ${CORE_FOLDER}/build.sbt /${BUILDER_FOLDER}/${CORE_FOLDER}/build.sbt
+RUN sbt ${CORE_PROJECT}/update
+
+COPY ${TARGET_FOLDER}/build.sbt /${BUILDER_FOLDER}/${TARGET_FOLDER}/build.sbt
+RUN sbt ${TARGET_PROJECT}/update
+
+COPY ${CORE_FOLDER}/ /${BUILDER_FOLDER}/${CORE_FOLDER}/
+RUN sbt ${CORE_PROJECT}/compile
+
+COPY ${TARGET_FOLDER}/ /${BUILDER_FOLDER}/${TARGET_FOLDER}/
+RUN sbt ${TARGET_PROJECT}/compile
+RUN sbt ${TARGET_PROJECT}/assembly
+
+
+FROM bde2020/spark-submit:3.1.1-hadoop3.2
+
+# These should be the same as BUILDER_FOLDER, TARGET_FOLDER and TARGET_VERSION from above
+ENV BUILDER_FOLDER builder
+ENV SPARK_APPLICATION_NAME adapter-course
+ENV SPARK_APPLICATION_VERSION 0.2
+
+ENV SPARK_APPLICATION_MAIN_CLASS visdom.adapters.course.CourseAdapter
+ENV SPARK_APPLICATION_ARGS ""
+
+ENV SPARK_APPLICATION_JAR_NAME ${SPARK_APPLICATION_NAME}-${SPARK_APPLICATION_VERSION}.jar
+ENV SPARK_APPLICATION_JAR_LOCATION /${SPARK_APPLICATION_JAR_NAME}
+
+ENV SOURCE_JAR /${BUILDER_FOLDER}/${SPARK_APPLICATION_NAME}/target/scala-2.12/${SPARK_APPLICATION_NAME}-${SPARK_APPLICATION_VERSION}.jar
+ENV TARGET_JAR /${SPARK_APPLICATION_NAME}-${SPARK_APPLICATION_VERSION}.jar
+
+COPY --from=builder ${SOURCE_JAR} ${TARGET_JAR}
+
+CMD [ "/submit.sh" ]

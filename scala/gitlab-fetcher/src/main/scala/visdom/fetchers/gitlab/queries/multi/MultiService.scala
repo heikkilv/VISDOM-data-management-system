@@ -51,6 +51,16 @@ with GitlabFetcherResponseHandler
                 example = Constants.ParameterExampleProjectNames
             ),
             new Parameter(
+                name = Constants.ParameterReference,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionReference,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = Constants.ParameterDefaultReference
+                )
+            ),
+            new Parameter(
                 name = Constants.ParameterFilePath,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -188,6 +198,8 @@ with GitlabFetcherResponseHandler
         path(MultiConstants.MultiPath) &
         parameters(
             Constants.ParameterProjectNames.withDefault(""),
+            Constants.ParameterReference
+                .withDefault(Constants.ParameterDefaultReference),
             Constants.ParameterFilePath.optional,
             Constants.ParameterRecursive.withDefault(Constants.ParameterDefaultRecursiveString),
             Constants.ParameterStartDate.optional,
@@ -198,6 +210,7 @@ with GitlabFetcherResponseHandler
     ) {
         (
             projectNames,
+            reference,
             filePath,
             recursive,
             startDate,
@@ -206,6 +219,7 @@ with GitlabFetcherResponseHandler
         ) => get {
             val options: MultiQueryOptions = MultiQueryOptions(
                 projectNames = projectNames,
+                reference = reference,
                 filePath = filePath,
                 recursive = recursive,
                 startDate = startDate,

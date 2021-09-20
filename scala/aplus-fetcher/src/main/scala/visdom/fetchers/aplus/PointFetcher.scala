@@ -5,6 +5,7 @@ import scalaj.http.Http
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
 import visdom.database.mongodb.MongoConstants
+import visdom.fetchers.FetcherConstants
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
@@ -14,6 +15,7 @@ import visdom.utils.AttributeConstants
 import visdom.utils.CheckQuestionUtils
 import visdom.utils.CheckQuestionUtils.EnrichedBsonDocumentWithGdpr
 import visdom.utils.CommonConstants
+import visdom.utils.SnakeCaseConstants._
 
 
 class PointFetcher(options: APlusPointOptions)
@@ -64,9 +66,9 @@ extends APlusDataHandler(options) {
 
     override def getIdentifierAttributes(): Array[String] = {
         Array(
-            APlusConstants.AttributeId,
-            APlusConstants.AttributeCourseId,
-            APlusConstants.AttributeHostName
+            Id,
+            CourseId,
+            HostName
         )
     }
 
@@ -74,10 +76,16 @@ extends APlusDataHandler(options) {
         options.useAnonymization match {
             case true => Some(
                 Seq(
-                    Seq(APlusConstants.AttributeUsername),
-                    Seq(APlusConstants.AttributeStudentId),
-                    Seq(APlusConstants.AttributeEmail),
-                    Seq(APlusConstants.AttributeFullName)
+                    Seq(Id),
+                    Seq(Url),
+                    Seq(Username),
+                    Seq(StudentId),
+                    Seq(Email),
+                    Seq(FullName),
+                    Seq(Modules, Exercises, BestSubmission),
+                    Seq(Modules, Exercises, Submissions),
+                    Seq(Modules, Exercises, SubmissionsWithPoints, Id),
+                    Seq(Modules, Exercises, SubmissionsWithPoints, Url)
                 )
             )
             case false => None
@@ -112,7 +120,12 @@ extends APlusDataHandler(options) {
                     case false => detailedDocument
                 }
 
-                addIdentifierAttributes(parsedDocumentNames)
+                addIdentifierAttributes(
+                    parsedDocumentNames.addPrefixToKeys(
+                        getPrefixAttributes(),
+                        FetcherConstants.PointsByDifficultyPrefix
+                    )
+                )
                     .append(AttributeConstants.Metadata, getMetadata())
             }
             // no data fetching allowed for the given user id => return empty document
@@ -160,6 +173,13 @@ extends APlusDataHandler(options) {
                 APlusConstants.AttributeExercises,
                 APlusConstants.AttributeName
             )
+        )
+    }
+
+    def getPrefixAttributes(): Seq[Seq[String]] = {
+        Seq(
+            Seq(APlusConstants.AttributePointsByDifficulty),
+            Seq(APlusConstants.AttributeModules, APlusConstants.AttributePointsByDifficulty)
         )
     }
 

@@ -1,5 +1,6 @@
 package visdom.json
 
+import java.time.Instant
 import java.time.ZonedDateTime
 import org.bson.BSONException
 import org.bson.BsonType
@@ -66,6 +67,16 @@ object JsonUtils {
             }
         }
 
+        def getInstantOption(key: Any): Option[Instant] = {
+            document.getOption(key) match {
+                case Some(value: BsonValue) => value.isTimestamp() match {
+                    case true => Some(Instant.ofEpochMilli(value.asTimestamp().getValue()))
+                    case false => None
+                }
+                case None => None
+            }
+        }
+
         def getZonedDateTimeOption(key: Any): Option[ZonedDateTime] = {
             GeneralUtils.toZonedDateTime(document.getStringOption(key))
         }
@@ -116,16 +127,29 @@ object JsonUtils {
             }
         }
 
-        def transformAttribute(key: String, transformFunction: BsonValue => BsonValue): BsonDocument = {
-            document.getOption(key) match {
-                case Some(value: BsonValue) => document.append(key, transformFunction(value))
-                case None => document
+        def transformAttribute(
+            key: String,
+            transformFunction: (String, BsonValue) => (String, BsonValue)
+        ): BsonDocument = {
+            key == CommonConstants.Dot match {
+                case true => transformAttributes(
+                    document.keySet().asScala.toSeq.map(subKey => Seq(subKey)),
+                    transformFunction
+                )
+                case false => document.containsKey(key) match {
+                    case true => {
+                        val originalValue: BsonValue = document.remove(key)
+                        val (newKey: String, newValue: BsonValue) = transformFunction(key, originalValue)
+                        document.append(newKey, newValue)
+                    }
+                    case false => document
+                }
             }
         }
 
         def transformAttribute(
             keySequence: Seq[String],
-            transformFunction: BsonValue => BsonValue
+            transformFunction: (String, BsonValue) => (String, BsonValue)
         ): BsonDocument = {
             def transformAttributeInternal(value: BsonValue, tailKeys: Seq[String]): BsonValue = {
                 value.getBsonType() match {
@@ -164,7 +188,7 @@ object JsonUtils {
 
         def transformAttributes(
             targetAttributes: Seq[Seq[String]],
-            transformFunction: BsonValue => BsonValue
+            transformFunction: (String, BsonValue) => (String, BsonValue)
         ): BsonDocument = {
             targetAttributes.headOption match {
                 case Some(attributeSequence: Seq[String]) =>
@@ -178,7 +202,7 @@ object JsonUtils {
         def anonymize(hashableAttributes: Option[Seq[Seq[String]]]): BsonDocument = {
             hashableAttributes match {
                 case Some(attributes: Seq[Seq[String]]) =>
-                    transformAttributes(attributes, JsonUtils.anonymizeValue(_))
+                    transformAttributes(attributes, valueTransform(anonymizeValue(_)))
                 case None => document
             }
         }
@@ -204,6 +228,14 @@ object JsonUtils {
                 .toIntMap()
                 .filter({case (_, value) => value.isDocument()})
                 .mapValues(value => value.asDocument())
+        }
+
+        def addPrefixToKeys(targetAttributes: Seq[Seq[String]], prefix: String): BsonDocument = {
+            transformAttributes(
+                // add dot to the end of each sequence to indicate all subattributes
+                targetAttributes.map(keySequence => keySequence ++ Seq(CommonConstants.Dot)),
+                JsonUtils.keyTransform(key => prefix + key)
+            )
         }
     }
 
@@ -233,6 +265,18 @@ object JsonUtils {
         BsonArray(values.map(value => toBsonValue(value)))
     }
 
+    def valueTransform(transformFunction: BsonValue => BsonValue): (String, BsonValue) => (String, BsonValue) = {
+        {
+            case (key: String, value: BsonValue) => (key, transformFunction(value))
+        }
+    }
+
+    def keyTransform(transformFunction: String => String): (String, BsonValue) => (String, BsonValue) = {
+        {
+            case (key: String, value: BsonValue) => (transformFunction(key), value)
+        }
+    }
+
     // scalastyle:off cyclomatic.complexity
     def toJsonValue(value: Any): JsValue = {
         value match {
@@ -245,7 +289,8 @@ object JsonUtils {
             case Some(optionValue) => toJsonValue(optionValue)
             case seqValue: Seq[_] => JsArray(seqValue.map(content => toJsonValue(content)).toList)
             case mapValue: Map[_, _] =>
-                JsObject(mapValue.map({ case (key, content) => (key.toString(), toJsonValue(content)) }))
+                JsObject(mapValue.map({case (key, content) => (key.toString(), toJsonValue(content))}))
+            case jsonObjectConvertible: JsonObjectConvertible => jsonObjectConvertible.toJsObject()
             case _ => JsNull
         }
     }
@@ -269,15 +314,22 @@ object JsonUtils {
     }
 
     def anonymizeValue(value: BsonValue): BsonValue = {
-        value.isString() match {
-            case true => {
+        value.getBsonType() match {
+            case BsonType.ARRAY => BsonArray(
+                value
+                    .asArray()
+                    .getValues
+                    .asScala.map(originalValue => anonymizeValue(originalValue))
+            )
+            case BsonType.STRING => {
                 val stringValue: String = value.asString().getValue()
-                stringValue.isEmpty() match {
-                    case false => BsonString(GeneralUtils.getHash(stringValue))
-                    case true => value
+                stringValue.nonEmpty match {
+                    case true => toBsonValue(GeneralUtils.getHash(stringValue))
+                    case false => value  // empty string are not hashed
                 }
             }
-            case false => value
+            case BsonType.INT32 => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
+            case _ => value  // values other than strings or integers are not hashed
         }
     }
 
@@ -336,6 +388,67 @@ object JsonUtils {
                 }
             }
             case None => None
+        }
+    }
+
+    def sortJs(jsonValue: JsValue, recursive: Boolean): JsValue = {
+        jsonValue match {
+            case JsObject(fields: Map[String, JsValue]) => JsObject(
+                fields
+                    .toList
+                    .sortBy({case (key, _) => key})
+                    .map({
+                        case (key, value) => (
+                            key,
+                            recursive match {
+                                case true => sortJs(value, recursive)
+                                case false => value
+                            }
+                        )
+                    })
+            )
+            case JsArray(array: Vector[JsValue]) => recursive match {
+                case true => JsArray(array.map(element => sortJs(element, recursive)))
+                case false => JsArray(array)
+            }
+            case _ => jsonValue
+        }
+    }
+
+    def sortJs(jsonValue: JsValue): JsValue = {
+        sortJs(jsonValue, true)
+    }
+
+    implicit class EnrichedJsObject(jsObject: JsObject) {
+        def sort(): JsObject = {
+            sortJs(jsObject) match {
+                case JsObject(fields: Map[String,JsValue]) => JsObject(fields)
+                case _ => jsObject
+            }
+        }
+
+        def sort(recursive: Boolean): JsObject = {
+            sortJs(jsObject, recursive) match {
+                case JsObject(fields: Map[String,JsValue]) => JsObject(fields)
+                case _ => jsObject
+            }
+        }
+
+        def removeNulls(): JsObject = {
+            def constructJsObject(fields: Map[String, JsValue], nonNullFields: Map[String, JsValue]): JsObject = {
+                fields.headOption match {
+                    case Some((key: String, value: JsValue)) => {
+                        val nextNonNullFields = value match {
+                            case JsNull => nonNullFields
+                            case _ => nonNullFields ++ Map(key -> value)
+                        }
+                        constructJsObject(fields.drop(1), nextNonNullFields)
+                    }
+                    case None => JsObject(nonNullFields)
+                }
+            }
+
+            constructJsObject(jsObject.fields, Map.empty)
         }
     }
 }

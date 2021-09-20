@@ -1,5 +1,8 @@
 package visdom.database.mongodb
 
+import java.time.Instant
+import java.util.concurrent.TimeoutException
+import org.bson.BsonValue
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient
 import org.mongodb.scala.MongoClientSettings
@@ -9,22 +12,21 @@ import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.ServerAddress
 import org.mongodb.scala.SingleObservable
 import org.mongodb.scala.bson.BsonNull
+import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.connection.ClusterSettings
 import org.mongodb.scala.model.Filters
 import org.mongodb.scala.model.ReplaceOptions
+import org.mongodb.scala.model.Sorts
 import org.mongodb.scala.model.UpdateOptions
 import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
-import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
+import scala.concurrent.Await
 import visdom.utils.EnvironmentVariables.EnvironmentMetadataDatabase
 import visdom.utils.EnvironmentVariables.getEnvironmentVariable
-import org.bson.BsonValue
-import scala.concurrent.Await
-import java.util.concurrent.TimeoutException
-import org.mongodb.scala.FindObservable
+import visdom.utils.WartRemoverConstants.WartsNonUnitStatements
 
 
 object MongoConnection {
@@ -86,6 +88,33 @@ object MongoConnection {
         mongoClient
             .getDatabase(metadataDatabaseName)
             .getCollection(MongoConstants.CollectionMetadata)
+    }
+
+    def getLastUpdateTime(databaseName: String): Option[Instant] = {
+        (
+            try {
+                Await.result(
+                    mongoClient
+                        .getDatabase(databaseName)
+                        .getCollection(MongoConstants.CollectionMetadata)
+                        .find()
+                        .sort(Sorts.descending(MongoConstants.AttributeDefaultId))
+                        .limit(1)
+                        .headOption(),
+                    MongoConstants.DefaultMaxQueryDelay
+                )
+            } catch {
+                case _: TimeoutException => None
+            }
+        ) match {
+            case Some(document: Document) => {
+                document.get(MongoConstants.AttributeTimestamp) match {
+                    case Some(timestamp: BsonDateTime) => Some(Instant.ofEpochMilli(timestamp.getValue()))
+                    case _ => None
+                }
+            }
+            case None => None
+        }
     }
 
     def getEqualFilter(attributeName: String, attributeValue: BsonValue): Bson = {

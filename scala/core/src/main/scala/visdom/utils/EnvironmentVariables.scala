@@ -1,7 +1,5 @@
 package visdom.utils
 
-import org.apache.commons.lang.StringUtils.EMPTY
-
 
 object EnvironmentVariables {
     // the environmental variable names
@@ -10,6 +8,7 @@ object EnvironmentVariables {
     val EnvironmentHostName: String = "HOST_NAME"
     val EnvironmentHostPort: String = "HOST_PORT"
     val EnvironmentMetadataDatabase: String = "MONGODB_METADATA_DATABASE"
+    val EnvironmentSecretWord: String = "SECRET_WORD"
 
     // the default values for the environment variables
     val DefaultApplicationName: String = "component-name"
@@ -17,15 +16,17 @@ object EnvironmentVariables {
     val DefaultHostName: String = "localhost"
     val DefaultHostPort: String = "8765"
     val DefaultMetadataDatabase: String = "metadata"
+    val DefaultSecretWord: String = CommonConstants.EmptyString
 
-    val DefaultEnvironmentValue: String = EMPTY
+    val DefaultEnvironmentValue: String = CommonConstants.EmptyString
 
     val VariableMap: Map[String, String] = Map(
         EnvironmentApplicationName -> DefaultApplicationName,
         EnvironmentDataBrokerAddress -> DefaultDataBrokerAddress,
         EnvironmentHostName -> DefaultHostName,
         EnvironmentHostPort -> DefaultHostPort,
-        EnvironmentMetadataDatabase -> DefaultMetadataDatabase
+        EnvironmentMetadataDatabase -> DefaultMetadataDatabase,
+        EnvironmentSecretWord -> DefaultSecretWord
     )
 
     def getEnvironmentVariable(variableName: String): String = {

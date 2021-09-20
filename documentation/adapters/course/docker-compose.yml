@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+    spark-app:
+        build:
+            context: ../../scala
+            dockerfile: Dockerfile-adapter-course
+        image: visdom/adapter-course:0.2
+        container_name: ${APPLICATION_NAME}
+        ports:
+            - ${SPARK_PORT}:4040
+            - ${HOST_PORT}:8080
+        environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
+            - ENABLE_INIT_DAEMON=false
+            - HOST_NAME=${HOST_NAME}
+            - HOST_PORT=${HOST_PORT}
+            - MONGODB_HOST=${MONGODB_HOST}
+            - MONGODB_PORT=${MONGODB_PORT}
+            - MONGODB_USERNAME=${MONGODB_USERNAME}
+            - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+            - MONGODB_METADATA_DATABASE=${MONGODB_METADATA_DATABASE}
+            - SPARK_MASTER_NAME=${SPARK_MASTER_HOST}
+            - SPARK_MASTER_PORT=7077
+        networks:
+            - visdom-spark-network
+
+networks:
+    visdom-spark-network:
+        name: ${ADAPTER_NETWORK}
+        external: true

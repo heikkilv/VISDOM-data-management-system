@@ -2,6 +2,7 @@
     "courses": {
         "12345": {
             "lateSubmissionCoefficient": 0.50,
+            "gitBranch": "master",
             "modules": {
                 "123456": {
                     "startDate": "2021-01-01T00:00:00+03:00",

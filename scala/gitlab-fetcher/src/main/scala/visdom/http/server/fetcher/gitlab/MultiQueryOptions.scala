@@ -9,6 +9,7 @@ import visdom.json.JsonUtils
 
 final case class MultiQueryOptions(
     projectNames: String,
+    reference: String,
     filePath: Option[String],
     recursive: String,
     startDate: Option[String],
@@ -18,6 +19,7 @@ final case class MultiQueryOptions(
     def toMap(): Map[String, JsValue] = {
         Map(
             AttributeConstants.ProjectNames -> JsonUtils.toJsonValue(projectNames),
+            AttributeConstants.Reference -> JsonUtils.toJsonValue(reference),
             AttributeConstants.FilePath -> JsonUtils.toJsonValue(filePath),
             AttributeConstants.Recursive -> JsonUtils.toJsonValue(recursive),
             AttributeConstants.StartDate -> JsonUtils.toJsonValue(startDate),
