@@ -1,5 +1,5 @@
 name := "adapter-course"
-version := "0.1"
+version := "0.2"
 
 val AdapterMain: String = "visdom.adapters.course.CourseAdapter"
 

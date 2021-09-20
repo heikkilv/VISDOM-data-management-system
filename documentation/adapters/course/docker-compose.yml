@@ -5,7 +5,7 @@ services:
         build:
             context: ../../scala
             dockerfile: Dockerfile-adapter-course
-        image: visdom/adapter-course:0.1
+        image: visdom/adapter-course:0.2
         container_name: ${APPLICATION_NAME}
         ports:
             - ${SPARK_PORT}:4040

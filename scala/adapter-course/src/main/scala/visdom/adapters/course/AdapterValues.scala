@@ -55,7 +55,7 @@ object AdapterValues {
     val cache: QueryCache = new QueryCache(Seq(aPlusDatabaseName, gitlabDatabaseName))
 
     val AdapterType: String = ComponentConstants.CourseAdapterType
-    val Version: String = "0.1"
+    val Version: String = "0.2"
 
     implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
     implicit val executionContext: ExecutionContextExecutor = system.dispatcher
