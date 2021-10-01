@@ -141,7 +141,7 @@ with CourseAdapterResponseHandler
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString),
             CourseAdapterConstants.Username.optional,
             CourseAdapterConstants.ExerciseId.optional,
-            CourseAdapterConstants.IncludeFuture.withDefault(CourseAdapterConstants.DefaultIncludeFuture),
+            CourseAdapterConstants.IncludeFuture.withDefault(CourseAdapterConstants.DefaultIncludeFuture)
         )
     ) {
         (

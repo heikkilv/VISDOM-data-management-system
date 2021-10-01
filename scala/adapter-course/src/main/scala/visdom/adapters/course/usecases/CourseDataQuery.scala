@@ -468,6 +468,43 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
         }
     }
 
+    private def filterModuleData(moduleData: Seq[ModuleSchema]): Seq[ModuleSchema] = {
+        val moduleNumbers: Seq[(Int, Int)] = moduleData.map(
+            module => (
+                module.id,
+                module.display_name.number match {
+                    // the module numbers should end in a dot, e.g. "1.", "2.", ...
+                    case Some(moduleNumber: String) => GeneralUtils.toInt(moduleNumber.dropRight(1)) match {
+                        case Some(number: Int) => number
+                        case None => 0
+                    }
+                    case None => 0
+                }
+            )
+        )
+        val missingModuleNumber: Int =
+            GeneralUtils.findFirstMissing(moduleNumbers.map({case (_, moduleNumber) => moduleNumber}))
+        val consideredModuleIds: Seq[Int] =
+            moduleNumbers
+                .filter({case (_, moduleNumber) => moduleNumber > 0 && moduleNumber < missingModuleNumber})
+                .map({case (moduleId, _) => moduleId})
+
+        moduleData.filter(module => consideredModuleIds.contains(module.id))
+    }
+
+    private def filterModuleDataForExerciseOption(moduleData: Seq[ModuleSchema]): Seq[ModuleSchema] = {
+        queryOptions.exerciseId match {
+            case Some(exerciseId: Int) => moduleData.filter(module => module._links match {
+                case Some(moduleLinks: ModuleLinksSchema) => moduleLinks.exercises match {
+                    case Some(exercises: Seq[Int]) => exercises.contains(exerciseId)
+                    case None => false
+                }
+                case None => false
+            })
+            case None => moduleData
+        }
+    }
+
     def getModuleData(moduleIds: Seq[Int]): Seq[ModuleSchema] = {
         // returns the module information for modules that match the given module ids
         val moduleData: Seq[ModuleSchema] = MongoSpark
@@ -492,39 +529,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                 )
             )
 
-        val moduleNumbers: Seq[(Int, Int)] = moduleData.map(
-            module => (
-                module.id,
-                module.display_name.number match {
-                    // the module numbers should end in a dot, e.g. "1.", "2.", ...
-                    case Some(moduleNumber: String) => GeneralUtils.toInt(moduleNumber.dropRight(1)) match {
-                        case Some(number: Int) => number
-                        case None => 0
-                    }
-                    case None => 0
-                }
-            )
-        )
-        val missingModuleNumber: Int =
-            GeneralUtils.findFirstMissing(moduleNumbers.map({case (_, moduleNumber) => moduleNumber}))
-        val consideredModuleIds: Seq[Int] =
-            moduleNumbers
-                .filter({case (_, moduleNumber) => moduleNumber > 0 && moduleNumber < missingModuleNumber})
-                .map({case (moduleId, _) => moduleId})
-
-        val consideredModules: Seq[ModuleSchema] =
-            moduleData.filter(module => consideredModuleIds.contains(module.id))
-
-        queryOptions.exerciseId match {
-            case Some(exerciseId: Int) => consideredModules.filter(module => module._links match {
-                case Some(moduleLinks: ModuleLinksSchema) => moduleLinks.exercises match {
-                    case Some(exercises: Seq[Int]) => exercises.contains(exerciseId)
-                    case None => false
-                }
-                case None => false
-            })
-            case None => consideredModules
-        }
+        filterModuleDataForExerciseOption(filterModuleData(moduleData))
     }
 
     def getExerciseIds(moduleData: Seq[ModuleSchema]): Map[Int, Seq[Int]] = {
