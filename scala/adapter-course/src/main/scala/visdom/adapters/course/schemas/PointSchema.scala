@@ -26,6 +26,24 @@ final case class PointSchema(
     modules: Seq[ModulePointSchema]
 )
 extends BaseSchema
+{
+    def withModules(modulesSeq: Seq[ModulePointSchema]): PointSchema = {
+        PointSchema(
+            id = id,
+            url = url,
+            username = username,
+            student_id = student_id,
+            email = email,
+            full_name = full_name,
+            is_external = is_external,
+            submission_count = submission_count,
+            points = points,
+            points_by_difficulty = points_by_difficulty,
+            course_id = course_id,
+            modules = modulesSeq
+        )
+    }
+}
 
 object PointSchema extends BaseSchemaTrait[PointSchema] {
     def fields: Seq[FieldDataType] = Seq(

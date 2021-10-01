@@ -10,4 +10,8 @@ object CourseAdapterConstants {
 
     final val ExerciseId = "exerciseId"
     final val DescriptionExerciseId = "the exercise id (must be a positive integer)"
+
+    final val IncludeFuture = "includeFuture"
+    final val DescriptionIncludeFuture = "whether to include data from modules that have not been opened yet"
+    final val DefaultIncludeFuture = "false"
 }

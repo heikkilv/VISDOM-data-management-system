@@ -5,6 +5,9 @@ import java.security.MessageDigest
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
+import java.time.temporal.ChronoUnit
+import visdom.http.server.ServerConstants
+
 
 object GeneralUtils {
     def toInt(stringValue: String): Option[Int] = {
@@ -29,7 +32,7 @@ object GeneralUtils {
         value match {
             case stringValue: String => Some(stringValue)
             case numberValue: Number => Some(numberValue.toString())
-            case instantValue: Instant => Some(instantValue.toString())
+            case instantValue: Instant => Some(getMillisString(instantValue))
             case zonedDateTimeValue: ZonedDateTime => Some(zonedDateTimeValue.toString())
             case Some(someValue: Any) => toStringOption(someValue)
             case _ => None
@@ -44,9 +47,9 @@ object GeneralUtils {
                         stringValue.split(CommonConstants.WhiteSpace).lastOption match {
                             case Some(stringPart: String) =>
                                 Some(
-                                    Instant.ofEpochMilli(
-                                        stringPart.substring(0, stringPart.size - 1).toLong
-                                    ).toString()
+                                    getMillisString(
+                                        Instant.ofEpochMilli(stringPart.substring(0, stringPart.size - 1).toLong)
+                                    )
                                 )
                             case None => Some(stringValue)
                         }
@@ -76,6 +79,32 @@ object GeneralUtils {
             case Some(someValue: Any) => toInstantOption(someValue)
             case _ => None
         }
+    }
+
+    def getMillisString(timeInstant: Instant): String = {
+        // Returns the given time as ISO 8601 formatted string in millisecond precision in UTC time zone.
+        val timeInMillis: Instant = timeInstant.truncatedTo(ChronoUnit.MILLIS)
+        val timeInMillisString: String = timeInMillis.toString()
+        timeInMillis.getNano() match {
+            case 0 => {
+                // When converting to String, Instant class leaves the milliseconds out when they are 0
+                timeInMillisString.lastOption match {
+                    case Some(timeZoneChar: Char) => (
+                        timeInMillisString.dropRight(1) +
+                        CommonConstants.Dot +
+                        CommonConstants.ZeroChar.toString() * 3 +
+                        timeZoneChar.toString()
+                    )
+                    case None => timeInMillisString  // this should never be reached
+                }
+            }
+            case _ => timeInMillisString
+        }
+    }
+
+    def getCurrentTimeString(): String = {
+        // Returns the current time as ISO 8601 formatted string in millisecond precision in UTC time zone.
+        getMillisString(Instant.now())
     }
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
@@ -148,6 +177,27 @@ object GeneralUtils {
         else {
             time2
         }
+    }
+
+    def isBooleanString(inputString: String): Boolean = {
+        ServerConstants.BooleanStrings.contains(inputString)
+    }
+
+    def findFirstMissing(values: Seq[Int]): Int = {
+        // Returns the first positive integer that is not included in the given sequence.
+        // Assumes that there are no duplicates in the given sequence.
+
+        def findFirstMissingInternal(remainingValues: Seq[Int], value: Int): Int = {
+            remainingValues.headOption match {
+                case Some(headValue: Int) => headValue == value match {
+                    case true => findFirstMissingInternal(remainingValues.drop(1), value + 1)
+                    case false => value
+                }
+                case None => value
+            }
+        }
+
+        findFirstMissingInternal(values.filter(integer => integer > 0).sorted, 1)
     }
 
     val ShaFunction: String = "SHA-512/256"

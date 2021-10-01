@@ -74,6 +74,17 @@ with CourseAdapterResponseHandler
                 schema = new Schema(
                     implementation = classOf[String]
                 )
+            ),
+            new Parameter(
+                name = CourseAdapterConstants.IncludeFuture,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = CourseAdapterConstants.DescriptionIncludeFuture,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = CourseAdapterConstants.DefaultIncludeFuture,
+                    allowableValues = Array(ServerConstants.FalseString, ServerConstants.TrueString)
+                )
             )
         ),
         responses = Array(
@@ -129,20 +140,23 @@ with CourseAdapterResponseHandler
         parameters(
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString),
             CourseAdapterConstants.Username.optional,
-            CourseAdapterConstants.ExerciseId.optional
+            CourseAdapterConstants.ExerciseId.optional,
+            CourseAdapterConstants.IncludeFuture.withDefault(CourseAdapterConstants.DefaultIncludeFuture),
         )
     ) {
         (
             courseId,
             username,
-            exerciseId
+            exerciseId,
+            includeFuture
         ) => get {
             getRoute(
                 dataActor,
                 CourseDataQueryInput(
                     courseId = courseId,
                     username = username,
-                    exerciseId = exerciseId
+                    exerciseId = exerciseId,
+                    includeFuture = includeFuture
                 )
             )
         }

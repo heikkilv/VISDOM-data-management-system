@@ -35,17 +35,19 @@ import visdom.database.mongodb.MongoConstants
 import visdom.spark.ConfigUtils
 import visdom.spark.Session
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
 import visdom.adapters.course.AdapterValues
 
 
 class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     val queryCode: Int = 1
+    val currentTime: String = GeneralUtils.getCurrentTimeString()
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
 
-    def getPointsDocuments(userIds: Seq[Int]): Seq[PointSchema] = {
+    def getPointsDocuments(userIds: Seq[Int], moduleIds: Seq[Int]): Seq[PointSchema] = {
         val pointsData: Seq[PointSchema] = MongoSpark
             .load[PointSchema](
                 sparkSession,
@@ -58,9 +60,16 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .collect()
             .flatMap(row => PointSchema.fromRow(row))
 
-        queryOptions.username match {
+        val userSpecificPointsData: Seq[PointSchema] = queryOptions.username match {
             case Some(username: String) => pointsData.filter(points => points.username == username)
             case None => pointsData
+        }
+
+        queryOptions.includeFuture match {
+            case false => userSpecificPointsData.map(
+                points => points.withModules(points.modules.filter(module => moduleIds.contains(module.id)))
+            )
+            case true => userSpecificPointsData
         }
     }
 
@@ -471,16 +480,50 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
             .filter(column(SnakeCaseConstants.CourseId) === queryOptions.courseId)
             .collect()
             .flatMap(row => ModuleSchema.fromRow(row))
+            .filter(
+                module => queryOptions.includeFuture || (
+                    module.metadata.other match {
+                        case Some(otherMetadata: MetadataOtherSchema) => otherMetadata.start_date match {
+                            case Some(startDate: String) => startDate < currentTime
+                            case None => false
+                        }
+                        case None => false
+                    }
+                )
+            )
+
+        val moduleNumbers: Seq[(Int, Int)] = moduleData.map(
+            module => (
+                module.id,
+                module.display_name.number match {
+                    // the module numbers should end in a dot, e.g. "1.", "2.", ...
+                    case Some(moduleNumber: String) => GeneralUtils.toInt(moduleNumber.dropRight(1)) match {
+                        case Some(number: Int) => number
+                        case None => 0
+                    }
+                    case None => 0
+                }
+            )
+        )
+        val missingModuleNumber: Int =
+            GeneralUtils.findFirstMissing(moduleNumbers.map({case (_, moduleNumber) => moduleNumber}))
+        val consideredModuleIds: Seq[Int] =
+            moduleNumbers
+                .filter({case (_, moduleNumber) => moduleNumber > 0 && moduleNumber < missingModuleNumber})
+                .map({case (moduleId, _) => moduleId})
+
+        val consideredModules: Seq[ModuleSchema] =
+            moduleData.filter(module => consideredModuleIds.contains(module.id))
 
         queryOptions.exerciseId match {
-            case Some(exerciseId: Int) => moduleData.filter(module => module._links match {
+            case Some(exerciseId: Int) => consideredModules.filter(module => module._links match {
                 case Some(moduleLinks: ModuleLinksSchema) => moduleLinks.exercises match {
                     case Some(exercises: Seq[Int]) => exercises.contains(exerciseId)
                     case None => false
                 }
                 case None => false
             })
-            case None => moduleData
+            case None => consideredModules
         }
     }
 
@@ -606,7 +649,7 @@ class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
                 val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
                 val userIds = getUserIds(courseData)  // will contain all user ids regardless of query options
                 // pointsData will contain only the selected user if the query option for username is used
-                val pointsData = getPointsDocuments(userIds)
+                val pointsData = getPointsDocuments(userIds, moduleData.map(module => module.id))
                 val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
                 val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
 
