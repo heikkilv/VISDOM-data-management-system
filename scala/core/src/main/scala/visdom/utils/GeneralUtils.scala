@@ -185,13 +185,13 @@ object GeneralUtils {
 
     def findFirstMissing(values: Seq[Int]): Int = {
         // Returns the first positive integer that is not included in the given sequence.
-        // Assumes that there are no duplicates in the given sequence.
 
         def findFirstMissingInternal(remainingValues: Seq[Int], value: Int): Int = {
             remainingValues.headOption match {
-                case Some(headValue: Int) => headValue == value match {
-                    case true => findFirstMissingInternal(remainingValues.drop(1), value + 1)
-                    case false => value
+                case Some(headValue: Int) => headValue match {
+                    case n: Int if n < value => findFirstMissingInternal(remainingValues.drop(1), value)
+                    case n: Int if n == value => findFirstMissingInternal(remainingValues.drop(1), value + 1)
+                    case _ => value
                 }
                 case None => value
             }
