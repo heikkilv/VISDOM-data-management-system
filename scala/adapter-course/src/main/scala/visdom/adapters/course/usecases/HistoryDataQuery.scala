@@ -42,6 +42,39 @@ import visdom.adapters.course.AdapterValues
 // TODO: This file contains a lot copy-pasted code from CourseDataQuery. Restructure them properly
 
 
+final case class ModuleDataCounts(
+    points: Int,
+    exercises: Int,
+    submissions: Int,
+    commits: Int
+) {
+    def add(otherCounts: ModuleDataCounts): ModuleDataCounts = {
+        ModuleDataCounts(
+            points = points + otherCounts.points,
+            exercises = exercises + otherCounts.exercises,
+            submissions = submissions + otherCounts.submissions,
+            commits = commits + otherCounts.commits
+        )
+    }
+}
+
+object ModuleDataCounts {
+    def getEmpty(): ModuleDataCounts = {
+        ModuleDataCounts(0, 0, 0, 0)
+    }
+}
+
+final case class ModuleDataCountsWithCumulative(
+    points: Int,
+    exercises: Int,
+    submissions: Int,
+    commits: Int,
+    cumulativePoints: Int,
+    cumulativeExercises: Int,
+    cumulativeSubmissions: Int,
+    cumulativeCommits: Int
+)
+
 class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
     val queryCode: Int = 3
     val currentTime: String = GeneralUtils.getCurrentTimeString()
@@ -392,39 +425,26 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
         })
     }
 
-    def getExerciseCommitsData(
+    def getExerciseCommitsIds(
         pointsData: Seq[PointSchema],
         exerciseIds: Seq[Int]
-    ): Map[(Int, Int), Option[ExerciseCommitsOutput]] = {
+    ): Map[(Int, Int), Seq[String]] = {
         // returns an exercise commits objects for the considered student and the given exerciseId-list
-        val exerciseData = getExerciseData(exerciseIds)
-        val exercisePaths = getExercisePaths(exerciseData.toSeq.map({case (_, exercise) => exercise}).flatten)
-        val submissionIds = getSubmissionIds(pointsData, exerciseIds)
-        val gitProjects = getGitProjects(submissionIds)
-        val gitLocations = getGitLocations(exercisePaths, gitProjects)
-        val gitCommitIds = getCommitIds(gitLocations)
-        val commitsWithProjects = getCommitIdsWithProjects(gitProjects, gitCommitIds)
-        val commitOutputs = getCommitOutputs(commitsWithProjects)
-        val simplifiedExerciseNames = getSimplifiedExerciseNames(exercisePaths)
 
-        commitOutputs.map({
-            case ((userId, exerciseId), outputs) => (
-                (userId, exerciseId),
-                outputs.isEmpty match {
-                    case false => Some(
-                        ExerciseCommitsOutput(
-                            name = simplifiedExerciseNames.get(exerciseId) match {
-                                case Some(exerciseName: String) => exerciseName
-                                case None => CommonConstants.Unknown
-                            },
-                            commit_count = outputs.size,
-                            commit_meta = outputs
-                        )
-                    )
-                    case true => None
-                }
-            )
-        })
+        // mapping from exercise id to exercise document
+        val exerciseData: Map[Int,Option[ExerciseSchema]] = getExerciseData(exerciseIds)
+        // mapping from exercise id to GitLab path
+        val exercisePaths: Map[Int,Option[String]] =
+            getExercisePaths(exerciseData.toSeq.map({case (_, exercise) => exercise}).flatten)
+        // mapping from (user id, exercise id) pair to list of submissions ids
+        val submissionIds: Map[(Int, Int),Seq[Int]] = getSubmissionIds(pointsData, exerciseIds)
+        // mapping from (user id, exercise id) pair to GitLab (host name, project name) pair
+        val gitProjects: Map[(Int, Int),Option[(String, String)]] = getGitProjects(submissionIds)
+        // mapping from (user id, exercise id) pair to GitLab (host name, project name, path) tuple
+        val gitLocations: Map[(Int, Int),Option[(String, String, String)]] =
+            getGitLocations(exercisePaths, gitProjects)
+        // return a mapping from (user id, exercise id) pair to Gitlab commit list
+        getCommitIds(gitLocations)
     }
 
     def getCourseData(): Option[CourseSchema] = {
@@ -602,6 +622,132 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
         }
     }
 
+    def getModuleCommitCounts(
+        exerciseIdMap: Map[Int, Seq[Int]],
+        exerciseCommitsIds: Map[(Int, Int), Seq[String]]
+    ): Map[(Int, Int), Int] = {
+        def getModuleId(exerciseId: Int): Option[Int] = {
+            exerciseIdMap
+                .find({case (_, exerciseIds) => exerciseIds.contains(exerciseId)})
+                .headOption
+                .map({case (moduleId, _) => moduleId})
+        }
+
+        exerciseCommitsIds.map({
+            case ((userId, exerciseId), commitIds) =>
+                getModuleId(exerciseId).map(moduleId =>((userId, moduleId, exerciseId), commitIds))
+            })
+            .flatten
+            .groupBy({case ((userId, moduleId, _), _) => (userId, moduleId)})
+            .mapValues(
+                iterable =>
+                    iterable
+                        .map({case (_, commitIds) => commitIds})
+                        .reduceOption((commitIds1, commitIds2) => commitIds1 ++ commitIds2)
+                        .map(commitIds => commitIds.toSet.size) match {
+                            case Some(commitCount: Int) => commitCount
+                            case None => 0
+                        }
+            )
+    }
+
+    def getUserModuleData(
+        pointsData: Seq[PointSchema],
+        moduleCommitCounts: Map[(Int, Int), Int]
+    ): Map[(Int, Int), ModuleDataCounts] = {
+        moduleCommitCounts
+            .map({
+                case ((userId, moduleId), commits) =>
+                    pointsData
+                        .find(pointsSchema => pointsSchema.id == userId)
+                        .map(
+                            pointSchema => pointSchema.modules.find(moduleSchema => moduleSchema.id == moduleId)
+                        )
+                        .flatten
+                        .map(moduleSchema => ((userId, moduleId), (moduleSchema, commits)))
+            })
+            .flatten
+            .map({case ((userId, moduleId), (moduleSchema, commits)) =>
+                (
+                    (userId, moduleId),
+                    ModuleDataCounts(
+                        points = moduleSchema.points,
+                        exercises = moduleSchema.exercises.filter(exercise => exercise.points > 0).size,
+                        submissions =
+                            moduleSchema.exercises
+                                .map(exercise => exercise.submission_count)
+                                .reduceOption((count1, count2) => count1 + count2) match {
+                                    case Some(submissionCount: Int) => submissionCount
+                                    case None => 0
+                                },
+                        commits = commits
+                    )
+                )
+            })
+            .toMap
+    }
+
+    def getUserWeekData(
+        moduleDataNames: Map[Int, String],
+        userModuleData: Map[(Int, Int), ModuleDataCounts]
+    ): Map[(Int, String), ModuleDataCounts] = {
+        userModuleData
+            .map({
+                case ((userId, moduleId), data) =>
+                    moduleDataNames
+                        .find({case (moduleIdFromMap, _) => moduleIdFromMap == moduleId})
+                        .map({case (_, weekNumber) => ((userId, moduleId, weekNumber), data)})
+            })
+            .flatten
+            .groupBy({case ((userId, _, weekNumber), _) => (userId, weekNumber)})
+            .mapValues(
+                counts =>
+                    counts
+                        .map({case (_, data) => data})
+                        .reduceOption((data1, data2) => data1.add(data2)) match {
+                            case Some(dataCounts: ModuleDataCounts) => dataCounts
+                            case None => ModuleDataCounts.getEmpty()
+                        }
+            )
+    }
+
+    def getCumulativeData(
+        userWeekData: Map[(Int, String), ModuleDataCounts]
+    ): Map[(Int, String), ModuleDataCountsWithCumulative] = {
+        userWeekData
+            .map({
+                case ((userId, weekNumber), counts) =>
+                    (
+                        (userId, weekNumber),
+                        (
+                            counts,
+                            userWeekData
+                                .filter({
+                                    case ((otherUserId, otherWeekNumber), otherCounts) =>
+                                        otherUserId == userId && otherWeekNumber <= weekNumber
+                                })
+                                .map({case (_, otherCounts) => otherCounts})
+                                .reduceOption((counts1, counts2) => counts1.add(counts2)) match {
+                                    case Some(cumulativeCounts: ModuleDataCounts) => cumulativeCounts
+                                    case None => ModuleDataCounts.getEmpty()
+                                }
+                        )
+                    )
+            })
+            .mapValues({
+                case (counts, cumulativeCounts) => ModuleDataCountsWithCumulative(
+                    points = counts.points,
+                    exercises = counts.exercises,
+                    submissions = counts.submissions,
+                    commits = counts.commits,
+                    cumulativePoints = cumulativeCounts.points,
+                    cumulativeExercises = cumulativeCounts.exercises,
+                    cumulativeSubmissions = cumulativeCounts.submissions,
+                    cumulativeCommits = cumulativeCounts.commits
+                )
+            })
+    }
+
     def getResults(): JsObject = {
         AdapterValues.cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: JsObject) => {
@@ -616,11 +762,19 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 val moduleIds = exerciseIdMap.keySet.toSeq
                 val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
                 val pointsData = getPointsDocuments(moduleIds)
+                val exerciseCommitIds: Map[(Int, Int), Seq[String]] = getExerciseCommitsIds(pointsData, exerciseIds)
+                val moduleCommitCounts: Map[(Int, Int), Int] =
+                    getModuleCommitCounts(exerciseIdMap, exerciseCommitIds)
+                val userModuleData: Map[(Int, Int), ModuleDataCounts] =
+                    getUserModuleData(pointsData, moduleCommitCounts)
+                val userWeekData: Map[(Int, String), ModuleDataCounts] =
+                    getUserWeekData(moduleDataNames, userModuleData)
+                val userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative] =
+                    getCumulativeData(userWeekData)
 
-                val exerciseCommitData = getExerciseCommitsData(pointsData, exerciseIds)
-                val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
+                // val moduleCommitData = getModuleCommitData(moduleDataNames, exerciseIdMap, exerciseCommitData)
 
-                val result = getFullOutput(pointsData, moduleCommitData).toJsObject()
+                // val result = getFullOutput(pointsData, moduleCommitData).toJsObject()
                 AdapterValues.cache.addResult(queryCode, queryOptions, result)
                 result
             }
