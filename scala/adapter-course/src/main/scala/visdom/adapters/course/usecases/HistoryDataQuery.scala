@@ -10,13 +10,13 @@ import org.apache.spark.sql.functions.udf
 import spray.json.JsArray
 import spray.json.JsObject
 import spray.json.JsString
+import visdom.adapters.course.AdapterValues
 import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.schemas.CommitIdListSchema
 import visdom.adapters.course.options.HistoryDataQueryOptions
-import visdom.adapters.course.output.CommitOutput
 import visdom.adapters.course.output.ExerciseCommitsOutput
-import visdom.adapters.course.output.FullCourseOutput
+import visdom.adapters.course.output.FullHistoryOutput
 import visdom.adapters.course.output.ModuleCommitsOutput
 import visdom.adapters.course.output.StudentCourseOutput
 import visdom.adapters.course.schemas.CommitSchema
@@ -31,72 +31,20 @@ import visdom.adapters.course.schemas.ModuleLinksSchema
 import visdom.adapters.course.schemas.ModuleSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.adapters.course.schemas.SubmissionSchema
+import visdom.adapters.course.structs.GradeDataCounts
+import visdom.adapters.course.structs.ModuleDataCounts
+import visdom.adapters.course.structs.ModuleDataCountsWithCumulative
 import visdom.database.mongodb.MongoConstants
 import visdom.spark.ConfigUtils
 import visdom.spark.Session
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
-import visdom.adapters.course.AdapterValues
-import visdom.adapters.course.output.FullHistoryOutput
+import visdom.utils.CourseUtils
 
 // TODO: This file contains a lot copy-pasted code from CourseDataQuery. Restructure them properly
 // NOTE, scan could be used when calculating cumulative values
 
-
-final case class ModuleDataCounts(
-    points: Int,
-    exercises: Int,
-    submissions: Int,
-    commits: Int
-) {
-    def add(otherCounts: ModuleDataCounts): ModuleDataCounts = {
-        ModuleDataCounts(
-            points = points + otherCounts.points,
-            exercises = exercises + otherCounts.exercises,
-            submissions = submissions + otherCounts.submissions,
-            commits = commits + otherCounts.commits
-        )
-    }
-}
-
-object ModuleDataCounts {
-    def getEmpty(): ModuleDataCounts = {
-        ModuleDataCounts(0, 0, 0, 0)
-    }
-}
-
-final case class ModuleDataCountsWithCumulative[NumberType](
-    points: NumberType,
-    exercises: NumberType,
-    submissions: NumberType,
-    commits: NumberType,
-    cumulativePoints: NumberType,
-    cumulativeExercises: NumberType,
-    cumulativeSubmissions: NumberType,
-    cumulativeCommits: NumberType
-)
-
-final case class GradeDataCounts(
-    students: Int,
-    weeks: Map[String, ModuleDataCountsWithCumulative[Float]]
-)
-
-object ModuleDataCountsWithCumulative {
-    def getAverages(dataCounts: Seq[ModuleDataCountsWithCumulative[Int]]): ModuleDataCountsWithCumulative[Float] = {
-        val size: Int = dataCounts.size
-        ModuleDataCountsWithCumulative(
-            points = dataCounts.map(counts => counts.points).sum.toFloat / size,
-            exercises = dataCounts.map(counts => counts.exercises).sum.toFloat / size,
-            submissions = dataCounts.map(counts => counts.submissions).sum.toFloat / size,
-            commits = dataCounts.map(counts => counts.commits).sum.toFloat / size,
-            cumulativePoints = dataCounts.map(counts => counts.cumulativePoints).sum.toFloat / size,
-            cumulativeExercises = dataCounts.map(counts => counts.cumulativeExercises).sum.toFloat / size,
-            cumulativeSubmissions = dataCounts.map(counts => counts.cumulativeSubmissions).sum.toFloat / size,
-            cumulativeCommits = dataCounts.map(counts => counts.cumulativeCommits).sum.toFloat / size
-        )
-    }
-}
 
 class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
     val queryCode: Int = 3
@@ -470,7 +418,7 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 )
             )
             // only include modules that contain at least one exercise
-            .filter({case (_, exerciseIds) => exerciseIds.size > 0})
+            .filter({case (_, exerciseIds) => exerciseIds.nonEmpty})
             .toMap
     }
 
@@ -530,22 +478,6 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                         .filter(module => module.projects.nonEmpty)
                         .sortBy(module => module.module_name)
             )
-    }
-
-    def getFullOutput(
-        pointsData: Seq[PointSchema],
-        moduleCommitData: Map[Int, Seq[ModuleCommitsOutput]]
-    ): FullCourseOutput = {
-        FullCourseOutput(
-            pointsData.map(
-                points =>
-                    StudentCourseOutput.fromSchemas(
-                        points,
-                        moduleCommitData.getOrElse(points.id, Seq.empty),
-                        None
-                    )
-            )
-        )
     }
 
     def getUserIds(courseData: Option[CourseSchema]): Seq[Int] = {
@@ -611,7 +543,7 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                     (userId, moduleId),
                     ModuleDataCounts(
                         points = moduleSchema.points,
-                        exercises = moduleSchema.exercises.filter(exercise => exercise.points > 0).size,
+                        exercises = moduleSchema.exercises.count(exercise => exercise.points > 0),
                         submissions =
                             moduleSchema.exercises
                                 .map(exercise => exercise.submission_count)
@@ -698,30 +630,19 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             .sum
     }
 
-    def getPredictedGrade(coursePoints: Int, studentPoints: Int): Int = {
-        // somewhat naive prediction for the course grade
-        // based on the amount of the maximum points a student has received
-        studentPoints.toFloat / coursePoints match {
-            case ratio: Float if ratio >= 0.8 => 5
-            case ratio: Float if ratio >= 0.7 => 4
-            case ratio: Float if ratio >= 0.6 => 3
-            case ratio: Float if ratio >= 0.5 => 2
-            case ratio: Float if ratio >= 0.4 => 1
-            case _ => 0
-        }
-    }
+
 
     def getPredictedStudentGrades(pointsData: Seq[PointSchema], exerciseIds: Seq[Int]): Map[Int, Int] = {
         val courseTotalPoints: Int = getTotalMaxPoints(exerciseIds)
         pointsData
-            .map(points => (points.id, getPredictedGrade(courseTotalPoints, points.points)))
+            .map(points => (points.id, CourseUtils.getPredictedGrade(courseTotalPoints, points.points)))
             .toMap
     }
 
-    def getGradeCumulativeData(
+    def addGradesToCumulativeData(
         userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]],
         studentGradeMap: Map[Int, Int]
-    ): Map[Int, GradeDataCounts] = {
+    ): Map[(Int, Int, String), ModuleDataCountsWithCumulative[Int]] = {
         userCumulativeData
             // add the predicted grade to the user-specific cumulative data
             .map({
@@ -740,6 +661,13 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                         weekData
                     )
             })
+    }
+
+    def getGradeCumulativeData(
+        userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]],
+        studentGradeMap: Map[Int, Int]
+    ): Map[Int, GradeDataCounts] = {
+        addGradesToCumulativeData(userCumulativeData, studentGradeMap)
             // group the data first by grade and then by week and calculate user averages
             .groupBy({case ((_, grade, _), _) => grade})
             .mapValues(

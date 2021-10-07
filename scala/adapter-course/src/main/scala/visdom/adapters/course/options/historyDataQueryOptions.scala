@@ -9,7 +9,7 @@ final case class HistoryDataQueryOptions(
 )
 extends BaseQueryOptions
 
-final case class HistoryQueryInput(
+final case class HistoryDataQueryInput(
     courseId: String
 )
 extends QueryOptionsBase
