@@ -23,7 +23,7 @@ class HistoryQueryActor extends Actor with ActorLogging {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case queryOptions: HistoryDataQueryInput => {
-            log.info(s"Received username query with options: ${queryOptions.toString()}")
+            log.info(s"Received history data query with options: ${queryOptions.toString()}")
 
             val response: BaseResponse = queryOptions.toUsernameQueryOptions() match {
                 case Some(historyQueryOptions: HistoryDataQueryOptions) => {

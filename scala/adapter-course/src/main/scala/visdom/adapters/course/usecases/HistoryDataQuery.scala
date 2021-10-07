@@ -35,6 +35,7 @@ import visdom.adapters.course.structs.GradeDataCounts
 import visdom.adapters.course.structs.ModuleDataCounts
 import visdom.adapters.course.structs.ModuleDataCountsWithCumulative
 import visdom.database.mongodb.MongoConstants
+import visdom.json.JsonUtils.EnrichedJsObject
 import visdom.spark.ConfigUtils
 import visdom.spark.Session
 import visdom.utils.CommonConstants
@@ -722,7 +723,12 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 val gradeCumulativeData: Map[Int, GradeDataCounts] =
                     getGradeCumulativeData(userCumulativeData, studentGradeMap)
 
-                val result = FullHistoryOutput.fromGradeWeekData(gradeCumulativeData).toJsObject()
+                val result =
+                    FullHistoryOutput.fromGradeWeekData(
+                        GradeDataCounts.fillMissingData(gradeCumulativeData)
+                    )
+                    .toJsObject()
+                    .sort()
                 AdapterValues.cache.addResult(queryCode, queryOptions, result)
                 result
             }

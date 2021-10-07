@@ -284,6 +284,7 @@ object JsonUtils {
             case stringValue: String => JsString(stringValue)
             case intValue: Int => JsNumber(intValue)
             case longValue: Long => JsNumber(longValue)
+            case floatValue: Float => JsNumber(floatValue)
             case doubleValue: Double => JsNumber(doubleValue)
             case booleanValue: Boolean => JsBoolean(booleanValue)
             case Some(optionValue) => toJsonValue(optionValue)

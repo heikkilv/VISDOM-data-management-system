@@ -13,6 +13,24 @@ final case class ModuleDataCountsWithCumulative[NumberType](
 )
 
 object ModuleDataCountsWithCumulative {
+    def getEmptyFloats(
+        previous: Option[ModuleDataCountsWithCumulative[Float]]
+    ): ModuleDataCountsWithCumulative[Float] = {
+        previous match {
+            case Some(previousCounts: ModuleDataCountsWithCumulative[Float]) => ModuleDataCountsWithCumulative(
+                0.0f,
+                0.0f,
+                0.0f,
+                0.0f,
+                previousCounts.cumulativePoints,
+                previousCounts.cumulativeExercises,
+                previousCounts.cumulativeSubmissions,
+                previousCounts.cumulativeCommits
+            )
+            case None => ModuleDataCountsWithCumulative(0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f)
+        }
+    }
+
     def getAverages(dataCounts: Seq[ModuleDataCountsWithCumulative[Int]]): ModuleDataCountsWithCumulative[Float] = {
         val size: Int = dataCounts.size
         ModuleDataCountsWithCumulative(
