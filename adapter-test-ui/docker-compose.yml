@@ -1,0 +1,25 @@
+version: '3.7'
+
+services:
+    adapter-test-ui:
+        build: .
+        image: visdom/adapter-test-ui:1.0
+        container_name: ${APPLICATION_NAME}
+        ports:
+            - ${REACT_APP_HOST_PORT}:3000
+        volumes:
+            - './:/app'
+            - '/app/node_modules'
+        environment:
+            - APPLICATION_NAME=${APPLICATION_NAME}
+            - REACT_APP_HOST_NAME=${REACT_APP_HOST_NAME}
+            - REACT_APP_HOST_PORT=${REACT_APP_HOST_PORT}
+            - REACT_APP_ADAPTER_HOST=${REACT_APP_ADAPTER_HOST}
+            - REACT_APP_ADAPTER_PORT=${REACT_APP_ADAPTER_PORT}
+        networks:
+            - visdom-mongodb-network
+
+networks:
+    visdom-mongodb-network:
+        name: ${ADAPTER_NETWORK}
+        external: true
