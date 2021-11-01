@@ -71,7 +71,12 @@ class GitlabFileHandler(options: GitlabFileOptions)
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
         options.useAnonymization match {
-            case true => Some(Seq(Seq(GitlabConstants.AttributeProjectName)))
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeGroupName),
+                    Seq(GitlabConstants.AttributeProjectName)
+                )
+            )
             case false => None
         }
     }
@@ -124,12 +129,6 @@ class GitlabFileHandler(options: GitlabFileOptions)
             )
             case None => documentWithMetadata
         }
-    }
-
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {

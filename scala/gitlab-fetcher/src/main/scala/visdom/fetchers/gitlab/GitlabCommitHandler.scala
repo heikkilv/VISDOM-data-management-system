@@ -87,6 +87,7 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                     Seq(GitlabConstants.AttributeCommitterName),
                     Seq(GitlabConstants.AttributeCommitterEmail),
                     Seq(GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeProjectName)
                 )
             )
@@ -104,12 +105,6 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
             )
             case None => documentWithMetadata
         }
-    }
-
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {

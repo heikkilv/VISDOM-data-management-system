@@ -85,6 +85,7 @@ extends GitlabDataHandler(options) {
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributeDetailedStatus, GitlabConstants.AttributeDetailsPath),
                     Seq(GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeProjectName)
                 )
             )
@@ -118,12 +119,6 @@ extends GitlabDataHandler(options) {
         addIdentifierAttributes(detailedDocument).append(
             GitlabConstants.AttributeMetadata, getMetadata()
         )
-    }
-
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {

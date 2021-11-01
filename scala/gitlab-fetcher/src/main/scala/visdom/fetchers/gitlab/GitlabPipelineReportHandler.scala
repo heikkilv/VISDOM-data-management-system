@@ -54,7 +54,12 @@ extends GitlabDataHandler(options) {
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
         options.useAnonymization match {
-            case true => Some(Seq(Seq(GitlabConstants.AttributeProjectName)))
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeGroupName),
+                    Seq(GitlabConstants.AttributeProjectName)
+                )
+            )
             case false => None
         }
     }
@@ -69,11 +74,9 @@ extends GitlabDataHandler(options) {
             .append(GitlabConstants.AttributeMetadata, getMetadata())
     }
 
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
+    override protected def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
+        super.addIdentifierAttributes(document)
             .append(GitlabConstants.AttributePipelineId, new BsonInt32(options.pipelineId))
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {

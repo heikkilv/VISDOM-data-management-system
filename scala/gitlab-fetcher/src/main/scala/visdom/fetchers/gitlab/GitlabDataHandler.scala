@@ -10,6 +10,7 @@ import visdom.fetchers.DataHandler
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.utils.GeneralUtils
+import visdom.json.JsonUtils
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions)
@@ -98,5 +99,24 @@ extends DataHandler(options) {
             }
             case None => None
         }
+    }
+
+    protected def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
+        val documentWithHostName: BsonDocument =
+            document.append(GitlabConstants.AttributeHostName, JsonUtils.toBsonValue(options.hostServer.hostName))
+
+        getProjectName() match {
+            case Some(projectName: String) => addIdentifierAttributes(documentWithHostName)
+            case None => documentWithHostName
+        }
+    }
+
+    protected def addIdentifierNames(document: BsonDocument, projectName: String): BsonDocument = {
+        document
+            .append(
+                GitlabConstants.AttributeGroupName,
+                JsonUtils.toBsonValue(GeneralUtils.getUpperFolder(projectName))
+            )
+            .append(GitlabConstants.AttributeProjectName, JsonUtils.toBsonValue(projectName))
     }
 }
