@@ -1,18 +1,12 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import scala.collection.JavaConverters.seqAsJavaListConverter
 import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.BsonValue
 import org.mongodb.scala.bson.Document
@@ -132,30 +126,10 @@ class GitlabFileHandler(options: GitlabFileOptions)
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeRecursive,
-                    new BsonBoolean(options.recursive)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeLinksCommits,
-                    new BsonBoolean(options.includeCommitLinks)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        )
+        getMetadataBase()
+            .append(GitlabConstants.AttributeRecursive, toBsonValue(options.recursive))
+            .append(GitlabConstants.AttributeIncludeLinksCommits, toBsonValue(options.includeCommitLinks))
+            .append(GitlabConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
     }
 
     private def simplifyCommitLink(document: Document): Option[BsonString] = {

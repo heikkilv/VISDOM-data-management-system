@@ -1,8 +1,13 @@
 package visdom.fetchers.gitlab
 
+import java.time.Instant
 import java.util.concurrent.TimeoutException
+import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonElement
+import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.Document
+import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.Await
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -99,6 +104,21 @@ extends DataHandler(options) {
             }
             case None => None
         }
+    }
+
+    protected def getMetadataBase(): BsonDocument = {
+        new BsonDocument(
+            List(
+                new BsonElement(
+                    GitlabConstants.AttributeLastModified,
+                    new BsonDateTime(Instant.now().toEpochMilli())
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeApiVersion,
+                    new BsonInt32(GitlabConstants.GitlabApiVersion)
+                )
+            ).asJava
+        )
     }
 
     protected def addIdentifierAttributes(document: BsonDocument): BsonDocument = {

@@ -1,13 +1,8 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.Document
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
@@ -80,17 +75,6 @@ extends GitlabDataHandler(options) {
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                )
-            ).asJava
-        )
+        getMetadataBase()
     }
 }

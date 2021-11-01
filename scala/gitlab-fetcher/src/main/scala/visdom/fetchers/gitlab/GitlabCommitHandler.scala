@@ -1,25 +1,20 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit.SECONDS
 import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
-import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.Document
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
 import scalaj.http.HttpRequest
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonArray
 import visdom.json.JsonUtils.toBsonValue
+import visdom.utils.GeneralUtils
 
 
 abstract class GitlabCommitLinkHandler(options: GitlabCommitLinkOptions) extends GitlabDataHandler(options)
@@ -108,34 +103,11 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeStatistics,
-                    new BsonBoolean(options.includeStatistics)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeLinksFiles,
-                    new BsonBoolean(options.includeFileLinks)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeLinksRefs,
-                    new BsonBoolean(options.includeReferenceLinks)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        )
+        getMetadataBase()
+            .append(GitlabConstants.AttributeIncludeStatistics, toBsonValue(options.includeStatistics))
+            .append(GitlabConstants.AttributeIncludeLinksFiles, toBsonValue(options.includeFileLinks))
+            .append(GitlabConstants.AttributeIncludeLinksRefs, toBsonValue(options.includeReferenceLinks))
+            .append(GitlabConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
     }
 
     def getLinkData(document: BsonDocument): Option[BsonDocument] = {
@@ -183,11 +155,7 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                     documentElement._1,
                     documentElement._2 match {
                         case Some(documentArray) => Some(
-                            new BsonArray(
-                                documentArray.map(
-                                    document => document.toBsonDocument
-                                ).toList.asJava
-                            )
+                            toBsonArray(documentArray.map(document => document.toBsonDocument))
                         )
                         case None => None
                     }
