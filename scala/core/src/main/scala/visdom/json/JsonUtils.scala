@@ -249,6 +249,7 @@ object JsonUtils {
 
     def toBsonValue[T](value: T): BsonValue = {
         value match {
+            case bsonValue: BsonValue => bsonValue
             case stringValue: String => BsonString(stringValue)
             case intValue: Int => BsonInt32(intValue)
             case longValue: Long => BsonInt64(longValue)
