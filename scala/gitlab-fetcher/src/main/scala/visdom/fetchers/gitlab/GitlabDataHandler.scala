@@ -71,6 +71,20 @@ extends DataHandler(options) {
         handleResults(results)
     }
 
+    def getProjectNameClear(): Option[String] = {
+        options match {
+            case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabFileOptions(_, _, projectName, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabCommitLinkOptions(_, _, projectName, _) =>
+                Some(projectName)
+            case _ => None
+        }
+    }
+
     override def getProjectName(): Option[String] = {
         options match {
             case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, useAnonymization) =>
@@ -125,8 +139,8 @@ extends DataHandler(options) {
         val documentWithHostName: BsonDocument =
             document.append(GitlabConstants.AttributeHostName, JsonUtils.toBsonValue(options.hostServer.hostName))
 
-        getProjectName() match {
-            case Some(projectName: String) => addIdentifierAttributes(documentWithHostName)
+        getProjectNameClear() match {
+            case Some(projectName: String) => addIdentifierNames(documentWithHostName, projectName)
             case None => documentWithHostName
         }
     }
