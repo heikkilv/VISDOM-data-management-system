@@ -12,8 +12,8 @@ function App() {
   return (
     <div className="App">
       <div className="buttonRow">
-        <button className="visualisationButton" onClick={() => setVisualisation(0)}>Weekly commits made by an author to projects</button>
-        <button className="visualisationButton" onClick={() => setVisualisation(1)}>Weekly commits made by authors to one project</button>
+        <button className={visualisation ? "visualisationButton" : "visualisationButtonActive"} onClick={() => setVisualisation(0)}>Weekly commits made by an author to projects</button>
+        <button className={visualisation ? "visualisationButtonActive" : "visualisationButton"} onClick={() => setVisualisation(1)}>Weekly commits made by authors to one project</button>
       </div>
       <div className="timeRow">
         <DatePicker selected={startDate} onChange={(date) => setStartDate(date)} />

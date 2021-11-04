@@ -1,8 +1,9 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, Label } from 'recharts';
 import { useState, useEffect } from "react"
 import { allAuthors, allProjects, weeklyProjectCommits } from '../queries';
+import randomColor from 'node-random-color';
 
-const colors = ["#8884d8", "#82ca9d", "#ff776e"];
+var colors = [];
 
 export default function WeeklyProjectCommits({startDate, endDate}) {
   const [selectedProject, setSelectedProject] = useState("");
@@ -25,6 +26,16 @@ export default function WeeklyProjectCommits({startDate, endDate}) {
     prefetch()
   }, [startDate, endDate])
 
+  if (projects.length > 0) {
+    for(let i = 0; i < projects.length; i++) {
+      const color = randomColor({
+        difference: 150,
+        considerations: 5
+      });
+      colors.push(color);
+    }
+  }
+
   const onChangeValue = async (event) => {
     setSelectedProject(event.target.value)
     const result = await weeklyProjectCommits(event.target.value, startDate.getTime(), endDate.getTime())
@@ -39,24 +50,27 @@ export default function WeeklyProjectCommits({startDate, endDate}) {
     <div className="visualisation">
       <BarChart
         width={800}
-        height={800}
+        height={600}
         data={visualData}
         margin={{
             top: 5,
             right: 30,
             left: 20,
-            bottom: 5,
+            bottom: 15,
         }}
         >
-        <XAxis dataKey="week" />
-        <YAxis />
+        <XAxis dataKey="week">
+          <Label value="Week" offset={0} position="bottom" />
+        </XAxis>
+        <YAxis label={{ value: 'Number of commits', angle: -90, position: 'insideLeft', textAnchor: 'middle' }} />
         <Tooltip />
-        <Legend />
+        <Legend verticalAlign="top" height={150}/>
         {authors.map((author, index) => (
             <Bar type="monotone" stackId="a" dataKey={`author_${author}`} fill={colors[index]} key={author}/>
         ))}
       </BarChart>
       <div className="selector">
+        Select project:
         {projects.map(project => (
           <div>
             <input key={project} type="radio" value={project} id={project} checked={selectedProject === project} onChange={onChangeValue}/>

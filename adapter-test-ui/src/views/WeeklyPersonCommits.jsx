@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react"
-import { LineChart, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, Legend, Label } from 'recharts';
 import { allAuthors, allProjects, weeklyPersonCommits } from '../queries';
 import "./visualisation.css";
+import randomColor from 'node-random-color';
 
-const colors = ["#8884d8", "#82ca9d", "#ff776e"];
+var colors = [];
 
 export default function WeeklyPersonCommits({startDate, endDate}) {
   const [selectedPerson, setSelectedPerson] = useState("");
@@ -26,6 +27,16 @@ export default function WeeklyPersonCommits({startDate, endDate}) {
     prefetch()
   }, [startDate, endDate])
 
+  if (projects.length > 0) {
+    for(let i = 0; i < projects.length; i++) {
+      const color = randomColor({
+        difference: 150,
+        considerations: 5
+      });
+      colors.push(color);
+    }
+  }
+
   const onChangeValue = async (event) => {
     setSelectedPerson(event.target.value)
     const result = await weeklyPersonCommits(event.target.value, startDate.getTime(), endDate.getTime())
@@ -40,7 +51,7 @@ export default function WeeklyPersonCommits({startDate, endDate}) {
     <div className="visualisation">
       <LineChart
         width={800}
-        height={800}
+        height={500}
         data={visualData}
         margin={{
             top: 5,
@@ -49,15 +60,18 @@ export default function WeeklyPersonCommits({startDate, endDate}) {
             bottom: 5,
         }}
         >
-        <XAxis dataKey="week" />
-        <YAxis />
+        <XAxis>
+          <Label value="Week" offset={0} position="bottom" />
+        </XAxis>
+        <YAxis label={{ value: 'Number of commits', angle: -90, position: 'insideLeft', textAnchor: 'middle' }}/>
         <Tooltip />
-        <Legend />
+        <Legend verticalAlign="top" />
         {projects.map((project, index) => (
             <Line type="monotone" dataKey={`project_${project}`} stroke={colors[index]} key={project}/>
         ))}
       </LineChart>
       <div className="selector">
+        Select author:
         {authors.map(author => (
           <div>
             <input key={author} type="radio" value={author} id={author} checked={selectedPerson === author} onChange={onChangeValue}/>

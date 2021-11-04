@@ -35,8 +35,8 @@ const buildWeeklyProjectCommitsNums = async (projectName, startDate, endDate) =>
         return commit.author_name === authorName;
       });
       weekObject[`author_${authorName}`] = weeklyCommitsByAuthor.length ? weeklyCommitsByAuthor.length : 0;
-      weekIndex++;
     }
+    weekIndex++;
     result.push(weekObject);
   }
   return result
@@ -60,8 +60,8 @@ const buildWeeklyPersonCommitsNums = async (authorName, startDate, endDate) => {
         return commit.project_name === projectName && commit.author_name === authorName;
       });
       weekObject[`project_${projectName}`] = weeklyCommitsByProject.length ? weeklyCommitsByProject.length : 0;
-      weekIndex++;
     }
+    weekIndex++;
     result.push(weekObject);
   }
   return result
