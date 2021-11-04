@@ -18,6 +18,7 @@ extends GitlabDataHandler(options) {
 
     def getFetcherType(): String = GitlabConstants.FetcherTypePipelineReport
     def getCollectionName(): String = MongoConstants.CollectionPipelineReports
+    override val createMetadataDocument: Boolean = false
 
     override def getOptionsDocument(): BsonDocument = {
         BsonDocument(
