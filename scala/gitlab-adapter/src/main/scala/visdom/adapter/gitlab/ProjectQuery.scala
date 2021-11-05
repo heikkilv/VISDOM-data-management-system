@@ -26,6 +26,7 @@ object ProjectQuery {
                 column(GitlabConstants.ColumnGroupName),
                 column(GitlabConstants.ColumnProjectName)
             )
+            .na.drop()
             .distinct()
             .as(Encoders.product[ProjectResult])
     }
@@ -35,7 +36,10 @@ object ProjectQuery {
         val fileProjects = getDataFrameFromCollection(sparkSession, GitlabConstants.CollectionFiles)
         val pipelineProjects = getDataFrameFromCollection(sparkSession, GitlabConstants.CollectionPipelines)
 
-        commitProjects.union(fileProjects.union(pipelineProjects))
+        commitProjects
+            .union(fileProjects)
+            .union(pipelineProjects)
+            .distinct()
     }
 
     def getResult(sparkSession: SparkSession): JsObject = {
