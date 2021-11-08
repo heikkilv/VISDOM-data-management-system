@@ -14,21 +14,23 @@ trait AdapterApp extends App
     val adapterRoutes: AdapterRoutes
     val adapterMetadata: Metadata
 
-    // create or update a metadata document and start periodic updates
-    adapterMetadata.startMetadataTask()
+    def start(): Unit = {
+        // create or update a metadata document and start periodic updates
+        adapterMetadata.startMetadataTask()
 
-    implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
-    val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
-        val termination: Future[Terminated] = {
-            adapterMetadata.stopMetadataTask()
-            system.terminate()
-        }
-    })
+        implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
+        val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
+            val termination: Future[Terminated] = {
+                adapterMetadata.stopMetadataTask()
+                system.terminate()
+            }
+        })
 
-    val serverBinding: Future[Http.ServerBinding] =
-        Http()
-            .newServerAt(ServerConstants.HttpInternalHost, ServerConstants.HttpInternalPort)
-            .bindFlow(adapterRoutes.routes)
+        val serverBinding: Future[Http.ServerBinding] =
+            Http()
+                .newServerAt(ServerConstants.HttpInternalHost, ServerConstants.HttpInternalPort)
+                .bindFlow(adapterRoutes.routes)
+    }
 }
 
 object DefaultAdapterApp extends AdapterApp {
