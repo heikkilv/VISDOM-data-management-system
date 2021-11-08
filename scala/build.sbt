@@ -9,6 +9,7 @@ val aPlusFetcherDirectory: String = "aplus-fetcher"
 val coreAdapterDirectory: String = "core-adapter"
 val gitlabAdapterDirectory: String = "gitlab-adapter"
 val adapterCourseDirectory: String = "adapter-course"
+val adapterGeneralModelDirectory: String = "adapter-general-model"
 
 lazy val core = project
     .in(file(coreDirectory))
@@ -36,3 +37,8 @@ lazy val gitlabAdapter = project
 lazy val adapterCourse = project
     .in(file(adapterCourseDirectory))
     .dependsOn(core)
+
+lazy val adapterGeneralModel = project
+    .in(file(adapterGeneralModelDirectory))
+    .dependsOn(core)
+    .dependsOn(coreAdapter)
