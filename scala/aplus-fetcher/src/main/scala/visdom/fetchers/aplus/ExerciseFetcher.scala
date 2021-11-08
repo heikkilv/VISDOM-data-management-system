@@ -209,15 +209,17 @@ class ExerciseFetcher(options: APlusExerciseOptions)
         )
     }
 
-    private def fetchGitlabData(exerciseId: Int, gitProjects: Map[String,Set[String]]): Unit = {
-        val gitReference: String = APlusMetadata.courseMetadata.get(options.courseId) match {
+    private def getGitReference(): String = {
+        APlusMetadata.courseMetadata.get(options.courseId) match {
             case Some(courseMetadata: CourseMetadata) => courseMetadata.gitBranch match {
                 case Some(gitBranch: String) => gitBranch
                 case None => APlusMetadata.DefaultGitBranch
             }
             case None => APlusMetadata.DefaultGitBranch
         }
+    }
 
+    private def fetchGitlabData(exerciseId: Int, gitProjects: Map[String,Set[String]]): Unit = {
         gitProjects.map({
             case (serverAddress, projectNames) => (
                 (
@@ -230,7 +232,7 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                         gitLocation => GitlabFetcherQueryOptions(
                             projectNames = projectNames.toSeq,
                             gitLocation = gitLocation,
-                            reference = gitReference
+                            reference = getGitReference()
                         )
                     )
             )

@@ -38,3 +38,5 @@ libraryDependencies ++= Seq(
 ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
+
+scalacOptions ++= Seq("-deprecation")

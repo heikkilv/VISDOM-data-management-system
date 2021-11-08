@@ -157,7 +157,7 @@ object JsonUtils {
                         value
                             .asDocument()
                             .transformAttribute(tailKeys, transformFunction)
-                    case BsonType.ARRAY => BsonArray(
+                    case BsonType.ARRAY => BsonArray.fromIterable(
                         value
                             .asArray()
                             .getValues()
@@ -262,7 +262,7 @@ object JsonUtils {
     }
 
     def toBsonArray[T](values: Seq[T]): BsonArray = {
-        BsonArray(values.map(value => toBsonValue(value)))
+        BsonArray.fromIterable(values.map(value => toBsonValue(value)))
     }
 
     def valueTransform(transformFunction: BsonValue => BsonValue): (String, BsonValue) => (String, BsonValue) = {
@@ -287,7 +287,7 @@ object JsonUtils {
             case doubleValue: Double => JsNumber(doubleValue)
             case booleanValue: Boolean => JsBoolean(booleanValue)
             case Some(optionValue) => toJsonValue(optionValue)
-            case seqValue: Seq[_] => JsArray(seqValue.map(content => toJsonValue(content)).toList)
+            case seqValue: Seq[_] => JsArray(seqValue.map(content => toJsonValue(content)).toVector)
             case mapValue: Map[_, _] =>
                 JsObject(mapValue.map({case (key, content) => (key.toString(), toJsonValue(content))}))
             case jsonObjectConvertible: JsonObjectConvertible => jsonObjectConvertible.toJsObject()
@@ -315,7 +315,7 @@ object JsonUtils {
 
     def anonymizeValue(value: BsonValue): BsonValue = {
         value.getBsonType() match {
-            case BsonType.ARRAY => BsonArray(
+            case BsonType.ARRAY => BsonArray.fromIterable(
                 value
                     .asArray()
                     .getValues
@@ -406,6 +406,7 @@ object JsonUtils {
                             }
                         )
                     })
+                    :_*
             )
             case JsArray(array: Vector[JsValue]) => recursive match {
                 case true => JsArray(array.map(element => sortJs(element, recursive)))
