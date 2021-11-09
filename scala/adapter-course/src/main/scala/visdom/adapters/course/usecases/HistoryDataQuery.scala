@@ -703,32 +703,37 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 cachedResult
             }
             case None => {
-                val courseData = getCourseData()
-                val moduleData = getModuleData(getModuleIds(courseData))
-                val moduleDataNames = getModuleNames(moduleData)
-                val exerciseIdMap = getExerciseIds(moduleData)
-                val moduleIds = exerciseIdMap.keySet.toSeq
-                val exerciseIds = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
-                val pointsData = getPointsDocuments(moduleIds)
+                val courseData: Option[CourseSchema] = getCourseData()
+                val moduleData: Seq[ModuleSchema] = getModuleData(getModuleIds(courseData))
+                val moduleDataNames: Map[Int, String] = getModuleNames(moduleData)
+                val exerciseIdMap: Map[Int, Seq[Int]] = getExerciseIds(moduleData)
+                val moduleIds: Seq[Int] = exerciseIdMap.keySet.toSeq
+                val exerciseIds: Seq[Int] = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
+                val pointsData: Seq[PointSchema] = getPointsDocuments(moduleIds)
                 val exerciseCommitIds: Map[(Int, Int), Seq[String]] = getExerciseCommitsIds(pointsData, exerciseIds)
+                // TODO: check that the commit counts per module are calculated correctly
                 val moduleCommitCounts: Map[(Int, Int), Int] =
                     getModuleCommitCounts(exerciseIdMap, exerciseCommitIds)
+                // TODO: check that the module data is produced correctly
                 val userModuleData: Map[(Int, Int), ModuleDataCounts] =
                     getUserModuleData(pointsData, moduleCommitCounts)
+                // TODO: check that week data is correctly calculated from module data
                 val userWeekData: Map[(Int, String), ModuleDataCounts] =
                     getUserWeekData(moduleDataNames, userModuleData)
+                // TODO: remove cumulative calculation from this point => only add them at the end when creating final results
                 val userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]] =
                     getCumulativeData(userWeekData)
                 val studentGradeMap: Map[Int, Int] = getPredictedStudentGrades(pointsData, exerciseIds)
                 val gradeCumulativeData: Map[Int, GradeDataCounts] =
                     getGradeCumulativeData(userCumulativeData, studentGradeMap)
 
-                val result =
+                val result: JsObject =
                     FullHistoryOutput.fromGradeWeekData(
                         GradeDataCounts.fillMissingData(gradeCumulativeData)
                     )
                     .toJsObject()
                     .sort()
+
                 AdapterValues.cache.addResult(queryCode, queryOptions, result)
                 result
             }
