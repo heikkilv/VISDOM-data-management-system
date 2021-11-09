@@ -67,10 +67,10 @@ object FullHistoryOutput {
                                 grade.toString,
                                 (studentCount, data)
                             )
-                    })
-                    .toSeq
-                    .sortBy({case (grade, _) => grade})
-                    .map({case (_, data) => data})
+                        })
+                        .toSeq
+                        .sortBy({case (grade, _) => grade})
+                        .map({case (_, data) => data})
             )
             .mapValues(
                 data => {
