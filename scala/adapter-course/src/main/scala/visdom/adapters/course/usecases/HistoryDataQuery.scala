@@ -524,10 +524,25 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
     }
 
     def getUserModuleData(
+        moduleIds: Seq[Int],
         pointsData: Seq[PointSchema],
         moduleCommitCounts: Map[(Int, Int), Int]
-    ): Map[(Int, Int), ModuleDataCounts] = {
-        moduleCommitCounts
+    ): Map[(Int, Int), ModuleDataCounts[Int]] = {
+        pointsData
+            .map(pointsData => pointsData.id)
+            // create a full list of user-module pairs
+            .flatMap(userId => moduleIds.map(moduleId => (userId, moduleId)))
+            // add the commit count data to the user-module pairs
+            .map(
+                userModulePair => (
+                    userModulePair,
+                    moduleCommitCounts.get(userModulePair) match {
+                        case Some(commitCount: Int) => commitCount
+                        case None => 0
+                    }
+                )
+            )
+            // combine the commit count data with the module points data for each user-module pair
             .map({
                 case ((userId, moduleId), commits) =>
                     pointsData
@@ -539,19 +554,13 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                         .map(moduleSchema => ((userId, moduleId), (moduleSchema, commits)))
             })
             .flatten
-            .map({case ((userId, moduleId), (moduleSchema, commits)) =>
+            .map({case (userModulePair, (moduleSchema, commits)) =>
                 (
-                    (userId, moduleId),
+                    userModulePair,
                     ModuleDataCounts(
                         points = moduleSchema.points,
                         exercises = moduleSchema.exercises.count(exercise => exercise.points > 0),
-                        submissions =
-                            moduleSchema.exercises
-                                .map(exercise => exercise.submission_count)
-                                .reduceOption((count1, count2) => count1 + count2) match {
-                                    case Some(submissionCount: Int) => submissionCount
-                                    case None => 0
-                                },
+                        submissions = moduleSchema.submission_count,
                         commits = commits
                     )
                 )
@@ -561,14 +570,14 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
 
     def getUserWeekData(
         moduleDataNames: Map[Int, String],
-        userModuleData: Map[(Int, Int), ModuleDataCounts]
-    ): Map[(Int, String), ModuleDataCounts] = {
+        userModuleData: Map[(Int, Int), ModuleDataCounts[Int]]
+    ): Map[(Int, String), ModuleDataCounts[Int]] = {
         userModuleData
             .map({
                 case ((userId, moduleId), data) =>
                     moduleDataNames
-                        .find({case (moduleIdFromMap, _) => moduleIdFromMap == moduleId})
-                        .map({case (_, weekNumber) => ((userId, moduleId, weekNumber), data)})
+                        .get(moduleId)
+                        .map(weekNumber => ((userId, moduleId, weekNumber), data))
             })
             .flatten
             .groupBy({case ((userId, _, weekNumber), _) => (userId, weekNumber)})
@@ -577,48 +586,48 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                     counts
                         .map({case (_, data) => data})
                         .reduceOption((data1, data2) => data1.add(data2)) match {
-                            case Some(dataCounts: ModuleDataCounts) => dataCounts
+                            case Some(dataCounts: ModuleDataCounts[_]) => dataCounts
                             case None => ModuleDataCounts.getEmpty()
                         }
             )
     }
 
-    def getCumulativeData(
-        userWeekData: Map[(Int, String), ModuleDataCounts]
-    ): Map[(Int, String), ModuleDataCountsWithCumulative[Int]] = {
-        userWeekData
-            .map({
-                case ((userId, weekNumber), counts) =>
-                    (
-                        (userId, weekNumber),
-                        (
-                            counts,
-                            userWeekData
-                                .filter({
-                                    case ((otherUserId, otherWeekNumber), otherCounts) =>
-                                        otherUserId == userId && otherWeekNumber <= weekNumber
-                                })
-                                .map({case (_, otherCounts) => otherCounts})
-                                .reduceOption((counts1, counts2) => counts1.add(counts2)) match {
-                                    case Some(cumulativeCounts: ModuleDataCounts) => cumulativeCounts
-                                    case None => ModuleDataCounts.getEmpty()
-                                }
-                        )
-                    )
-            })
-            .mapValues({
-                case (counts, cumulativeCounts) => ModuleDataCountsWithCumulative(
-                    points = counts.points,
-                    exercises = counts.exercises,
-                    submissions = counts.submissions,
-                    commits = counts.commits,
-                    cumulativePoints = cumulativeCounts.points,
-                    cumulativeExercises = cumulativeCounts.exercises,
-                    cumulativeSubmissions = cumulativeCounts.submissions,
-                    cumulativeCommits = cumulativeCounts.commits
-                )
-            })
-    }
+    // def getCumulativeData(
+    //     userWeekData: Map[(Int, String), ModuleDataCounts]
+    // ): Map[(Int, String), ModuleDataCountsWithCumulative[Int]] = {
+    //     userWeekData
+    //         .map({
+    //             case ((userId, weekNumber), counts) =>
+    //                 (
+    //                     (userId, weekNumber),
+    //                     (
+    //                         counts,
+    //                         userWeekData
+    //                             .filter({
+    //                                 case ((otherUserId, otherWeekNumber), otherCounts) =>
+    //                                     otherUserId == userId && otherWeekNumber <= weekNumber
+    //                             })
+    //                             .map({case (_, otherCounts) => otherCounts})
+    //                             .reduceOption((counts1, counts2) => counts1.add(counts2)) match {
+    //                                 case Some(cumulativeCounts: ModuleDataCounts) => cumulativeCounts
+    //                                 case None => ModuleDataCounts.getEmpty()
+    //                             }
+    //                     )
+    //                 )
+    //         })
+    //         .mapValues({
+    //             case (counts, cumulativeCounts) => ModuleDataCountsWithCumulative(
+    //                 points = counts.points,
+    //                 exercises = counts.exercises,
+    //                 submissions = counts.submissions,
+    //                 commits = counts.commits,
+    //                 cumulativePoints = cumulativeCounts.points,
+    //                 cumulativeExercises = cumulativeCounts.exercises,
+    //                 cumulativeSubmissions = cumulativeCounts.submissions,
+    //                 cumulativeCommits = cumulativeCounts.commits
+    //             )
+    //         })
+    // }
 
     def getTotalMaxPoints(exerciseIds: Seq[Int]): Int = {
         getExerciseData(exerciseIds)
@@ -640,11 +649,11 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             .toMap
     }
 
-    def addGradesToCumulativeData(
-        userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]],
+    def addGradesToWeekData(
+        userWeekData: Map[(Int, String), ModuleDataCounts[Int]],
         studentGradeMap: Map[Int, Int]
-    ): Map[(Int, Int, String), ModuleDataCountsWithCumulative[Int]] = {
-        userCumulativeData
+    ): Map[(Int, Int, String), ModuleDataCounts[Int]] = {
+        userWeekData
             // add the predicted grade to the user-specific cumulative data
             .map({
                 case ((userId, week), weekData) =>
@@ -664,11 +673,11 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             })
     }
 
-    def getGradeCumulativeData(
-        userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]],
+    def getGradeData(
+        userWeekData: Map[(Int, String), ModuleDataCounts[Int]],
         studentGradeMap: Map[Int, Int]
     ): Map[Int, GradeDataCounts] = {
-        addGradesToCumulativeData(userCumulativeData, studentGradeMap)
+        addGradesToWeekData(userWeekData, studentGradeMap)
             // group the data first by grade and then by week and calculate user averages
             .groupBy({case ((_, grade, _), _) => grade})
             .mapValues(
@@ -678,7 +687,7 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                         .mapValues(
                             weekDataMap => (
                                 weekDataMap.size,
-                                ModuleDataCountsWithCumulative.getAverages(
+                                ModuleDataCounts.getAverages(
                                     weekDataMap.map({case (_, weekData) => weekData}).toSeq
                                 )
                             )
@@ -711,25 +720,28 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 val exerciseIds: Seq[Int] = exerciseIdMap.toSeq.flatMap({case (_, exerciseIds) => exerciseIds})
                 val pointsData: Seq[PointSchema] = getPointsDocuments(moduleIds)
                 val exerciseCommitIds: Map[(Int, Int), Seq[String]] = getExerciseCommitsIds(pointsData, exerciseIds)
-                // TODO: check that the commit counts per module are calculated correctly
                 val moduleCommitCounts: Map[(Int, Int), Int] =
                     getModuleCommitCounts(exerciseIdMap, exerciseCommitIds)
-                // TODO: check that the module data is produced correctly
-                val userModuleData: Map[(Int, Int), ModuleDataCounts] =
-                    getUserModuleData(pointsData, moduleCommitCounts)
-                // TODO: check that week data is correctly calculated from module data
-                val userWeekData: Map[(Int, String), ModuleDataCounts] =
+                // NOTE: check that the module data is produced correctly
+                // NOTE: should be ok now, i.e. code has been checked
+                val userModuleData: Map[(Int, Int), ModuleDataCounts[Int]] =
+                    getUserModuleData(moduleIds, pointsData, moduleCommitCounts)
+                // NOTE: check that week data is correctly calculated from module data
+                // NOTE: code has been checked
+                val userWeekData: Map[(Int, String), ModuleDataCounts[Int]] =
                     getUserWeekData(moduleDataNames, userModuleData)
-                // TODO: remove cumulative calculation from this point => only add them at the end when creating final results
-                val userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]] =
-                    getCumulativeData(userWeekData)
+                // val userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]] =
+                //     getCumulativeData(userWeekData)
                 val studentGradeMap: Map[Int, Int] = getPredictedStudentGrades(pointsData, exerciseIds)
-                val gradeCumulativeData: Map[Int, GradeDataCounts] =
-                    getGradeCumulativeData(userCumulativeData, studentGradeMap)
+                // val gradeCumulativeData: Map[Int, GradeDataCounts] =
+                //     getGradeCumulativeData(userCumulativeData, studentGradeMap)
+                val gradeData: Map[Int, GradeDataCounts] = getGradeData(userWeekData, studentGradeMap)
+                val fullGradeData: Map[Int, GradeDataCounts] = GradeDataCounts.fillMissingData(gradeData)
+                // TODO: calculate the cumulative data at this point and use it to build the final result
 
                 val result: JsObject =
                     FullHistoryOutput.fromGradeWeekData(
-                        GradeDataCounts.fillMissingData(gradeCumulativeData)
+                        GradeDataCounts.fillMissingData(gradeData)
                     )
                     .toJsObject()
                     .sort()
