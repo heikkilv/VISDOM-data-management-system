@@ -7,9 +7,7 @@ import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.column
 import org.apache.spark.sql.functions.udf
-import spray.json.JsArray
 import spray.json.JsObject
-import spray.json.JsString
 import visdom.adapters.course.AdapterValues
 import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
@@ -18,8 +16,6 @@ import visdom.adapters.course.options.HistoryDataQueryOptions
 import visdom.adapters.course.output.ExerciseCommitsOutput
 import visdom.adapters.course.output.FullHistoryOutput
 import visdom.adapters.course.output.ModuleCommitsOutput
-import visdom.adapters.course.output.StudentCourseOutput
-import visdom.adapters.course.schemas.CommitSchema
 import visdom.adapters.course.schemas.CourseLinksSchema
 import visdom.adapters.course.schemas.CourseSchema
 import visdom.adapters.course.schemas.ExercisePointsSchema
@@ -32,8 +28,8 @@ import visdom.adapters.course.schemas.ModuleSchema
 import visdom.adapters.course.schemas.PointSchema
 import visdom.adapters.course.schemas.SubmissionSchema
 import visdom.adapters.course.structs.GradeDataCounts
+import visdom.adapters.course.structs.GradeCumulativeDataCounts
 import visdom.adapters.course.structs.ModuleDataCounts
-import visdom.adapters.course.structs.ModuleDataCountsWithCumulative
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedJsObject
 import visdom.spark.ConfigUtils
@@ -44,7 +40,6 @@ import visdom.utils.SnakeCaseConstants
 import visdom.utils.CourseUtils
 
 // TODO: This file contains a lot copy-pasted code from CourseDataQuery. Restructure them properly
-// NOTE, scan could be used when calculating cumulative values
 
 
 class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
@@ -592,43 +587,6 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             )
     }
 
-    // def getCumulativeData(
-    //     userWeekData: Map[(Int, String), ModuleDataCounts]
-    // ): Map[(Int, String), ModuleDataCountsWithCumulative[Int]] = {
-    //     userWeekData
-    //         .map({
-    //             case ((userId, weekNumber), counts) =>
-    //                 (
-    //                     (userId, weekNumber),
-    //                     (
-    //                         counts,
-    //                         userWeekData
-    //                             .filter({
-    //                                 case ((otherUserId, otherWeekNumber), otherCounts) =>
-    //                                     otherUserId == userId && otherWeekNumber <= weekNumber
-    //                             })
-    //                             .map({case (_, otherCounts) => otherCounts})
-    //                             .reduceOption((counts1, counts2) => counts1.add(counts2)) match {
-    //                                 case Some(cumulativeCounts: ModuleDataCounts) => cumulativeCounts
-    //                                 case None => ModuleDataCounts.getEmpty()
-    //                             }
-    //                     )
-    //                 )
-    //         })
-    //         .mapValues({
-    //             case (counts, cumulativeCounts) => ModuleDataCountsWithCumulative(
-    //                 points = counts.points,
-    //                 exercises = counts.exercises,
-    //                 submissions = counts.submissions,
-    //                 commits = counts.commits,
-    //                 cumulativePoints = cumulativeCounts.points,
-    //                 cumulativeExercises = cumulativeCounts.exercises,
-    //                 cumulativeSubmissions = cumulativeCounts.submissions,
-    //                 cumulativeCommits = cumulativeCounts.commits
-    //             )
-    //         })
-    // }
-
     def getTotalMaxPoints(exerciseIds: Seq[Int]): Int = {
         getExerciseData(exerciseIds)
             .map({
@@ -639,8 +597,6 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             })
             .sum
     }
-
-
 
     def getPredictedStudentGrades(pointsData: Seq[PointSchema], exerciseIds: Seq[Int]): Map[Int, Int] = {
         val courseTotalPoints: Int = getTotalMaxPoints(exerciseIds)
@@ -722,27 +678,18 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                 val exerciseCommitIds: Map[(Int, Int), Seq[String]] = getExerciseCommitsIds(pointsData, exerciseIds)
                 val moduleCommitCounts: Map[(Int, Int), Int] =
                     getModuleCommitCounts(exerciseIdMap, exerciseCommitIds)
-                // NOTE: check that the module data is produced correctly
-                // NOTE: should be ok now, i.e. code has been checked
                 val userModuleData: Map[(Int, Int), ModuleDataCounts[Int]] =
                     getUserModuleData(moduleIds, pointsData, moduleCommitCounts)
-                // NOTE: check that week data is correctly calculated from module data
-                // NOTE: code has been checked
                 val userWeekData: Map[(Int, String), ModuleDataCounts[Int]] =
                     getUserWeekData(moduleDataNames, userModuleData)
-                // val userCumulativeData: Map[(Int, String), ModuleDataCountsWithCumulative[Int]] =
-                //     getCumulativeData(userWeekData)
                 val studentGradeMap: Map[Int, Int] = getPredictedStudentGrades(pointsData, exerciseIds)
-                // val gradeCumulativeData: Map[Int, GradeDataCounts] =
-                //     getGradeCumulativeData(userCumulativeData, studentGradeMap)
                 val gradeData: Map[Int, GradeDataCounts] = getGradeData(userWeekData, studentGradeMap)
                 val fullGradeData: Map[Int, GradeDataCounts] = GradeDataCounts.fillMissingData(gradeData)
-                // TODO: calculate the cumulative data at this point and use it to build the final result
+                val fullCumulativeGradeData: Map[Int, GradeCumulativeDataCounts] =
+                    fullGradeData.mapValues(gradeData => GradeCumulativeDataCounts.fromGradeDataCounts(gradeData))
 
                 val result: JsObject =
-                    FullHistoryOutput.fromGradeWeekData(
-                        GradeDataCounts.fillMissingData(gradeData)
-                    )
+                    FullHistoryOutput.fromGradeWeekData(fullCumulativeGradeData)
                     .toJsObject()
                     .sort()
 

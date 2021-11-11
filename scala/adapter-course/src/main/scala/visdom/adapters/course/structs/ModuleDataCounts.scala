@@ -1,5 +1,8 @@
 package visdom.adapters.course.structs
 
+import visdom.utils.GeneralUtils
+import visdom.utils.TupleUtils.EnrichedWithToTuple
+
 
 final case class ModuleDataCounts[T : Numeric](
     points: T,
@@ -18,13 +21,10 @@ final case class ModuleDataCounts[T : Numeric](
 }
 
 object ModuleDataCounts {
+    val attributeCount: Int = GeneralUtils.getAttributeCount[ModuleDataCounts[Int]]()
+
     def getEmpty[T : Numeric](): ModuleDataCounts[T] = {
-        ModuleDataCounts(
-            implicitly[Numeric[T]].zero,
-            implicitly[Numeric[T]].zero,
-            implicitly[Numeric[T]].zero,
-            implicitly[Numeric[T]].zero
-        )
+        (ModuleDataCounts[T] _).tupled(Seq.fill[T](attributeCount)(implicitly[Numeric[T]].zero).toTuple4)
     }
 
     def getAverages(dataCounts: Seq[ModuleDataCounts[Int]]): ModuleDataCounts[Float] = {

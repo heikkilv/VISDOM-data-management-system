@@ -4,8 +4,8 @@ import spray.json.JsObject
 import visdom.json.JsonObjectConvertible
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
-import visdom.adapters.course.structs.GradeDataCounts
-import visdom.adapters.course.structs.ModuleDataCountsWithCumulative
+import visdom.adapters.course.structs.GradeCumulativeDataCounts
+import visdom.adapters.course.structs.ModuleCumulativeDataCounts
 
 
 final case class FullHistoryOutput(
@@ -21,10 +21,10 @@ final case class FullHistoryOutput(
 }
 
 object FullHistoryOutput {
-    def getDataByGrades(gradeWeekMapData: Map[Int, GradeDataCounts]): Map[String, HistoryWeekDataForGrade] = {
+    def getDataByGrades(gradeWeekMapData: Map[Int, GradeCumulativeDataCounts]): Map[String, HistoryWeekDataForGrade] = {
         gradeWeekMapData.map({
             case (grade, gradeData) => {
-                val sortedWeekData: Seq[ModuleDataCountsWithCumulative[Float]] =
+                val sortedWeekData: Seq[ModuleCumulativeDataCounts[Float]] =
                     gradeData
                         .weeks
                         .toSeq
@@ -49,7 +49,7 @@ object FullHistoryOutput {
         })
     }
 
-    def getDataByWeeks(gradeWeekMapData: Map[Int, GradeDataCounts]): Map[String, HistoryGradeDataForWeek] = {
+    def getDataByWeeks(gradeWeekMapData: Map[Int, GradeCumulativeDataCounts]): Map[String, HistoryGradeDataForWeek] = {
         gradeWeekMapData
             .map({
                 case (grade, gradeData) =>
@@ -74,7 +74,7 @@ object FullHistoryOutput {
             )
             .mapValues(
                 data => {
-                    val counts: Seq[ModuleDataCountsWithCumulative[Float]] =
+                    val counts: Seq[ModuleCumulativeDataCounts[Float]] =
                         data.map({case (_, countData) => countData})
 
                     HistoryGradeDataForWeek(
@@ -92,7 +92,7 @@ object FullHistoryOutput {
             )
     }
 
-    def fromGradeWeekData(gradeWeekMapData: Map[Int, GradeDataCounts]): FullHistoryOutput = {
+    def fromGradeWeekData(gradeWeekMapData: Map[Int, GradeCumulativeDataCounts]): FullHistoryOutput = {
         FullHistoryOutput(
             data_by_grades = getDataByGrades(gradeWeekMapData),
             data_by_weeks = getDataByWeeks(gradeWeekMapData)

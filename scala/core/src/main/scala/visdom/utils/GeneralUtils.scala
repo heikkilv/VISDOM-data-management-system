@@ -6,6 +6,9 @@ import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
+import scala.reflect.runtime.universe.termNames
+import scala.reflect.runtime.universe.weakTypeOf
+import scala.reflect.runtime.universe.TypeTag
 import visdom.http.server.ServerConstants
 
 
@@ -232,6 +235,22 @@ object GeneralUtils {
                 pathParts.take(pathParts.size - 1).mkString(CommonConstants.Slash)
             }
             case false => CommonConstants.EmptyString
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsNonUnitStatements))
+    def getAttributeCount[T]()(implicit tag: TypeTag[T]): Int = {
+        try {
+            weakTypeOf[T].decl(termNames.CONSTRUCTOR).asMethod.paramLists.headOption match {
+                case Some(paramList: List[_]) => paramList.size
+                case None => 0
+            }
+        }
+        catch {
+            case reflectionException: ScalaReflectionException => {
+                println(s"${reflectionException}")
+                0
+            }
         }
     }
 }
