@@ -4,7 +4,7 @@ import visdom.utils.GeneralUtils
 import visdom.utils.TupleUtils.EnrichedWithToTuple
 
 
-final case class ModuleCumulativeDataCounts[T : Numeric](
+final case class ModuleCumulativeDataCounts[T](
     points: T,
     exercises: T,
     submissions: T,
@@ -22,7 +22,7 @@ object ModuleCumulativeDataCounts {
         (ModuleCumulativeDataCounts[T] _).tupled(Seq.fill[T](attributeCount)(implicitly[Numeric[T]].zero).toTuple8)
     }
 
-    def fromModuleDataCounts[T : Numeric](
+    def fromModuleDataCounts[T](
         newData: ModuleDataCounts[T],
         previous: Option[ModuleDataCounts[T]]
     ): ModuleCumulativeDataCounts[T] = {

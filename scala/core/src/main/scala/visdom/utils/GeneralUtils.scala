@@ -238,7 +238,7 @@ object GeneralUtils {
         }
     }
 
-    @SuppressWarnings(Array(WartRemoverConstants.WartsNonUnitStatements))
+    @SuppressWarnings(Array(WartRemoverConstants.WartsNonUnitStatements, WartRemoverConstants.WartsListSize))
     def getAttributeCount[T]()(implicit tag: TypeTag[T]): Int = {
         try {
             weakTypeOf[T].decl(termNames.CONSTRUCTOR).asMethod.paramLists.headOption match {

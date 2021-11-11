@@ -524,7 +524,7 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
         moduleCommitCounts: Map[(Int, Int), Int]
     ): Map[(Int, Int), ModuleDataCounts[Int]] = {
         pointsData
-            .map(pointsData => pointsData.id)
+            .map(points => points.id)
             // create a full list of user-module pairs
             .flatMap(userId => moduleIds.map(moduleId => (userId, moduleId)))
             // add the commit count data to the user-module pairs

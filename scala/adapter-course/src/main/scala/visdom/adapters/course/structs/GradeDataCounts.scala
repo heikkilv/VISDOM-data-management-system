@@ -32,25 +32,23 @@ object GradeDataCounts {
         (CourseUtils.MinGrade to CourseUtils.MaxGrade)
             .map(grade => (grade, data.get(grade)))
             .toMap
-            .mapValues(
-                gradeDataOption => gradeDataOption match {
-                    case Some(gradeData: GradeDataCounts) => GradeDataCounts(
-                        students = gradeData.students,
-                        weeks = weeks
-                            .map(week => (week, gradeData.weeks.get(week)))
-                            .toMap
-                            .mapValues(
-                                weekDataOption => weekDataOption match {
-                                    case Some(weekData: ModuleDataCounts[Float]) => weekData
-                                    case None => emptyWeekData
-                                }
-                            )
-                    )
-                    case None => GradeDataCounts(
-                        students = 0,
-                        weeks = weeks.map(week => (week, emptyWeekData)).toMap
-                    )
-                }
-            )
+            .mapValues({
+                case Some(gradeData: GradeDataCounts) => GradeDataCounts(
+                    students = gradeData.students,
+                    weeks = weeks
+                        .map(week => (week, gradeData.weeks.get(week)))
+                        .toMap
+                        .mapValues(
+                            weekDataOption => weekDataOption match {
+                                case Some(weekData: ModuleDataCounts[Float]) => weekData
+                                case None => emptyWeekData
+                            }
+                        )
+                )
+                case None => GradeDataCounts(
+                    students = 0,
+                    weeks = weeks.map(week => (week, emptyWeekData)).toMap
+                )
+            })
     }
 }
