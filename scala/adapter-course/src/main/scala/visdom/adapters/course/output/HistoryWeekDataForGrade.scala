@@ -17,8 +17,8 @@ final case class HistoryWeekDataForGrade(
     avg_cum_commits: Seq[Float]
 ) extends HistoryData(
     avg_points,
-    avg_cum_exercises,
-    avg_cum_submissions,
+    avg_exercises,
+    avg_submissions,
     avg_commits,
     avg_cum_points,
     avg_cum_exercises,

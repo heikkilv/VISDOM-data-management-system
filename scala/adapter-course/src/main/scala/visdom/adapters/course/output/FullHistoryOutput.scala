@@ -42,7 +42,7 @@ object FullHistoryOutput {
                         avg_cum_points = sortedWeekData.map(data => data.cumulativePoints),
                         avg_cum_exercises = sortedWeekData.map(data => data.cumulativeExercises),
                         avg_cum_submissions = sortedWeekData.map(data => data.cumulativeSubmissions),
-                        avg_cum_commits = sortedWeekData.map(data => data.cumulativePoints)
+                        avg_cum_commits = sortedWeekData.map(data => data.cumulativeCommits)
                     )
                 )
             }
