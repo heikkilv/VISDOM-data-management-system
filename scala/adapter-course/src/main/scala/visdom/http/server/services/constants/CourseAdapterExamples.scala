@@ -104,6 +104,57 @@ object CourseAdapterExamples {
         ]
     }"""
 
+    final val HistoryResponseExampleOk = """{
+        "data_by_grades": {
+            "0": {
+                "student_count": 10,
+                "avg_points": [10.0, 5.0],
+                "avg_exercises": [1.0, 1.5],
+                "avg_submissions": [1.5, 3.5],
+                "avg_commits": [1.75, 3.75],
+                "avg_cum_points": [10.0, 15.0],
+                "avg_cum_exercises": [1.0, 2.5],
+                "avg_cum_submissions": [1.5, 5.0],
+                "avg_cum_commits": [1.75, 5.5]
+            },
+            "1": {
+                "student_count": 25,
+                "avg_points": [20.0, 25.0],
+                "avg_exercises": [2.0, 2.5],
+                "avg_submissions": [2.5, 4.5],
+                "avg_commits": [2.75, 4.75],
+                "avg_cum_points": [20.0, 45.0],
+                "avg_cum_exercises": [2.0, 4.5],
+                "avg_cum_submissions": [2.5, 6.0],
+                "avg_cum_commits": [2.75, 7.5]
+            }
+        },
+        "data_by_weeks": {
+            "01": {
+                "student_counts": [10, 25],
+                "avg_points": [10.0, 20.0],
+                "avg_exercises": [1.0, 2.0],
+                "avg_submissions": [1.5, 2.5],
+                "avg_commits": [1.75, 2.75],
+                "avg_cum_points": [10.0, 20.0],
+                "avg_cum_exercises": [1.0, 2.0],
+                "avg_cum_submissions": [1.5, 2.5],
+                "avg_cum_commits": [1.75, 2.75]
+            },
+            "02": {
+                "student_counts": [10, 25],
+                "avg_points": [5.0, 25.0],
+                "avg_exercises": [1.5, 2.5],
+                "avg_submissions": [3.5, 4.5],
+                "avg_commits": [3.75, 4.75],
+                "avg_cum_points": [15.0, 45.0],
+                "avg_cum_exercises": [2.5, 4.5],
+                "avg_cum_submissions": [5.0, 6.0],
+                "avg_cum_commits": [5.5, 7.5]
+            }
+        }
+    }"""
+
     final val UsernameResponseExampleOk = """{
         "results": [
             "863bdff3f9d3228183f8e271c7a924d9ae09f4d9ba32c077981fdd889e9524ea",
