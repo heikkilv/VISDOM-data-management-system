@@ -30,5 +30,6 @@ object AttributeConstants {
     val StartDate: String = "startDate"
     val SwaggerDefinition: String = "swaggerDefinition"
     val Unauthorized: String = "unauthorized"
+    val UseAnonymization: String = "useAnonymization"
     val Version: String = "version"
 }
