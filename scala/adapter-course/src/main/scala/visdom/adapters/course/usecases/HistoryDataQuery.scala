@@ -589,6 +589,23 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             )
     }
 
+    private def getPointsPerCategory(
+        exerciseOption: Option[ExerciseSchema],
+        exerciseDifficulties: Map[Int, String]
+    ): PointsPerCategory = {
+        exerciseOption match {
+            case Some(exercise: ExerciseSchema) => exerciseDifficulties.get(exercise.id) match {
+                case Some(difficulty: String) => difficulty match {
+                    case PascalCaseConstants.G => PointsPerCategory(0, exercise.max_points, 0)
+                    case PascalCaseConstants.P => PointsPerCategory(0, 0, exercise.max_points)
+                    case _ => PointsPerCategory(exercise.max_points, 0, 0)
+                }
+                case None => PointsPerCategory(exercise.max_points, 0, 0)
+            }
+            case None => PointsPerCategory.getDefaultValues()
+        }
+    }
+
     def getTotalMaxPoints(exerciseIds: Seq[Int], samplePoints: Option[PointSchema]): PointsPerCategory = {
         samplePoints match {
             case Some(sample: PointSchema) => {
@@ -600,19 +617,7 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
                         .toMap
 
                 getExerciseData(exerciseIds)
-                    .map({
-                        case (_, exerciseOption) => exerciseOption match {
-                            case Some(exercise: ExerciseSchema) => exerciseDifficulties.get(exercise.id) match {
-                                case Some(difficulty: String) => difficulty match {
-                                    case PascalCaseConstants.G => PointsPerCategory(0, exercise.max_points, 0)
-                                    case PascalCaseConstants.P => PointsPerCategory(0, 0, exercise.max_points)
-                                    case _ => PointsPerCategory(exercise.max_points, 0, 0)
-                                }
-                                case None => PointsPerCategory(exercise.max_points, 0, 0)
-                            }
-                            case None => PointsPerCategory.getDefaultValues()
-                        }
-                    })
+                    .map({case (_, exerciseOption) => getPointsPerCategory(exerciseOption, exerciseDifficulties)})
                     .fold(PointsPerCategory.getDefaultValues())((points1, points2) => points1.add(points2))
             }
             case None => PointsPerCategory.getDefaultValues()
