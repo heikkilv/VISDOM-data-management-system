@@ -1,32 +1,78 @@
 package visdom.utils
 
+import visdom.adapters.course.structs.PointsPerCategory
+
 
 object CourseUtils {
-    val GradeRatioDefinitions: Map[Int, Double] = Map(
-        5 -> 0.8,
-        4 -> 0.7,
-        3 -> 0.6,
-        2 -> 0.5,
-        1 -> 0.4
+    val ExerciseScoreLimits: Map[Int, Double] = Map(
+        5 -> 0.9,
+        4 -> 0.8,
+        3 -> 0.7,
+        2 -> 0.6,
+        1 -> 0.5
     )
 
-    val MinGrade: Int = 0
-    val MaxGrade: Int = GradeRatioDefinitions.keys.fold(MinGrade)((grade1, grade2) => math.max(grade1, grade2))
-    val MaxRatio: Double = GradeRatioDefinitions.getOrElse(MaxGrade, 1.0)
+    val ProjectScoreLimits: Map[Int, Double] = Map(
+        5 -> 0.875,
+        4 -> 0.750,
+        3 -> 0.625,
+        2 -> 0.375,
+        1 -> 0.255
+    )
 
-    def getPredictedGrade(coursePoints: Int, studentPoints: Int): Int = {
-        // somewhat naive prediction for the course grade
-        // based on the amount of the maximum points a student has received
-        def predictGrade(pointRatio: Double, maxGrade: Int): Int = {
-            maxGrade > MinGrade match {
-                case true => pointRatio >= GradeRatioDefinitions.getOrElse(maxGrade, MaxRatio) match {
-                    case true => maxGrade
-                    case false => predictGrade(pointRatio, maxGrade - 1)
+    val GuiRatioRequirements: Map[Int, Double] = Map(
+        5 -> 0.5,
+        4 -> 0.4,
+        3 -> 0.3,
+        2 -> 0.0
+    )
+
+    val MinScore: Int = 0
+
+    def getMaxScore(scoreMap: Map[Int, Double]): Int = {
+        scoreMap.keys.fold(MinScore)((grade1, grade2) => math.max(grade1, grade2))
+    }
+
+    def getMaxRatio(scoreMap: Map[Int, Double]): Double = {
+        scoreMap.getOrElse(getMaxScore(scoreMap), 1.0)
+    }
+
+    val MinGrade: Int = 0
+    val MaxGrade: Int = GuiRatioRequirements.keys.fold(MinGrade)((grade1, grade2) => math.max(grade1, grade2))
+
+    def getPredictedGrade(courseMaxPoints: PointsPerCategory, studentPoints: PointsPerCategory): Int = {
+        def getScore(scoreMap: Map[Int, Double], pointRatio: Double, maxScore: Int): Int = {
+            maxScore > MinScore match {
+                case true => pointRatio >= scoreMap.getOrElse(maxScore, getMaxRatio(scoreMap)) match {
+                    case true => maxScore
+                    case false => getScore(scoreMap, pointRatio, maxScore - 1)
                 }
-                case false => MinGrade
+                case false => MinScore
             }
         }
 
-        predictGrade(studentPoints.toDouble / coursePoints, MaxGrade)
+        val nScore: Int = getScore(
+            ExerciseScoreLimits,
+            studentPoints.categoryN.toDouble / courseMaxPoints.categoryN,
+            getMaxScore(ExerciseScoreLimits)
+        )
+        val ngScore: Int = getScore(
+            ExerciseScoreLimits,
+            (studentPoints.categoryN + studentPoints.categoryG).toDouble / (courseMaxPoints.categoryN + courseMaxPoints.categoryG),
+            getMaxScore(ExerciseScoreLimits)
+        )
+        val exerciseScore: Int = Math.max(ngScore, ngScore)
+        val projectScore: Int = getScore(
+            ProjectScoreLimits,
+            studentPoints.categoryP.toDouble / courseMaxPoints.categoryP,
+            getMaxScore(ProjectScoreLimits)
+        )
+        val studentMaxGrade: Int = getScore(
+            GuiRatioRequirements,
+            studentPoints.categoryG.toDouble / courseMaxPoints.categoryG,
+            getMaxScore(GuiRatioRequirements)
+        )
+
+        Math.min(studentMaxGrade, (exerciseScore + projectScore) / 2)
     }
 }

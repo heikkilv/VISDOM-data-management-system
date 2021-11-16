@@ -30,14 +30,16 @@ import visdom.adapters.course.schemas.SubmissionSchema
 import visdom.adapters.course.structs.GradeDataCounts
 import visdom.adapters.course.structs.GradeCumulativeDataCounts
 import visdom.adapters.course.structs.ModuleDataCounts
+import visdom.adapters.course.structs.PointsPerCategory
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedJsObject
 import visdom.spark.ConfigUtils
 import visdom.spark.Session
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
-import visdom.utils.SnakeCaseConstants
 import visdom.utils.CourseUtils
+import visdom.utils.GeneralUtils
+import visdom.utils.PascalCaseConstants
+import visdom.utils.SnakeCaseConstants
 
 // TODO: This file contains a lot copy-pasted code from CourseDataQuery. Restructure them properly
 
@@ -587,21 +589,48 @@ class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
             )
     }
 
-    def getTotalMaxPoints(exerciseIds: Seq[Int]): Int = {
-        getExerciseData(exerciseIds)
-            .map({
-                case (_, exerciseOption) => exerciseOption match {
-                    case Some(exercise: ExerciseSchema) => exercise.max_points
-                    case None => 0
-                }
-            })
-            .sum
+    def getTotalMaxPoints(exerciseIds: Seq[Int], samplePoints: Option[PointSchema]): PointsPerCategory = {
+        samplePoints match {
+            case Some(sample: PointSchema) => {
+                val exerciseDifficulties: Map[Int, String] =
+                    sample
+                        .modules
+                        .flatMap(module => module.exercises)
+                        .map(exercise => (exercise.id, exercise.difficulty))
+                        .toMap
+
+                getExerciseData(exerciseIds)
+                    .map({
+                        case (_, exerciseOption) => exerciseOption match {
+                            case Some(exercise: ExerciseSchema) => exerciseDifficulties.get(exercise.id) match {
+                                case Some(difficulty: String) => difficulty match {
+                                    case PascalCaseConstants.G => PointsPerCategory(0, exercise.max_points, 0)
+                                    case PascalCaseConstants.P => PointsPerCategory(0, 0, exercise.max_points)
+                                    case _ => PointsPerCategory(exercise.max_points, 0, 0)
+                                }
+                                case None => PointsPerCategory(exercise.max_points, 0, 0)
+                            }
+                            case None => PointsPerCategory.getDefaultValues()
+                        }
+                    })
+                    .fold(PointsPerCategory.getDefaultValues())((points1, points2) => points1.add(points2))
+            }
+            case None => PointsPerCategory.getDefaultValues()
+        }
     }
 
     def getPredictedStudentGrades(pointsData: Seq[PointSchema], exerciseIds: Seq[Int]): Map[Int, Int] = {
-        val courseTotalPoints: Int = getTotalMaxPoints(exerciseIds)
+        val courseTotalPoints: PointsPerCategory = getTotalMaxPoints(exerciseIds, pointsData.headOption)
         pointsData
-            .map(points => (points.id, CourseUtils.getPredictedGrade(courseTotalPoints, points.points)))
+            .map(
+                points => (
+                    points.id,
+                    CourseUtils.getPredictedGrade(
+                        courseTotalPoints,
+                        PointsPerCategory.fromModulePointDifficultySchema(points.points_by_difficulty)
+                    )
+                )
+            )
             .toMap
     }
 
