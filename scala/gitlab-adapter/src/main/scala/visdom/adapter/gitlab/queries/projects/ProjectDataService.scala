@@ -19,7 +19,7 @@ import scala.concurrent.Future
 import spray.json.JsObject
 import visdom.adapter.gitlab.queries.Constants
 import visdom.http.server.GitlabAdapterResponseHandler
-import visdom.http.server.adapter.gitlab.ProjectDataQueryOptions
+import visdom.http.server.QueryOptionsBase
 import visdom.http.server.response.ResponseProblem
 import visdom.utils.WarningConstants.UnusedMethodParameter
 
@@ -91,8 +91,7 @@ with GitlabAdapterResponseHandler {
         path(ProjectDataConstants.ProjectDataPath)
     ) {
         get {
-            val options: ProjectDataQueryOptions = ProjectDataQueryOptions()
-            getRoute(projectDataActor, options)
+            getRoute(projectDataActor, new QueryOptionsBase())
         }
     }
 }
