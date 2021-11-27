@@ -52,7 +52,6 @@ extends GitlabDataHandler(options) {
         options.useAnonymization match {
             case true => Some(
                 Seq(
-                    Seq(GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeProjectName)
                 )
             )

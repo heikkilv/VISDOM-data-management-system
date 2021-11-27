@@ -76,7 +76,6 @@ extends GitlabDataHandler(options) {
                     Seq(GitlabConstants.AttributeCommit, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributePipeline, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributeWebUrl),
-                    Seq(GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeProjectName)
                 )
             )

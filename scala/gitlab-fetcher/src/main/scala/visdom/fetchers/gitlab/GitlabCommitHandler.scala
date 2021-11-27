@@ -82,7 +82,6 @@ class GitlabCommitHandler(options: GitlabCommitOptions)
                     Seq(GitlabConstants.AttributeCommitterName),
                     Seq(GitlabConstants.AttributeCommitterEmail),
                     Seq(GitlabConstants.AttributeWebUrl),
-                    Seq(GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeProjectName)
                 )
             )
