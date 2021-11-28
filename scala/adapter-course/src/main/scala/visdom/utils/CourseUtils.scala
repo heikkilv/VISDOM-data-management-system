@@ -13,11 +13,11 @@ object CourseUtils {
     )
 
     val ProjectScoreLimits: Map[Int, Double] = Map(
-        5 -> 0.875,
-        4 -> 0.750,
-        3 -> 0.625,
-        2 -> 0.375,
-        1 -> 0.255
+        5 -> 0.700,  // 175 out of 250
+        4 -> 0.600,  // 150 out of 250
+        3 -> 0.500,  // 125 out of 250
+        2 -> 0.300,  //  75 out of 250
+        1 -> 0.204   //  51 out of 250
     )
 
     val GuiRatioRequirements: Map[Int, Double] = Map(
@@ -61,7 +61,7 @@ object CourseUtils {
             (studentPoints.categoryN + studentPoints.categoryG).toDouble / (courseMaxPoints.categoryN + courseMaxPoints.categoryG),
             getMaxScore(ExerciseScoreLimits)
         )
-        val exerciseScore: Int = Math.max(ngScore, ngScore)
+        val exerciseScore: Int = Math.max(nScore, ngScore)
         val projectScore: Int = getScore(
             ProjectScoreLimits,
             studentPoints.categoryP.toDouble / courseMaxPoints.categoryP,
