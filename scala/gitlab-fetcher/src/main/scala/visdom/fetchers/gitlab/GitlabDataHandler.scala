@@ -1,8 +1,13 @@
 package visdom.fetchers.gitlab
 
+import java.time.Instant
 import java.util.concurrent.TimeoutException
+import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonElement
+import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.Document
+import scala.collection.JavaConverters.seqAsJavaListConverter
 import scala.concurrent.Await
 import scalaj.http.HttpRequest
 import scalaj.http.HttpResponse
@@ -10,6 +15,7 @@ import visdom.fetchers.DataHandler
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
 import visdom.utils.GeneralUtils
+import visdom.json.JsonUtils
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions)
@@ -65,6 +71,20 @@ extends DataHandler(options) {
         handleResults(results)
     }
 
+    def getProjectNameClear(): Option[String] = {
+        options match {
+            case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabFileOptions(_, _, projectName, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _, _) =>
+                Some(projectName)
+            case GitlabCommitLinkOptions(_, _, projectName, _) =>
+                Some(projectName)
+            case _ => None
+        }
+    }
+
     override def getProjectName(): Option[String] = {
         options match {
             case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, useAnonymization) =>
@@ -98,5 +118,39 @@ extends DataHandler(options) {
             }
             case None => None
         }
+    }
+
+    protected def getMetadataBase(): BsonDocument = {
+        new BsonDocument(
+            List(
+                new BsonElement(
+                    GitlabConstants.AttributeLastModified,
+                    new BsonDateTime(Instant.now().toEpochMilli())
+                ),
+                new BsonElement(
+                    GitlabConstants.AttributeApiVersion,
+                    new BsonInt32(GitlabConstants.GitlabApiVersion)
+                )
+            ).asJava
+        )
+    }
+
+    protected def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
+        val documentWithHostName: BsonDocument =
+            document.append(GitlabConstants.AttributeHostName, JsonUtils.toBsonValue(options.hostServer.hostName))
+
+        getProjectNameClear() match {
+            case Some(projectName: String) => addIdentifierNames(documentWithHostName, projectName)
+            case None => documentWithHostName
+        }
+    }
+
+    protected def addIdentifierNames(document: BsonDocument, projectName: String): BsonDocument = {
+        document
+            .append(
+                GitlabConstants.AttributeGroupName,
+                JsonUtils.toBsonValue(GeneralUtils.getUpperFolder(projectName))
+            )
+            .append(GitlabConstants.AttributeProjectName, JsonUtils.toBsonValue(projectName))
     }
 }

@@ -12,6 +12,7 @@ class GitlabCommitRefsHandler(options: GitlabCommitLinkOptions)
 
     def getFetcherType(): String = GitlabConstants.FetcherTypeCommitRefs
     def getCollectionName(): String = MongoConstants.CollectionTemp
+    override val createMetadataDocument: Boolean = false
 
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/commits.html#get-references-a-commit-is-pushed-to

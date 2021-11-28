@@ -73,6 +73,7 @@ object GitlabConstants {
     val AttributeFetcherType: String = "fetcher_type"
     val AttributeFilePath: String = "file_path"
     val AttributeFiles: String = "files"
+    val AttributeGroupName: String = "group_name"
     val AttributeHostName: String = "host_name"
     val AttributeId: String = "id"
     val AttributeIncludeLinksCommits: String = "include_links_commits"

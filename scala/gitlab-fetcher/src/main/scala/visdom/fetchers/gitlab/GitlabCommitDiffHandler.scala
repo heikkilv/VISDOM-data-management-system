@@ -16,6 +16,7 @@ class GitlabCommitDiffHandler(options: GitlabCommitLinkOptions)
 
     def getFetcherType(): String = GitlabConstants.FetcherTypeCommitDiff
     def getCollectionName(): String = MongoConstants.CollectionTemp
+    override val createMetadataDocument: Boolean = false
 
     def getRequest(): HttpRequest = {
         // https://docs.gitlab.com/ee/api/commits.html#get-the-diff-of-a-commit

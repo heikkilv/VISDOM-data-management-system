@@ -4,7 +4,9 @@ package visdom.adapter.gitlab
 object GitlabConstants {
     val CollectionCommits: String = "commits"
     val CollectionFiles: String = "files"
+    val CollectionPipelines: String = "pipelines"
 
+    val ColumnGroupName: String = "group_name"
     val ColumnProjectName: String = "project_name"
     val ColumnCommits: String = "commits"
     val ColumnCommitterName: String = "committer_name"

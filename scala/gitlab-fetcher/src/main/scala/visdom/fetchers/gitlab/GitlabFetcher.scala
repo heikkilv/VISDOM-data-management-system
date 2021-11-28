@@ -21,6 +21,7 @@ import visdom.fetchers.gitlab.queries.multi.MultiService
 import visdom.fetchers.gitlab.queries.multi.MultiActor
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesActor
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesService
+import visdom.http.server.ServerConstants
 import visdom.http.server.swagger.SwaggerRoutes
 
 
@@ -31,7 +32,7 @@ object GitlabFetcher extends App
     // create or update a metadata document and start periodic updates
     Routes.startMetadataTask()
 
-    implicit val system: ActorSystem = ActorSystem("akka-http-sample")
+    implicit val system: ActorSystem = ActorSystem(ServerConstants.DefaultActorSystem)
     val shutDownHookThread: ShutdownHookThread = sys.addShutdownHook({
         val termination: Future[Terminated] = {
             Routes.stopMetadataTask()
@@ -52,5 +53,7 @@ object GitlabFetcher extends App
     )
 
     val serverBinding: Future[Http.ServerBinding] =
-        Http().newServerAt("0.0.0.0", GitlabConstants.HttpInternalPort).bindFlow(routes)
+        Http()
+            .newServerAt(ServerConstants.HttpInternalHost, ServerConstants.HttpInternalPort)
+            .bindFlow(routes)
 }

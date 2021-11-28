@@ -249,6 +249,7 @@ object JsonUtils {
 
     def toBsonValue[T](value: T): BsonValue = {
         value match {
+            case bsonValue: BsonValue => bsonValue
             case stringValue: String => BsonString(stringValue)
             case intValue: Int => BsonInt32(intValue)
             case longValue: Long => BsonInt64(longValue)
@@ -320,13 +321,14 @@ object JsonUtils {
                 value
                     .asArray()
                     .getValues
-                    .asScala.map(originalValue => anonymizeValue(originalValue))
+                    .asScala
+                    .map(originalValue => anonymizeValue(originalValue))
             )
             case BsonType.STRING => {
                 val stringValue: String = value.asString().getValue()
                 stringValue.nonEmpty match {
                     case true => toBsonValue(GeneralUtils.getHash(stringValue))
-                    case false => value  // empty string are not hashed
+                    case false => value  // empty string is not hashed
                 }
             }
             case BsonType.INT32 => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
