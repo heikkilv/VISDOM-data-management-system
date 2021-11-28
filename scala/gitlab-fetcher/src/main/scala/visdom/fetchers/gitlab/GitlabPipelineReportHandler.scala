@@ -1,13 +1,8 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.Document
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
@@ -23,6 +18,7 @@ extends GitlabDataHandler(options) {
 
     def getFetcherType(): String = GitlabConstants.FetcherTypePipelineReport
     def getCollectionName(): String = MongoConstants.CollectionPipelineReports
+    override val createMetadataDocument: Boolean = false
 
     override def getOptionsDocument(): BsonDocument = {
         BsonDocument(
@@ -54,7 +50,11 @@ extends GitlabDataHandler(options) {
 
     override def getHashableAttributes(): Option[Seq[Seq[String]]] = {
         options.useAnonymization match {
-            case true => Some(Seq(Seq(GitlabConstants.AttributeProjectName)))
+            case true => Some(
+                Seq(
+                    Seq(GitlabConstants.AttributeProjectName)
+                )
+            )
             case false => None
         }
     }
@@ -69,25 +69,12 @@ extends GitlabDataHandler(options) {
             .append(GitlabConstants.AttributeMetadata, getMetadata())
     }
 
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
+    override protected def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
+        super.addIdentifierAttributes(document)
             .append(GitlabConstants.AttributePipelineId, new BsonInt32(options.pipelineId))
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
     }
 
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                )
-            ).asJava
-        )
+        getMetadataBase()
     }
 }

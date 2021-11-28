@@ -232,7 +232,8 @@ class ExerciseFetcher(options: APlusExerciseOptions)
                         gitLocation => GitlabFetcherQueryOptions(
                             projectNames = projectNames.toSeq,
                             gitLocation = gitLocation,
-                            reference = getGitReference()
+                            reference = gitReference,
+                            useAnonymization = options.useAnonymization
                         )
                     )
             )

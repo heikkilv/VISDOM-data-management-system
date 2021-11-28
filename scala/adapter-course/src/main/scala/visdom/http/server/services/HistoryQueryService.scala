@@ -19,7 +19,7 @@ import javax.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import spray.json.JsObject
-import visdom.adapters.course.options.UsernameQueryInput
+import visdom.adapters.course.options.HistoryDataQueryInput
 import visdom.http.HttpConstants
 import visdom.http.server.CourseAdapterResponseHandler
 import visdom.http.server.ServerConstants
@@ -33,8 +33,8 @@ import visdom.utils.WarningConstants
 
 // scalastyle:off method.length
 @SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
-@Path(ServerConstants.UsernamesRootPath)
-class UsernameQueryService(usernameActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(ServerConstants.HistoryRootPath)
+class HistoryQueryService(historyActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
 with CourseAdapterResponseHandler
 {
@@ -45,8 +45,8 @@ with CourseAdapterResponseHandler
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = CourseAdapterDescriptions.UsernameQueryEndpointSummary,
-        description = CourseAdapterDescriptions.UsernameQueryEndpointDescription,
+        summary = CourseAdapterDescriptions.HistoryQueryEndpointSummary,
+        description = CourseAdapterDescriptions.HistoryQueryEndpointDescription,
         parameters = Array(
             new Parameter(
                 name = CourseAdapterConstants.CourseId,
@@ -61,14 +61,14 @@ with CourseAdapterResponseHandler
         responses = Array(
             new ApiResponse(
                 responseCode = HttpConstants.StatusOkCode,
-                description = CourseAdapterDescriptions.UsernameStatusOkDescription,
+                description = CourseAdapterDescriptions.HistoryStatusOkDescription,
                 content = Array(
                     new Content(
                         schema = new Schema(implementation = classOf[JsObject]),
                         examples = Array(
                             new ExampleObject(
                                 name = CourseAdapterExamples.ResponseExampleOkName,
-                                value = CourseAdapterExamples.UsernameResponseExampleOk
+                                value = CourseAdapterExamples.HistoryResponseExampleOk
                             )
                         )
                     )
@@ -107,7 +107,7 @@ with CourseAdapterResponseHandler
         )
     )
     def getUsernameRoute: RequestContext => Future[RouteResult] = (
-        path(ServerConstants.UsernamesPath) &
+        path(ServerConstants.HistoryPath) &
         parameters(
             CourseAdapterConstants.CourseId.withDefault(CommonConstants.EmptyString)
         )
@@ -116,8 +116,8 @@ with CourseAdapterResponseHandler
             courseId
         ) => get {
             getRoute(
-                usernameActor,
-                UsernameQueryInput(
+                historyActor,
+                HistoryDataQueryInput(
                     courseId = courseId
                 )
             )

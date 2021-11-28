@@ -33,6 +33,9 @@ object ServerConstants {
     final val DataRootPath = "/data"
     final val DataPath = "data"
 
+    final val HistoryRootPath = "/history"
+    final val HistoryPath = "history"
+
     final val UsernamesRootPath = "/usernames"
     final val UsernamesPath = "usernames"
 

@@ -1,16 +1,12 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.MongoDatabase
 import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.Document
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import visdom.http.HttpConstants
 import scalaj.http.HttpConstants.utf8
@@ -20,6 +16,7 @@ import visdom.http.HttpUtils
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.json.JsonUtils.toBsonValue
 import visdom.utils.CommonConstants
 
 
@@ -100,29 +97,9 @@ extends GitlabDataHandler(options) {
             .append(GitlabConstants.AttributeMetadata, getMetadata())
     }
 
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
-    }
-
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        )
+        getMetadataBase()
+            .append(GitlabConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
     }
 
     private def fetchJobLog(jobId: Int): Boolean = {

@@ -1,19 +1,13 @@
 package visdom.fetchers.gitlab
 
-import java.time.Instant
 import java.time.ZonedDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit.SECONDS
 import org.bson.BsonValue
 import org.mongodb.scala.bson.BsonArray
-import org.mongodb.scala.bson.BsonBoolean
-import org.mongodb.scala.bson.BsonDateTime
 import org.mongodb.scala.bson.BsonDocument
-import org.mongodb.scala.bson.BsonElement
 import org.mongodb.scala.bson.BsonInt32
-import org.mongodb.scala.bson.BsonString
 import org.mongodb.scala.bson.collection.immutable.Document
-import scala.collection.JavaConverters.seqAsJavaListConverter
 import scalaj.http.Http
 import scalaj.http.HttpConstants.utf8
 import scalaj.http.HttpConstants.urlEncode
@@ -120,41 +114,12 @@ extends GitlabDataHandler(options) {
         )
     }
 
-    private def addIdentifierAttributes(document: BsonDocument): BsonDocument = {
-        document
-            .append(GitlabConstants.AttributeProjectName, new BsonString(options.projectName))
-            .append(GitlabConstants.AttributeHostName, new BsonString(options.hostServer.hostName))
-    }
-
     private def getMetadata(): BsonDocument = {
-        new BsonDocument(
-            List(
-                new BsonElement(
-                    GitlabConstants.AttributeLastModified,
-                    new BsonDateTime(Instant.now().toEpochMilli())
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeApiVersion,
-                    new BsonInt32(GitlabConstants.GitlabApiVersion)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeReports,
-                    new BsonBoolean(options.includeReports)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeJobs,
-                    new BsonBoolean(options.includeJobs)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeIncludeJobLogs,
-                    new BsonBoolean(options.includeJobLogs)
-                ),
-                new BsonElement(
-                    GitlabConstants.AttributeUseAnonymization,
-                    new BsonBoolean(options.useAnonymization)
-                )
-            ).asJava
-        )
+        getMetadataBase()
+            .append(GitlabConstants.AttributeIncludeReports, toBsonValue(options.includeReports))
+            .append(GitlabConstants.AttributeIncludeJobs, toBsonValue(options.includeJobs))
+            .append(GitlabConstants.AttributeIncludeJobLogs, toBsonValue(options.includeJobLogs))
+            .append(GitlabConstants.AttributeUseAnonymization, toBsonValue(options.useAnonymization))
     }
 
     private def processOptionalParameters(request: HttpRequest): HttpRequest = {
