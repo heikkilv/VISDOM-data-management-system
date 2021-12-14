@@ -1,11 +1,5 @@
-name := "aplus-fetcher"
-version := "0.2"
-
-val MainAPlusFetcher: String = "visdom.fetchers.aplus.APlusFetcher"
-
-Compile / mainClass := Some(MainAPlusFetcher)
-assembly / mainClass := Some(MainAPlusFetcher)
-assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
+name := "data-management-system-adapter-core"
+version := "0.1"
 
 val AkkaVersion = "2.6.14"
 val AkkaHttpVersion = "10.2.4"
@@ -29,9 +23,11 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
     "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
+    "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
+    "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
+    "org.mongodb.spark" %% "mongo-spark-connector" % MongoConnectorVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
-    "org.scalaj" %% "scalaj-http" % ScalajVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
     "org.scalatest" %% "scalatest-funsuite" % ScalaTestVersion % "test",
     "org.slf4j" % "slf4j-api" % LoggerVersion,
@@ -43,13 +39,3 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 wartremoverErrors ++= Warts.unsafe
 
 scalacOptions ++= Seq("-deprecation")
-
-// to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
-ThisBuild / assemblyMergeStrategy := {
-    case PathList("module-info.class") => MergeStrategy.discard
-    case name if name.endsWith("/module-info.class") => MergeStrategy.discard
-    case name => {
-        val oldStrategy = (ThisBuild / assemblyMergeStrategy).value
-        oldStrategy(name)
-    }
-}

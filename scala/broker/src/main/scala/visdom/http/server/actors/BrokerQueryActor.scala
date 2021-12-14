@@ -50,7 +50,7 @@ class BrokerQueryActor extends Actor with ActorLogging {
 
             sender() ! JsonArrayResponse(
                 JsArray(
-                    responses.map(component => component.toJsObject())
+                    responses.map(component => component.toJsObject()).toVector
                 )
             )
         }

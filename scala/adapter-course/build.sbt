@@ -44,6 +44,8 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
 
+scalacOptions ++= Seq("-deprecation")
+
 // to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
 ThisBuild / assemblyMergeStrategy := {
     case PathList("module-info.class") => MergeStrategy.discard

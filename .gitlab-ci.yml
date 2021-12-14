@@ -32,8 +32,10 @@ scalastyle:
         - sbt dataBroker/scalastyle
         - sbt gitlabFetcher/scalastyle
         - sbt aPlusFetcher/scalastyle
+        - sbt coreAdapter/scalastyle
         - sbt gitlabAdapter/scalastyle
         - sbt adapterCourse/scalastyle
+        - sbt adapterGeneralModel/scalastyle
 
 scapegoat:
     stage: Static Analysis
@@ -44,8 +46,10 @@ scapegoat:
         - sbt dataBroker/scapegoat
         - sbt gitlabFetcher/scapegoat
         - sbt aPlusFetcher/scapegoat
+        - sbt coreAdapter/scapegoat
         - sbt gitlabAdapter/scapegoat
         - sbt adapterCourse/scapegoat
+        - sbt adapterGeneralModel/scapegoat
 
 unit_test:
     stage: Unit Test
@@ -56,8 +60,10 @@ unit_test:
         - sbt dataBroker/test
         - sbt gitlabFetcher/test
         - sbt aPlusFetcher/test
+        - sbt coreAdapter/test
         - sbt gitlabAdapter/test
         - sbt adapterCourse/test
+        - sbt adapterGeneralModel/test
 
 docker_build:
     stage: Build
@@ -69,3 +75,4 @@ docker_build:
         - docker build --tag visdom-fetcher-aplus:test --file Dockerfile-fetcher-aplus .
         - docker build --tag visdom-adapter-gitlab:test --file Dockerfile-adapter-gitlab .
         - docker build --tag visdom-adapter-course:test --file Dockerfile-adapter-course .
+        - docker build --tag visdom-adapter-general-model:test --file Dockerfile-adapter-general-model .

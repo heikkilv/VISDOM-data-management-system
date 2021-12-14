@@ -1,10 +1,10 @@
-name := "aplus-fetcher"
-version := "0.2"
+name := "adapter-general-model"
+version := "0.1"
 
-val MainAPlusFetcher: String = "visdom.fetchers.aplus.APlusFetcher"
+val AdapterMain: String = "visdom.adapters.general.Adapter"
 
-Compile / mainClass := Some(MainAPlusFetcher)
-assembly / mainClass := Some(MainAPlusFetcher)
+Compile / mainClass := Some(AdapterMain)
+assembly / mainClass := Some(AdapterMain)
 assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
 
 val AkkaVersion = "2.6.14"
@@ -29,9 +29,11 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
     "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
+    "org.apache.spark" %% "spark-core" % SparkVersion % "provided",
+    "org.apache.spark" %% "spark-sql" % SparkVersion % "provided",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
+    "org.mongodb.spark" %% "mongo-spark-connector" % MongoConnectorVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
-    "org.scalaj" %% "scalaj-http" % ScalajVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
     "org.scalatest" %% "scalatest-funsuite" % ScalaTestVersion % "test",
     "org.slf4j" % "slf4j-api" % LoggerVersion,

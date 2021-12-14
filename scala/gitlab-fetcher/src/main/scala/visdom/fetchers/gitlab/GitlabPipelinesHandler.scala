@@ -192,7 +192,7 @@ extends GitlabDataHandler(options) {
                 pipelineJobIds match {
                     case Some(jobIds: Array[BsonInt32]) => pipelineDocument.append(
                         GitlabConstants.AttributeLinks,
-                        BsonDocument(GitlabConstants.AttributeJobs -> BsonArray(jobIds))
+                        BsonDocument(GitlabConstants.AttributeJobs -> BsonArray.fromIterable(jobIds))
                     )
                     case None => pipelineDocument
                 }
