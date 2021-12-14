@@ -51,7 +51,7 @@ object ProjectQuery {
                     projects => JsArray(
                         projects.map(
                             project => JsonUtils.toJsonValue(project.project_name)
-                        ).toList
+                        ).toVector
                     )
                 )
         )
