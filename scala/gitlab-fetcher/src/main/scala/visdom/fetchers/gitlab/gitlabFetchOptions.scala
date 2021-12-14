@@ -244,3 +244,30 @@ final case class GitlabPipelineReportOptions(
     pipelineId: Int,
     useAnonymization: Boolean
 ) extends GitlabFetchOptions
+
+abstract class ProjectSpecificFetchOptions {
+    val projectIdentifier: Either[String, Int]
+    val useAnonymization: Boolean
+}
+
+final case class ProjectSpecificFetchParameters(
+    projectIdentifier: Either[String, Int],
+    useAnonymization: Boolean
+) extends ProjectSpecificFetchOptions
+
+final case class GitlabProjectOptions(
+    hostServer: GitlabServer,
+    mongoDatabase: Option[MongoDatabase],
+    projectIdentifier: Either[String, Int],
+    useAnonymization: Boolean
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            projectIdentifier match {
+                case Left(projectName: String) => projectName
+                case Right(projectId: Int) => projectId.toString()
+            },
+            useAnonymization
+        ).toString()
+    }
+}

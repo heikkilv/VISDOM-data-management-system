@@ -10,11 +10,13 @@ import visdom.fetchers.gitlab.CommitSpecificFetchParameters
 import visdom.fetchers.gitlab.FileSpecificFetchParameters
 import visdom.fetchers.gitlab.GitlabConstants
 import visdom.fetchers.gitlab.PipelinesSpecificFetchParameters
+import visdom.fetchers.gitlab.ProjectSpecificFetchParameters
 import visdom.fetchers.gitlab.queries.CommonHelpers
 import visdom.fetchers.gitlab.queries.Constants
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.files.FileActor
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesActor
+import visdom.fetchers.gitlab.queries.project.ProjectActor
 import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
@@ -95,6 +97,14 @@ object AllDataActor {
     }
     // scalastyle:on cyclomatic.complexity
 
+    def startProjectFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
+        val projectFetchParameters = ProjectSpecificFetchParameters(
+            projectIdentifier = Left(fetchParameters.projectName),
+            useAnonymization = fetchParameters.useAnonymization
+        )
+        ProjectActor.startProjectFetching(projectFetchParameters)
+    }
+
     def startCommitFetching(fetchParameters: AllDataSpecificFetchParameters): Unit = {
         val commitFetchParameters = CommitSpecificFetchParameters(
             projectName = fetchParameters.projectName,
@@ -137,6 +147,7 @@ object AllDataActor {
     }
 
     private val dataFetchers: Seq[AllDataSpecificFetchParameters => Unit] = Seq(
+        AllDataActor.startProjectFetching(_),
         AllDataActor.startCommitFetching(_),
         AllDataActor.startFileFetching(_),
         AllDataActor.startPipelineFetching(_)
