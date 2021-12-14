@@ -25,6 +25,7 @@ object Constants {
     final val StatusNotFoundDescription = "The asked project or reference was not found"
     final val StatusErrorDescription = "Internal server error"
 
+    final val ParameterProjectId = "projectId"
     final val ParameterProjectName = "projectName"
     final val ParameterProjectNames = "projectNames"
     final val ParameterReference = "reference"
@@ -41,6 +42,7 @@ object Constants {
     final val ParameterRecursive = "recursive"
     final val ParameterUseAnonymization = "useAnonymization"
 
+    final val ParameterDescriptionProjectId = "the GitLab project id"
     final val ParameterDescriptionProjectName = "the GitLab project name"
     final val ParameterDescriptionProjectNames = "a comma-separated list for GitLab project names"
     final val ParameterDescriptionReference = "the reference (branch or tag) for the project"
@@ -66,6 +68,7 @@ object Constants {
     final val ParameterDefaultIncludeReportsString = TrueString
     final val ParameterDefaultRecursiveString = TrueString
     final val ParameterDefaultUseAnonymization = TrueString
+    final val ParameterExampleProjectId = "1234"
     final val ParameterExampleProjectName = "group/my-project-name"
     final val ParameterExampleProjectNames = "group/project-name1,group/project-name2"
 

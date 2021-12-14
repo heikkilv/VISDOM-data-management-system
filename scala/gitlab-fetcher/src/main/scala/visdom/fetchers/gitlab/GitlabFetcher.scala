@@ -21,6 +21,8 @@ import visdom.fetchers.gitlab.queries.multi.MultiService
 import visdom.fetchers.gitlab.queries.multi.MultiActor
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesActor
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesService
+import visdom.fetchers.gitlab.queries.project.ProjectActor
+import visdom.fetchers.gitlab.queries.project.ProjectService
 import visdom.http.server.ServerConstants
 import visdom.http.server.swagger.SwaggerRoutes
 
@@ -49,6 +51,7 @@ object GitlabFetcher extends App
         new InfoService(system.actorOf(Props[InfoActor])).route,
         new MultiService(system.actorOf(Props[MultiActor])).route,
         new PipelinesService(system.actorOf(Props[PipelinesActor])).route,
+        new ProjectService(system.actorOf(Props[ProjectActor])).route,
         SwaggerRoutes.getSwaggerRouter(SwaggerFetcherDocService)
     )
 
