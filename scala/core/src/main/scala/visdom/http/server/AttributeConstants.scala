@@ -15,6 +15,7 @@ object AttributeConstants {
     final val IncludeStatistics: String = "includeStatistics"
     final val IncludeReports: String = "includeReports"
     final val NotFound: String = "notFound"
+    final val ProjectId: String = "projectId"
     final val ProjectName: String = "projectName"
     final val ProjectNames: String = "projectNames"
     final val Projects: String = "projects"
