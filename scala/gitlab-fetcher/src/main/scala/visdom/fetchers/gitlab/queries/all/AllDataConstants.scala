@@ -6,9 +6,9 @@ object AllDataConstants {
     final val AllDataPath = "all"
 
     final val AllDataEndpointDescription =
-        """Starts a fetching process for commit, file and pipeline data from a GitLab repository.
+        """Starts a fetching process for project, commit, file and pipeline data from a GitLab repository.
         All additional metadata and link data will be included."""
-    final val AllDataEndpointSummary = "Fetch commit, file and pipeline data from a GitLab repository."
+    final val AllDataEndpointSummary = "Fetch project, commit, file and pipeline data from a GitLab repository."
 
     final val AllDataStatusAcceptedDescription = "The fetching of the data has started"
 
