@@ -4,22 +4,10 @@ ENV SBT_VERSION 1.5.2
 RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz | gunzip | tar -x -C /usr/local
 ENV PATH /usr/local/sbt/bin:${PATH}
 
-ENV CORE_FOLDER core
-ENV CORE_ADAPTER_FOLDER core-adapter
-ENV TARGET_FOLDER adapter-general-model
 ENV BUILDER_FOLDER builder
-
-ENV CORE_PROJECT core
-ENV CORE_ADAPTER_PROJECT coreAdapter
-ENV TARGET_PROJECT adapterGeneralModel
-
-ENV TARGET_VERSION 0.1
 
 # create all build folders
 RUN mkdir -p /${BUILDER_FOLDER}/project
-RUN mkdir -p /${BUILDER_FOLDER}/${CORE_FOLDER}
-RUN mkdir -p /${BUILDER_FOLDER}/${CORE_ADAPTER_FOLDER}
-RUN mkdir -p /${BUILDER_FOLDER}/${TARGET_FOLDER}
 WORKDIR /${BUILDER_FOLDER}
 
 # copy the project definitions and load all library code
@@ -27,24 +15,33 @@ COPY build.sbt /${BUILDER_FOLDER}/build.sbt
 COPY project/build.properties /${BUILDER_FOLDER}/project/build.properties
 COPY project/plugins.sbt /${BUILDER_FOLDER}/project/plugins.sbt
 
+# compile the core code
+ENV CORE_FOLDER core
+ENV CORE_PROJECT core
+
+RUN mkdir -p /${BUILDER_FOLDER}/${CORE_FOLDER}
 COPY ${CORE_FOLDER}/build.sbt /${BUILDER_FOLDER}/${CORE_FOLDER}/build.sbt
 RUN sbt ${CORE_PROJECT}/update
-
-COPY ${CORE_ADAPTER_FOLDER}/build.sbt /${BUILDER_FOLDER}/${CORE_ADAPTER_FOLDER}/build.sbt
-RUN sbt ${CORE_ADAPTER_PROJECT}/update
-
-COPY ${TARGET_FOLDER}/build.sbt /${BUILDER_FOLDER}/${TARGET_FOLDER}/build.sbt
-RUN sbt ${TARGET_PROJECT}/update
-
-# compile the core code
 COPY ${CORE_FOLDER}/ /${BUILDER_FOLDER}/${CORE_FOLDER}/
 RUN sbt ${CORE_PROJECT}/compile
 
 # compile the core adapter code
+ENV CORE_ADAPTER_FOLDER core-adapter
+ENV CORE_ADAPTER_PROJECT coreAdapter
+
+RUN mkdir -p /${BUILDER_FOLDER}/${CORE_ADAPTER_FOLDER}
+COPY ${CORE_ADAPTER_FOLDER}/build.sbt /${BUILDER_FOLDER}/${CORE_ADAPTER_FOLDER}/build.sbt
+RUN sbt ${CORE_ADAPTER_PROJECT}/update
 COPY ${CORE_ADAPTER_FOLDER}/ /${BUILDER_FOLDER}/${CORE_ADAPTER_FOLDER}/
 RUN sbt ${CORE_ADAPTER_PROJECT}/compile
 
 # compile and assemble the adapter application
+ENV TARGET_FOLDER adapter-general-model
+ENV TARGET_PROJECT adapterGeneralModel
+
+RUN mkdir -p /${BUILDER_FOLDER}/${TARGET_FOLDER}
+COPY ${TARGET_FOLDER}/build.sbt /${BUILDER_FOLDER}/${TARGET_FOLDER}/build.sbt
+RUN sbt ${TARGET_PROJECT}/update
 COPY ${TARGET_FOLDER}/ /${BUILDER_FOLDER}/${TARGET_FOLDER}/
 RUN sbt ${TARGET_PROJECT}/compile
 RUN sbt ${TARGET_PROJECT}/assembly
@@ -52,7 +49,8 @@ RUN sbt ${TARGET_PROJECT}/assembly
 
 FROM bde2020/spark-submit:3.1.1-hadoop3.2
 
-# These should be the same as BUILDER_FOLDER, TARGET_FOLDER and TARGET_VERSION from above
+# These should be the same as BUILDER_FOLDER and TARGET_FOLDER from above
+# and SPARK_APPLICATION_VERSION has to match the to the version set in the project
 ENV BUILDER_FOLDER builder
 ENV SPARK_APPLICATION_NAME adapter-general-model
 ENV SPARK_APPLICATION_VERSION 0.1
