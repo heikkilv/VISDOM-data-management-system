@@ -1,4 +1,5 @@
-addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.0.0")
+addSbtPlugin("com.eed3si9n" % "sbt-assembly" % "1.1.0")
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
-addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.0")
-addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.13")
+addSbtPlugin("com.sksamuel.scapegoat" %% "sbt-scapegoat" % "1.1.1")
+addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.4.16")
+addSbtPlugin("com.timushev.sbt" % "sbt-updates" % "0.6.0")
