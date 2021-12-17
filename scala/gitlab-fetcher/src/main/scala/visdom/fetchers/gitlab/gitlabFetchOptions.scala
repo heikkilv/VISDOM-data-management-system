@@ -271,3 +271,43 @@ final case class GitlabProjectOptions(
         ).toString()
     }
 }
+
+abstract class EventSpecificFetchOptions {
+    val userId: String
+    val actionType: Option[String]
+    val targetType: Option[String]
+    val startDate: Option[ZonedDateTime]
+    val endDate: Option[ZonedDateTime]
+    val useAnonymization: Boolean
+}
+
+final case class EventSpecificFetchParameters(
+    userId: String,
+    actionType: Option[String],
+    targetType: Option[String],
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    useAnonymization: Boolean
+)
+
+final case class GitlabEventOptions(
+    hostServer: GitlabServer,
+    mongoDatabase: Option[MongoDatabase],
+    userId: String,
+    actionType: Option[String],
+    targetType: Option[String],
+    startDate: Option[ZonedDateTime],
+    endDate: Option[ZonedDateTime],
+    useAnonymization: Boolean
+) extends GitlabFetchOptions {
+    override def toString(): String = {
+        (
+            userId,
+            actionType,
+            targetType,
+            startDate,
+            endDate,
+            useAnonymization
+        ).toString()
+    }
+}
