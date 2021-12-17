@@ -28,42 +28,21 @@ scalastyle:
     extends:
         - .java_with_sbt
     script:
-        - sbt core/scalastyle
-        - sbt dataBroker/scalastyle
-        - sbt gitlabFetcher/scalastyle
-        - sbt aPlusFetcher/scalastyle
-        - sbt coreAdapter/scalastyle
-        - sbt gitlabAdapter/scalastyle
-        - sbt adapterCourse/scalastyle
-        - sbt adapterGeneralModel/scalastyle
+        - sbt scalastyle
 
 scapegoat:
     stage: Static Analysis
     extends:
         - .java_with_sbt
     script:
-        - sbt core/scapegoat
-        - sbt dataBroker/scapegoat
-        - sbt gitlabFetcher/scapegoat
-        - sbt aPlusFetcher/scapegoat
-        - sbt coreAdapter/scapegoat
-        - sbt gitlabAdapter/scapegoat
-        - sbt adapterCourse/scapegoat
-        - sbt adapterGeneralModel/scapegoat
+        - sbt scapegoat
 
 unit_test:
     stage: Unit Test
     extends:
         - .java_with_sbt
     script:
-        - sbt core/test
-        - sbt dataBroker/test
-        - sbt gitlabFetcher/test
-        - sbt aPlusFetcher/test
-        - sbt coreAdapter/test
-        - sbt gitlabAdapter/test
-        - sbt adapterCourse/test
-        - sbt adapterGeneralModel/test
+        - sbt test
 
 docker_build:
     stage: Build

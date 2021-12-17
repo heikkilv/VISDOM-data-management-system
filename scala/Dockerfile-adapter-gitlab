@@ -5,23 +5,21 @@ RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-$
 ENV PATH /usr/local/sbt/bin:${PATH}
 
 RUN mkdir -p /builder/project
-RUN mkdir -p /builder/core
-RUN mkdir -p /builder/gitlab-adapter
 WORKDIR /builder
 
 COPY build.sbt /builder/build.sbt
 COPY project/build.properties /builder/project/build.properties
 COPY project/plugins.sbt /builder/project/plugins.sbt
 
+RUN mkdir -p /builder/core
 COPY core/build.sbt /builder/core/build.sbt
 RUN sbt core/update
-
-COPY gitlab-adapter/build.sbt /builder/gitlab-adapter/build.sbt
-RUN sbt gitlabAdapter/update
-
 COPY core/ /builder/core/
 RUN sbt core/compile
 
+RUN mkdir -p /builder/gitlab-adapter
+COPY gitlab-adapter/build.sbt /builder/gitlab-adapter/build.sbt
+RUN sbt gitlabAdapter/update
 COPY gitlab-adapter/ /builder/gitlab-adapter/
 RUN sbt gitlabAdapter/compile
 RUN sbt gitlabAdapter/assembly
