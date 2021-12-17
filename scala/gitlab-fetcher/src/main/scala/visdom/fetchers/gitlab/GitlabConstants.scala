@@ -129,7 +129,7 @@ object GitlabConstants {
     val AttributeType: String = "type"
     val AttributeUseAnonymization: String = "use_anonymization"
     val AttributeUser: String = "user"
-    val AttributeUserName: String = "username"
+    val AttributeUsername: String = "username"
     val AttributeVersion: String = "version"
     val AttributeWebsiteUrl: String = "website_url"
     val AttributeWebUrl: String = "web_url"
