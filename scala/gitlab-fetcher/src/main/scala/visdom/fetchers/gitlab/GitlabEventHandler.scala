@@ -30,12 +30,12 @@ class GitlabEventHandler(options: GitlabEventOptions)
             options.targetType.map(stringValue => toBsonValue(stringValue))
         )
         .appendOption(
-            GitlabConstants.AttributeStartDate,
-            options.startDate.map(stringValue => toBsonValue(stringValue))
+            GitlabConstants.AttributeDateAfter,
+            options.dateAfter.map(stringValue => toBsonValue(stringValue))
         )
         .appendOption(
-            GitlabConstants.AttributeEndDate,
-            options.endDate.map(stringValue => toBsonValue(stringValue))
+            GitlabConstants.AttributeDateBefore,
+            options.dateBefore.map(stringValue => toBsonValue(stringValue))
         )
     }
 
@@ -53,8 +53,8 @@ class GitlabEventHandler(options: GitlabEventOptions)
                 Seq(
                     (GitlabConstants.ParamAction, options.actionType.map(value => Left(value))),
                     (GitlabConstants.ParamTargetType, options.targetType.map(value => Left(value))),
-                    (GitlabConstants.ParamAfter, options.startDate.map(value => Right(value))),
-                    (GitlabConstants.ParamBefore, options.endDate.map(value => Right(value)))
+                    (GitlabConstants.ParamAfter, options.dateAfter.map(value => Right(value))),
+                    (GitlabConstants.ParamBefore, options.dateBefore.map(value => Right(value)))
                 )
                     .map({
                         case (paramName, optionValue) => optionValue match {

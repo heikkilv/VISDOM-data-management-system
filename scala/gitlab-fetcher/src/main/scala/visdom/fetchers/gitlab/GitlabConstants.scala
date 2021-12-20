@@ -80,6 +80,8 @@ object GitlabConstants {
     val AttributeComponentType: String = "component_type"
     val AttributeContainerRegistryImagePrefix: String = "container_registry_image_prefix"
     val AttributeDatabase: String = "database"
+    val AttributeDateAfter: String = "date_after"
+    val AttributeDateBefore: String = "date_before"
     val AttributeDescription: String = "description"
     val AttributeDetailedStatus: String = "detailed_status"
     val AttributeDetailsPath: String = "details_path"
