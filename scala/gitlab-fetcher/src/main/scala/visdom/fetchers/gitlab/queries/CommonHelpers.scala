@@ -9,7 +9,7 @@ import visdom.utils.CommonConstants
 object CommonHelpers {
     def isProjectName(projectName: String): Boolean = {
         // TODO: implement actual check for a proper project name
-        projectName != ""
+        projectName != CommonConstants.EmptyString
     }
 
     def isProjectNameSequence(projectNames: String): Boolean = {
@@ -23,7 +23,11 @@ object CommonHelpers {
 
     def isReference(reference: String): Boolean = {
         // TODO: implement actual check for a proper reference name
-        reference != ""
+        reference != CommonConstants.EmptyString
+    }
+
+    def isUserId(userId: String): Boolean = {
+        userId != CommonConstants.EmptyString && userId.forall(letter => letter.isDigit || letter.isLower)
     }
 
     def toFilePath(filePathOption: Option[String]): Option[String] = {

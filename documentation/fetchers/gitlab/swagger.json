@@ -15,8 +15,8 @@
     "paths": {
         "/all": {
             "get": {
-                "summary": "Fetch commit, file and pipeline data from a GitLab repository.",
-                "description": "Starts a fetching process for commit, file and pipeline data from a GitLab repository.\n        All additional metadata and link data will be included.",
+                "summary": "Fetch project, commit, file and pipeline data from a GitLab repository.",
+                "description": "Starts a fetching process for project, commit, file and pipeline data from a GitLab repository.\n        All additional metadata and link data will be included.",
                 "operationId": "getAllDataRoute",
                 "parameters": [
                     {
@@ -403,6 +403,162 @@
                 }
             }
         },
+        "/events": {
+            "get": {
+                "summary": "Fetch event data for a GitLab user.",
+                "description": "Starts a fetching process for event data for a GitLab user.",
+                "operationId": "getEventRoute",
+                "parameters": [
+                    {
+                        "name": "userId",
+                        "in": "query",
+                        "description": "the ID or Username of the GitLab user ",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "username"
+                    },
+                    {
+                        "name": "actionType",
+                        "in": "query",
+                        "description": "include only events of a particular action type, https://docs.gitlab.com/ee/api/events.html#actions",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "approved",
+                                "closed",
+                                "commented",
+                                "created",
+                                "destroyed",
+                                "expired",
+                                "joined",
+                                "left",
+                                "merged",
+                                "pushed",
+                                "reopened",
+                                "updated"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "targetType",
+                        "in": "query",
+                        "description": "include only events of a particular target type, https://docs.gitlab.com/ee/api/events.html#target-types",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "issue",
+                                "milestone",
+                                "merge_request",
+                                "note",
+                                "project",
+                                "snippet",
+                                "user"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "dateAfter",
+                        "in": "query",
+                        "description": "only events created after the given date are included (requires ISO 8601 format: YYYY-MM-DD)",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "dateBefore",
+                        "in": "query",
+                        "description": "only events created before the given date are included (requires ISO 8601 format: YYYY-MM-DD)",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the event data has been started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the event data has been started",
+                                            "options": {
+                                                "userId": "username",
+                                                "actionType": "pushed",
+                                                "targetType": null,
+                                                "dateAfter": "2020-01-01",
+                                                "dateBefore": null,
+                                                "useAnonymization": "false"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained invalid or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Invalid action type": {
+                                        "description": "Invalid action type",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'committed'' is not a valid value for actionType"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [10 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/files": {
             "get": {
                 "summary": "Fetch files data from a GitLab repository.",
@@ -639,6 +795,15 @@
                             "type": "string"
                         },
                         "example": "group/project-name1,group/project-name2"
+                    },
+                    {
+                        "name": "reference",
+                        "in": "query",
+                        "description": "the reference (branch or tag) for the project",
+                        "schema": {
+                            "type": "string",
+                            "default": "master"
+                        }
                     },
                     {
                         "name": "filePath",
@@ -1027,6 +1192,117 @@
                     }
                 }
             }
+        },
+        "/project": {
+            "get": {
+                "summary": "Fetch project document from a GitLab repository.",
+                "description": "Starts a fetching process for project document from a GitLab repository.",
+                "operationId": "getFileRoute_2",
+                "parameters": [
+                    {
+                        "name": "projectId",
+                        "in": "query",
+                        "description": "the GitLab project id",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": 1234
+                    },
+                    {
+                        "name": "projectName",
+                        "in": "query",
+                        "description": "the GitLab project name",
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "group/my-project-name"
+                    },
+                    {
+                        "name": "useAnonymization",
+                        "in": "query",
+                        "description": "whether to anonymize the user information",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "false",
+                                "true"
+                            ],
+                            "default": "true"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "The fetching of the project document has been started",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseAccepted"
+                                },
+                                "examples": {
+                                    "Successful response example": {
+                                        "description": "Successful response example",
+                                        "value": {
+                                            "status": "Accepted",
+                                            "description": "The fetching of the project document has been started",
+                                            "options": {
+                                                "projectId": null,
+                                                "projectName": "group/my-project-name",
+                                                "useAnonymization": "false"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained invalid or missing parameters",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Missing project name example": {
+                                        "description": "Missing project name example",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "''' is not a valid project name"
+                                        }
+                                    },
+                                    "Invalid start time example": {
+                                        "description": "Invalid start time example",
+                                        "value": {
+                                            "status": "BadRequest",
+                                            "description": "'2020-13-13T00:00' is not valid datetime in ISO 8601 format with timezone"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [10 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     },
     "components": {
@@ -1042,7 +1318,6 @@
                 "properties": {
                     "fields": {
                         "type": "object",
-                        "properties": { },
                         "additionalProperties": {
                             "$ref": "#/components/schemas/JsValue"
                         }

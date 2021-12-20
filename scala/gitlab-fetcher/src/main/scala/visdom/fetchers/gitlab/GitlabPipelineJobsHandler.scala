@@ -55,7 +55,7 @@ extends GitlabDataHandler(options) {
                 Seq(
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeId),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeName),
-                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUserName),
+                    Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeUsername),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeAvatarUrl),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributeUser, GitlabConstants.AttributeBio),

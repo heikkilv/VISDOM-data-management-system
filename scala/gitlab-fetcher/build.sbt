@@ -10,10 +10,10 @@ assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
 
 val AkkaVersion = "2.6.17"
 val AkkaHttpVersion = "10.2.7"
-val JavaWsRestApiVersion: String = "2.1.1"
+val JakartaVersion: String = "3.0.0"
 val LoggerVersion: String = "2.0.0-alpha5"
 val MongoConnectorVersion: String = "3.0.1"
-val MongoDriverVersion: String = "4.4.0"
+val MongoDriverVersion: String = "4.1.1"
 val SparkVersion: String = "3.1.1"
 val ScalajVersion: String = "2.4.2"
 val ScalaTestVersion: String = "3.2.10"
@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
-    "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
+    "jakarta.ws.rs" % "jakarta.ws.rs-api" % JakartaVersion,
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalaj" %% "scalaj-http" % ScalajVersion,

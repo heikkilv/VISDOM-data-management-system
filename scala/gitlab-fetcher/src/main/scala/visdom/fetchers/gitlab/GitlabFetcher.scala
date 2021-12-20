@@ -13,6 +13,8 @@ import visdom.fetchers.gitlab.queries.all.AllDataActor
 import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitActor
 import visdom.fetchers.gitlab.queries.commits.CommitService
+import visdom.fetchers.gitlab.queries.events.EventActor
+import visdom.fetchers.gitlab.queries.events.EventService
 import visdom.fetchers.gitlab.queries.files.FileActor
 import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.info.InfoActor
@@ -52,6 +54,7 @@ object GitlabFetcher extends App
         new MultiService(system.actorOf(Props[MultiActor])).route,
         new PipelinesService(system.actorOf(Props[PipelinesActor])).route,
         new ProjectService(system.actorOf(Props[ProjectActor])).route,
+        new EventService(system.actorOf(Props[EventActor])).route,
         SwaggerRoutes.getSwaggerRouter(SwaggerFetcherDocService)
     )
 
