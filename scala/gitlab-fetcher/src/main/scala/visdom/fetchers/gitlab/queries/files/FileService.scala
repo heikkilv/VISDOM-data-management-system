@@ -26,10 +26,11 @@ import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.FileQueryOptions
 import visdom.http.server.GitlabFetcherResponseHandler
+import visdom.utils.WarningConstants.UnusedMethodParameter
 
 
 // scalastyle:off method.length
-@SuppressWarnings(Array("UnusedMethodParameter"))
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(FileConstants.FileRootPath)
 class FileService(fileActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

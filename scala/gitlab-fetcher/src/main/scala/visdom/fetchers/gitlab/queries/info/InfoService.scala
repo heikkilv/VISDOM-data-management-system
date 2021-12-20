@@ -21,9 +21,10 @@ import visdom.fetchers.gitlab.queries.Constants
 import visdom.http.server.response.GitlabFetcherInfoResponse
 import visdom.http.server.GitlabFetcherResponseHandler
 import visdom.http.server.QueryOptionsBaseObject
+import visdom.utils.WarningConstants.UnusedMethodParameter
 
 
-@SuppressWarnings(Array("UnusedMethodParameter"))
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(InfoConstants.InfoRootPath)
 class InfoService(infoActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

@@ -27,10 +27,11 @@ import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.CommitQueryOptions
 import visdom.http.server.GitlabFetcherResponseHandler
+import visdom.utils.WarningConstants.UnusedMethodParameter
 
 
 // scalastyle:off method.length
-@SuppressWarnings(Array("UnusedMethodParameter"))
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(CommitConstants.CommitRootPath)
 class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

@@ -23,9 +23,11 @@ import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.EventQueryOptions
 import visdom.http.server.GitlabFetcherResponseHandler
+import visdom.utils.WarningConstants.UnusedMethodParameter
 
 
 // scalastyle:off method.length
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(EventConstants.EventRootPath)
 class EventService(eventActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
