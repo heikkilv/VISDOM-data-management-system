@@ -1,5 +1,9 @@
 # GitLab data fetcher
 
+```text
+NOTE: this readme has not been updated with the latest changes to the GitLab fetcher
+```
+
 <!-- no toc -->
 - [Environment variables for the GitLab data fetcher](#environment-variables-for-the-gitlab-data-fetcher)
     - [Variables related to the deployment of the GitLab data fetcher](#variables-related-to-the-deployment-of-the-gitlab-data-fetcher)

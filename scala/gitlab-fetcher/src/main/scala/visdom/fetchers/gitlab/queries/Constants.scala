@@ -65,7 +65,7 @@ object Constants {
     final val ParameterDescriptionRecursive = "whether to use recursive search or not"
     final val ParameterDescriptionTargetType = "include only events of a particular target type, https://docs.gitlab.com/ee/api/events.html#target-types"
     final val ParameterDescriptionUseAnonymization = "whether to anonymize the user information"
-    final val ParameterDescriptionUserId = "the ID or Username of the GitLab user "
+    final val ParameterDescriptionUserId = "the id or username of the GitLab user"
 
     final val ParameterDefaultReference = "master"
     final val ParameterDefaultIncludeStatisticsString = FalseString

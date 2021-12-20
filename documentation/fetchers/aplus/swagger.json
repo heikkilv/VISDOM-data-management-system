@@ -648,7 +648,6 @@
                 "properties": {
                     "fields": {
                         "type": "object",
-                        "properties": { },
                         "additionalProperties": {
                             "$ref": "#/components/schemas/JsValue"
                         }

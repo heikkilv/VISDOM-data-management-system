@@ -182,6 +182,77 @@
                 }
             }
         },
+        "/projects": {
+            "get": {
+                "summary": "Return the project names for each group.",
+                "description": "Return the available projects names grouped using the group names.",
+                "operationId": "getProjectDataRoute",
+                "responses": {
+                    "200": {
+                        "description": "The data successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "group-name-1": [
+                                                "project-name-1",
+                                                "project-name-2"
+                                            ],
+                                            "group-name-2": [
+                                                "project-name-3"
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "No results found for the query",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "No results found example": {
+                                        "description": "No results found example",
+                                        "value": {
+                                            "status": "NotFound",
+                                            "description": "No results found for the query"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/timestamps": {
             "get": {
                 "summary": "Return the commit timestamps for the asked files.",
@@ -371,7 +442,6 @@
                 "properties": {
                     "fields": {
                         "type": "object",
-                        "properties": { },
                         "additionalProperties": {
                             "$ref": "#/components/schemas/JsValue"
                         }
