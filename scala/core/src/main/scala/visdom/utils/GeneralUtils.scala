@@ -13,6 +13,8 @@ import visdom.http.server.ServerConstants
 
 
 object GeneralUtils {
+    final val ZeroHourString: String = "T00:00Z"
+
     def toInt(stringValue: String): Option[Int] = {
         try {
             Some(stringValue.toInt)
@@ -154,6 +156,10 @@ object GeneralUtils {
                 }
             case None => None
         }
+    }
+
+    def toZonedDateTimeFromDate(dateString: Option[String]): Option[ZonedDateTime] = {
+        toZonedDateTime(dateString.map(value => value + ZeroHourString))
     }
 
     def lessOrEqual(dateTimeA: Option[ZonedDateTime], dateTimeB: Option[ZonedDateTime]): Boolean = {

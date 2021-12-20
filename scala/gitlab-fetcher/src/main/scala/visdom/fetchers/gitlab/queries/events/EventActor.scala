@@ -49,8 +49,8 @@ class EventActor extends Actor with ActorLogging {
 object EventActor {
     // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: EventQueryOptions): Either[String, EventSpecificFetchParameters] = {
-        val dateAfter: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.dateAfter)
-        val dateBefore: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.dateBefore)
+        val dateAfter: Option[ZonedDateTime] = GeneralUtils.toZonedDateTimeFromDate(queryOptions.dateAfter)
+        val dateBefore: Option[ZonedDateTime] = GeneralUtils.toZonedDateTimeFromDate(queryOptions.dateBefore)
         val actionType: String = queryOptions.actionType.getOrElse(CommonConstants.EmptyString)
         val targetType: String = queryOptions.targetType.getOrElse(CommonConstants.EmptyString)
 
@@ -66,10 +66,10 @@ object EventActor {
         else if (dateAfter.isDefined && dateBefore.isDefined && !GeneralUtils.lessOrEqual(dateAfter, dateAfter)) {
             Left("the dateBefore must be later than the dateAfter")
         }
-        else if (!Constants.ActionTypes.contains(actionType)) {
+        else if (queryOptions.actionType.isDefined && !Constants.ActionTypes.contains(actionType)) {
             Left(s"'${actionType}' is not valid value for actionType")
         }
-        else if (!Constants.TargetTypes.contains(targetType)) {
+        else if (queryOptions.targetType.isDefined && !Constants.TargetTypes.contains(targetType)) {
             Left(s"'${targetType}' is not valid value for targetType")
         }
         else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {

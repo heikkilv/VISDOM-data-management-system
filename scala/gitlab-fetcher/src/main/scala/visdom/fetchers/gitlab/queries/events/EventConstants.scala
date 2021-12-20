@@ -10,8 +10,8 @@ object EventConstants {
 
     final val EventStatusAcceptedDescription = "The fetching of the event data has been started"
 
-    final val ParameterDescriptionDateAfter = "only events created after the given date, given in ISO 8601 format, are included"
-    final val ParameterDescriptionDateBefore = "only events created before the given date, given in ISO 8601 format, are included"
+    final val ParameterDescriptionDateAfter = "only events created after the given date are included (requires ISO 8601 format: YYYY-MM-DD)"
+    final val ParameterDescriptionDateBefore = "only events created before the given date are included (requires ISO 8601 format: YYYY-MM-DD)"
 
     // the example responses for the events endpoint
     final val EventResponseExampleAccepted = """{
