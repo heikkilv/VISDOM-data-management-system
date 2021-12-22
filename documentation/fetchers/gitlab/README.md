@@ -1,7 +1,6 @@
 # GitLab data fetcher
 
 ```text
-TODO: update usage notes
 TODO: add /multi endpoint description (used to start commit and file data fetching from multiple projects with a single query)
 ```
 
@@ -232,26 +231,31 @@ The GitLab data fetcher provides a Swagger UI interface to test the GitLab data 
 ## Notes about using GitLab data fetcher
 
 - The response (status code: 202) from the API is given at the same time that the actual data fetching process is started. Depending on how much data the fetch results in, it might take a long while until the actual data fetching process is completed.
-- No limits on how many data fetching can be start concurrently have been implemented. It is advisable to not to start dozens or hundreds queries at the same time.
+- Only one actual data fetching process will be ongoing at any given time. The GitLab fetcher uses internal task queue where any new accepted fetch query is added. New data fetching processes are started using the "first in, first out" (FIFO) principle.
 - No access control for GitLab data fetcher has been implemented.
     - Any project that can be accessed with the access token given at startup will be available for data fetching without any tokens from the user.
-- An anonymization option for the fetched data has been implemented and it is set to true by default.
-    - When the option is set to true, all attributes that contain strings that might include names, emails or other identifying parts are stored as SHA-512/256 hashes instead. Note, that this also includes the project names. Possible options for either including or excluding the project name to the anonymization might be implemented later.
+- `host_name`, `project_name` and `group_name` attributes are added to the fetched data
+    - for event data only the `host_name` attribute is added since the events themselves contain the project information
+    - `group_name` is the namespace for the project. I.e., if the project_name is `cs/visdom/data-management-system`, then group_name would be `cs/visdom`
+- An anonymization (or pseudonymization to be exact) option for the fetched data has been implemented and it is set to true by default.
+    - When the option is set to true, all attributes that contain strings that might include names, emails or other identifying parts are stored as SHA-512/256 hashes instead. Note, that this also includes the project names. Possible options for either including or excluding the project name to the anonymization might be implemented later. It should also be noted that the generated group_name attributes will not be hashed.
     - If the option is set to false, the fetched data will contain user information (at least names and emails) in plain text.
-- Projects in GitLab have both an id number and a name. Both of these can be used as the `project_name` attribute when using the API. However, it is recommended that only the name is used, since this is the assumption the GitLab data fetcher makes about the input.
-- No proper input checking has been implemented for the API.
+    - The environment variable `SECRET_WORD` is used as salt when calculation the hashes in order to make more difficult to decode the pseudonymized strings.
+- (`Important`) Projects in GitLab have both an id number and a name. Both of these can be used as the `project_name` attribute when using the API. However, it is recommended that only the name is used, since this is the assumption the GitLab data fetcher makes about the input.
+- The input parameter checking for the API is not anywhere near complete.
 - When the data fetching query results in new data, that data is stored as new documents in the appropriate collection.
 - When the data fetching query results matches previously stored data, the stored document will be replaced by the new data fetch result.
     - This means that if the new query result did not include link data, any possible link data in the previously stored document will be lost.
     - Documents stored in the database are identified by the combination of the following:
         - GitLab project name (attribute `project_name`)
+            - not used for event data
         - GitLab host server name (attribute `host_name`)
         - Data specific identifying attribute (attribute `path` for file data and `id` for other data)
 - The `_metadata` attribute in the stored documents contains a timestamp for the latest update for that document.
 - A new document will be added to the collection `metadata` after each completed data fetch query. This document will contain the number of added/updated documents.
     - Note that for the pipelines endpoint, the number of documents refer only to the number of pipeline related documents and does not include the affected job or job log related documents.
 - A metadata document will be added/updated by the GitLab data fetcher at startup and every 5 minutes. This metadata document is located at the metadata collection in the metadata database in MongoDB.
-- For developers, no proper unit tests have been implemented for the GitLab data fetcher.
+- For developers: no proper unit tests have been implemented for the GitLab data fetcher.
 
 ## Uninstalling GitLab data fetcher
 
