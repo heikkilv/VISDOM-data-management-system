@@ -22,6 +22,7 @@ object MongoConstants {
 
     val CollectionCommits: String = "commits"
     val CollectionCourses: String = "courses"
+    val CollectionEvents: String = "events"
     val CollectionExercises: String = "exercises"
     val CollectionFiles: String = "files"
     val CollectionJobs: String = "jobs"
@@ -31,6 +32,7 @@ object MongoConstants {
     val CollectionPipelineReports: String = "pipeline_reports"
     val CollectionPipelines: String = "pipelines"
     val CollectionPoints: String = "points"
+    val CollectionProjects: String = "projects"
     val CollectionSubmissions: String = "submissions"
     val CollectionTemp: String = "temp"
 

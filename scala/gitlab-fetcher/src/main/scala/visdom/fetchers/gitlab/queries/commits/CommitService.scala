@@ -14,10 +14,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.ExampleObject
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import javax.ws.rs.GET
-import javax.ws.rs.Path
-import javax.ws.rs.Produces
-import javax.ws.rs.core.MediaType
+import jakarta.ws.rs.GET
+import jakarta.ws.rs.Path
+import jakarta.ws.rs.Produces
+import jakarta.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
@@ -27,10 +27,11 @@ import visdom.http.server.response.ResponseAccepted
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.fetcher.gitlab.CommitQueryOptions
 import visdom.http.server.GitlabFetcherResponseHandler
+import visdom.utils.WarningConstants.UnusedMethodParameter
 
 
 // scalastyle:off method.length
-@SuppressWarnings(Array("UnusedMethodParameter"))
+@SuppressWarnings(Array(UnusedMethodParameter))
 @Path(CommitConstants.CommitRootPath)
 class CommitService(commitActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives

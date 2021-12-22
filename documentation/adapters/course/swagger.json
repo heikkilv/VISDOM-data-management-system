@@ -76,6 +76,19 @@
                         "schema": {
                             "type": "string"
                         }
+                    },
+                    {
+                        "name": "includeFuture",
+                        "in": "query",
+                        "description": "whether to include data from modules that have not been opened yet",
+                        "schema": {
+                            "type": "string",
+                            "default": "false",
+                            "enum": [
+                                "false",
+                                "true"
+                            ]
+                        }
                     }
                 ],
                 "responses": {
@@ -225,11 +238,236 @@
                 }
             }
         },
+        "/history": {
+            "get": {
+                "summary": "Returns a history data.",
+                "description": "Returns a document containing aggregate values for student points, attempted exercises, submissions and commits for each course week and predicted course grade.",
+                "operationId": "getUsernameRoute",
+                "parameters": [
+                    {
+                        "name": "courseId",
+                        "in": "query",
+                        "description": "the course id (must be a positive integer)",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The history data successfully fetched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "example response": {
+                                        "description": "example response",
+                                        "value": {
+                                            "data_by_grades": {
+                                                "0": {
+                                                    "student_count": 10,
+                                                    "avg_points": [
+                                                        10.0,
+                                                        5.0
+                                                    ],
+                                                    "avg_exercises": [
+                                                        1.0,
+                                                        1.5
+                                                    ],
+                                                    "avg_submissions": [
+                                                        1.5,
+                                                        3.5
+                                                    ],
+                                                    "avg_commits": [
+                                                        1.75,
+                                                        3.75
+                                                    ],
+                                                    "avg_cum_points": [
+                                                        10.0,
+                                                        15.0
+                                                    ],
+                                                    "avg_cum_exercises": [
+                                                        1.0,
+                                                        2.5
+                                                    ],
+                                                    "avg_cum_submissions": [
+                                                        1.5,
+                                                        5.0
+                                                    ],
+                                                    "avg_cum_commits": [
+                                                        1.75,
+                                                        5.5
+                                                    ]
+                                                },
+                                                "1": {
+                                                    "student_count": 25,
+                                                    "avg_points": [
+                                                        20.0,
+                                                        25.0
+                                                    ],
+                                                    "avg_exercises": [
+                                                        2.0,
+                                                        2.5
+                                                    ],
+                                                    "avg_submissions": [
+                                                        2.5,
+                                                        4.5
+                                                    ],
+                                                    "avg_commits": [
+                                                        2.75,
+                                                        4.75
+                                                    ],
+                                                    "avg_cum_points": [
+                                                        20.0,
+                                                        45.0
+                                                    ],
+                                                    "avg_cum_exercises": [
+                                                        2.0,
+                                                        4.5
+                                                    ],
+                                                    "avg_cum_submissions": [
+                                                        2.5,
+                                                        6.0
+                                                    ],
+                                                    "avg_cum_commits": [
+                                                        2.75,
+                                                        7.5
+                                                    ]
+                                                }
+                                            },
+                                            "data_by_weeks": {
+                                                "01": {
+                                                    "student_counts": [
+                                                        10,
+                                                        25
+                                                    ],
+                                                    "avg_points": [
+                                                        10.0,
+                                                        20.0
+                                                    ],
+                                                    "avg_exercises": [
+                                                        1.0,
+                                                        2.0
+                                                    ],
+                                                    "avg_submissions": [
+                                                        1.5,
+                                                        2.5
+                                                    ],
+                                                    "avg_commits": [
+                                                        1.75,
+                                                        2.75
+                                                    ],
+                                                    "avg_cum_points": [
+                                                        10.0,
+                                                        20.0
+                                                    ],
+                                                    "avg_cum_exercises": [
+                                                        1.0,
+                                                        2.0
+                                                    ],
+                                                    "avg_cum_submissions": [
+                                                        1.5,
+                                                        2.5
+                                                    ],
+                                                    "avg_cum_commits": [
+                                                        1.75,
+                                                        2.75
+                                                    ]
+                                                },
+                                                "02": {
+                                                    "student_counts": [
+                                                        10,
+                                                        25
+                                                    ],
+                                                    "avg_points": [
+                                                        5.0,
+                                                        25.0
+                                                    ],
+                                                    "avg_exercises": [
+                                                        1.5,
+                                                        2.5
+                                                    ],
+                                                    "avg_submissions": [
+                                                        3.5,
+                                                        4.5
+                                                    ],
+                                                    "avg_commits": [
+                                                        3.75,
+                                                        4.75
+                                                    ],
+                                                    "avg_cum_points": [
+                                                        15.0,
+                                                        45.0
+                                                    ],
+                                                    "avg_cum_exercises": [
+                                                        2.5,
+                                                        4.5
+                                                    ],
+                                                    "avg_cum_submissions": [
+                                                        5.0,
+                                                        6.0
+                                                    ],
+                                                    "avg_cum_commits": [
+                                                        5.5,
+                                                        7.5
+                                                    ]
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "The request contained an invalid parameter",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "invalid course id": {
+                                        "description": "invalid course id",
+                                        "value": {
+                                            "description": "Some query parameters contained invalid values",
+                                            "status": "BadRequest"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/usernames": {
             "get": {
-                "summary": "Returns a points document.",
-                "description": "Returns a document related to points achieved by a student.",
-                "operationId": "getUsernameRoute",
+                "summary": "Returns student usernames for a course.",
+                "description": "Returns a list of student A+ system usernames for a A+ course.",
+                "operationId": "getUsernameRoute_1",
                 "parameters": [
                     {
                         "name": "courseId",
@@ -318,7 +556,6 @@
                 "properties": {
                     "fields": {
                         "type": "object",
-                        "properties": { },
                         "additionalProperties": {
                             "$ref": "#/components/schemas/JsValue"
                         }

@@ -5,23 +5,21 @@ RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-$
 ENV PATH /usr/local/sbt/bin:${PATH}
 
 RUN mkdir -p /builder/project
-RUN mkdir -p /builder/core
-RUN mkdir -p /builder/gitlab-fetcher
 WORKDIR /builder
 
 COPY build.sbt /builder/build.sbt
 COPY project/build.properties /builder/project/build.properties
 COPY project/plugins.sbt /builder/project/plugins.sbt
 
+RUN mkdir -p /builder/core
 COPY core/build.sbt /builder/core/build.sbt
 RUN sbt core/update
-
-COPY gitlab-fetcher/build.sbt /builder/gitlab-fetcher/build.sbt
-RUN sbt gitlabFetcher/update
-
 COPY core/ /builder/core/
 RUN sbt core/compile
 
+RUN mkdir -p /builder/gitlab-fetcher
+COPY gitlab-fetcher/build.sbt /builder/gitlab-fetcher/build.sbt
+RUN sbt gitlabFetcher/update
 COPY gitlab-fetcher/ /builder/gitlab-fetcher/
 RUN sbt gitlabFetcher/compile
 RUN sbt gitlabFetcher/assembly
@@ -29,4 +27,8 @@ RUN sbt gitlabFetcher/assembly
 
 FROM openjdk:8u292-jre-slim
 COPY --from=builder /builder/gitlab-fetcher/target/scala-2.12/gitlab-fetcher-0.2.jar /gitlab-fetcher-0.2.jar
+
+# to ensure that log4j exploits cannot be used
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS true
+
 CMD [ "java", "-jar", "/gitlab-fetcher-0.2.jar" ]

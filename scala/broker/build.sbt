@@ -1,6 +1,6 @@
-scalaVersion := "2.12.13"
 name := "broker"
 version := "0.2"
+scalaVersion := "2.12.15"
 
 val MainDataBroker: String = "visdom.broker.DataBroker"
 
@@ -8,18 +8,18 @@ Compile / mainClass := Some(MainDataBroker)
 assembly / mainClass := Some(MainDataBroker)
 assembly / assemblyJarName := s"${name.value}-${version.value}.jar"
 
-val AkkaVersion = "2.6.14"
-val AkkaHttpVersion = "10.2.4"
-val JavaWsRestApiVersion: String = "2.1.1"
-val LoggerVersion: String = "1.8.0-beta4"
+val AkkaVersion = "2.6.17"
+val AkkaHttpVersion = "10.2.7"
+val JakartaVersion: String = "3.0.0"
+val LoggerVersion: String = "2.0.0-alpha5"
 val MongoConnectorVersion: String = "3.0.1"
-val MongoDriverVersion: String = "4.0.5"
+val MongoDriverVersion: String = "4.1.1"
 val SparkVersion: String = "3.1.1"
 val ScalajVersion: String = "2.4.2"
-val ScalaTestVersion: String = "3.2.7"
-val ScapeGoatVersion: String = "1.4.8"
+val ScalaTestVersion: String = "3.2.10"
+val ScapeGoatVersion: String = "1.4.11"
 val SprayJsonVersion: String = "1.3.6"
-val SwaggerAkkaVersion: String = "2.4.2"
+val SwaggerAkkaVersion: String = "2.6.0"
 
 libraryDependencies ++= Seq(
     "com.github.swagger-akka-http" %% "swagger-akka-http" % SwaggerAkkaVersion,
@@ -29,7 +29,7 @@ libraryDependencies ++= Seq(
     "com.typesafe.akka" %% "akka-http" % AkkaHttpVersion,
     "com.typesafe.akka" %% "akka-http-spray-json" % AkkaHttpVersion,
     "io.spray" %%  "spray-json" % SprayJsonVersion,
-    "javax.ws.rs" % "javax.ws.rs-api" % JavaWsRestApiVersion,
+    "jakarta.ws.rs" % "jakarta.ws.rs-api" % "3.0.0",
     "org.mongodb.scala" %% "mongo-scala-driver" % MongoDriverVersion,
     "org.scalactic" %% "scalactic" % ScalaTestVersion,
     "org.scalatest" %% "scalatest" % ScalaTestVersion % "test",
@@ -43,6 +43,9 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 wartremoverErrors ++= Warts.unsafe
 
 scalacOptions ++= Seq("-deprecation")
+
+dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
+dependencyUpdatesFilter -= moduleFilter(organization = "org.apache.spark")
 
 // to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
 ThisBuild / assemblyMergeStrategy := {

@@ -3,10 +3,12 @@ package visdom.fetchers.gitlab
 import com.github.swagger.akka.model.Info
 import visdom.fetchers.gitlab.queries.all.AllDataService
 import visdom.fetchers.gitlab.queries.commits.CommitService
+import visdom.fetchers.gitlab.queries.events.EventService
 import visdom.fetchers.gitlab.queries.files.FileService
 import visdom.fetchers.gitlab.queries.info.InfoService
 import visdom.fetchers.gitlab.queries.multi.MultiService
 import visdom.fetchers.gitlab.queries.pipelines.PipelinesService
+import visdom.fetchers.gitlab.queries.project.ProjectService
 import visdom.http.server.swagger.SwaggerDocService
 
 
@@ -26,6 +28,8 @@ object SwaggerFetcherDocService extends SwaggerDocService {
         classOf[CommitService],
         classOf[FileService],
         classOf[PipelinesService],
+        classOf[ProjectService],
+        classOf[EventService],
         classOf[AllDataService],
         classOf[MultiService],
         classOf[InfoService]

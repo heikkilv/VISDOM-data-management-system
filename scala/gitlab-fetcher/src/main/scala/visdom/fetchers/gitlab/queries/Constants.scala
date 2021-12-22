@@ -18,6 +18,7 @@ object Constants {
     final val QueryNotFoundStatus: String = "NotFound"
     final val QueryErrorStatus: String = "InternalServerError"
 
+    final val DateFormat = "date"
     final val DateTimeFormat = "date-time"
 
     final val StatusInvalidDescription = "The request contained invalid or missing parameters"
@@ -25,6 +26,10 @@ object Constants {
     final val StatusNotFoundDescription = "The asked project or reference was not found"
     final val StatusErrorDescription = "Internal server error"
 
+    final val ParameterActionType = "actionType"
+    final val ParameterDateAfter = "dateAfter"
+    final val ParameterDateBefore = "dateBefore"
+    final val ParameterProjectId = "projectId"
     final val ParameterProjectName = "projectName"
     final val ParameterProjectNames = "projectNames"
     final val ParameterReference = "reference"
@@ -39,8 +44,12 @@ object Constants {
     final val ParameterIncludeJobLogs = "includeJobLogs"
     final val ParameterIncludeReports = "includeReports"
     final val ParameterRecursive = "recursive"
+    final val ParameterTargetType = "targetType"
     final val ParameterUseAnonymization = "useAnonymization"
+    final val ParameterUserId = "userId"
 
+    final val ParameterDescriptionActionType = "include only events of a particular action type, https://docs.gitlab.com/ee/api/events.html#actions"
+    final val ParameterDescriptionProjectId = "the GitLab project id"
     final val ParameterDescriptionProjectName = "the GitLab project name"
     final val ParameterDescriptionProjectNames = "a comma-separated list for GitLab project names"
     final val ParameterDescriptionReference = "the reference (branch or tag) for the project"
@@ -54,7 +63,9 @@ object Constants {
     final val ParameterDescriptionIncludeJobLogs = "whether job logs are included or not (only applicable when includeJobs is true)"
     final val ParameterDescriptionIncludeReports = "whether to include the pipeline test reports or not"
     final val ParameterDescriptionRecursive = "whether to use recursive search or not"
+    final val ParameterDescriptionTargetType = "include only events of a particular target type, https://docs.gitlab.com/ee/api/events.html#target-types"
     final val ParameterDescriptionUseAnonymization = "whether to anonymize the user information"
+    final val ParameterDescriptionUserId = "the id or username of the GitLab user"
 
     final val ParameterDefaultReference = "master"
     final val ParameterDefaultIncludeStatisticsString = FalseString
@@ -66,8 +77,40 @@ object Constants {
     final val ParameterDefaultIncludeReportsString = TrueString
     final val ParameterDefaultRecursiveString = TrueString
     final val ParameterDefaultUseAnonymization = TrueString
+    final val ParameterExampleProjectId = "1234"
     final val ParameterExampleProjectName = "group/my-project-name"
     final val ParameterExampleProjectNames = "group/project-name1,group/project-name2"
+    final val ParameterExampleUserId = "username"
+
+    final val ActionTypeApproved = "approved"
+    final val ActionTypeClosed = "closed"
+    final val ActionTypeCommented = "commented"
+    final val ActionTypeCreated = "created"
+    final val ActionTypeDestroyed = "destroyed"
+    final val ActionTypeExpired = "expired"
+    final val ActionTypeJoined = "joined"
+    final val ActionTypeLeft = "left"
+    final val ActionTypeMerged = "merged"
+    final val ActionTypePushed = "pushed"
+    final val ActionTypeReopened = "reopened"
+    final val ActionTypeUpdated = "updated"
+    final val ActionTypes: Set[String] = Set(
+        ActionTypeApproved, ActionTypeClosed, ActionTypeCommented, ActionTypeCreated, ActionTypeDestroyed,
+        ActionTypeExpired, ActionTypeJoined, ActionTypeLeft, ActionTypeMerged, ActionTypePushed,
+        ActionTypeReopened, ActionTypeUpdated
+    )
+
+    final val TargetTypeIssue = "issue"
+    final val TargetTypeMilestone = "milestone"
+    final val TargetTypeMergeRequest = "merge_request"
+    final val TargetTypeNote = "note"
+    final val TargetTypeProject = "project"
+    final val TargetTypeSnippet = "snippet"
+    final val TargetTypeUser = "user"
+    final val TargetTypes: Set[String] = Set(
+        TargetTypeIssue, TargetTypeMilestone, TargetTypeMergeRequest, TargetTypeNote,
+        TargetTypeProject, TargetTypeSnippet, TargetTypeUser
+    )
 
     // the example responses and their names for that can common for the various endpoints
     final val ResponseExampleAcceptedName = "Successful response example"
@@ -86,6 +129,11 @@ object Constants {
     final val ResponseExampleInvalid3 = """{
         "status": "BadRequest",
         "description": "'name1,,name3'' is not a valid comma-separated list of project names"
+    }"""
+    final val ResponseExampleInvalidName4 = "Invalid action type"
+    final val ResponseExampleInvalid4 = """{
+        "status": "BadRequest",
+        "description": "'committed'' is not a valid value for actionType"
     }"""
 
     final val ResponseExampleUnauthorizedName = "Unauthorized response example"

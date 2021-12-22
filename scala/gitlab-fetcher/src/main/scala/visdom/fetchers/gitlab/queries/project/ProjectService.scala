@@ -1,12 +1,10 @@
-package visdom.fetchers.gitlab.queries.all
+package visdom.fetchers.gitlab.queries.project
 
 import akka.actor.ActorRef
-import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.RequestContext
 import akka.http.scaladsl.server.Route
 import akka.http.scaladsl.server.RouteResult
-import akka.pattern.ask
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.enums.ParameterIn
@@ -21,67 +19,42 @@ import jakarta.ws.rs.core.MediaType
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import visdom.fetchers.gitlab.queries.Constants
-import visdom.http.server.ServerProtocol
-import visdom.http.server.GitlabFetcherResponseHandler
-import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
-import visdom.http.server.response.ResponseProblem
 import visdom.http.server.response.ResponseAccepted
+import visdom.http.server.response.ResponseProblem
+import visdom.http.server.fetcher.gitlab.ProjectQueryOptions
+import visdom.http.server.GitlabFetcherResponseHandler
 import visdom.utils.WarningConstants
 
 
 // scalastyle:off method.length
 @SuppressWarnings(Array(WarningConstants.UnusedMethodParameter))
-@Path(AllDataConstants.AllDataRootPath)
-class AllDataService(allDataActor: ActorRef)(implicit executionContext: ExecutionContext)
+@Path(ProjectConstants.ProjectRootPath)
+class ProjectService(projectActor: ActorRef)(implicit executionContext: ExecutionContext)
 extends Directives
-with GitlabFetcherResponseHandler
-{
+with GitlabFetcherResponseHandler {
     val route: Route = (
-        getAllDataRoute
+        getFileRoute
     )
 
     @GET
     @Produces(Array(MediaType.APPLICATION_JSON))
     @Operation(
-        summary = AllDataConstants.AllDataEndpointSummary,
-        description = AllDataConstants.AllDataEndpointDescription,
+        summary = ProjectConstants.ProjectEndpointSummary,
+        description = ProjectConstants.ProjectEndpointDescription,
         parameters = Array(
+            new Parameter(
+                name = Constants.ParameterProjectId,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = Constants.ParameterDescriptionProjectId,
+                example = Constants.ParameterExampleProjectId
+            ),
             new Parameter(
                 name = Constants.ParameterProjectName,
                 in = ParameterIn.QUERY,
-                required = true,
+                required = false,
                 description = Constants.ParameterDescriptionProjectName,
                 example = Constants.ParameterExampleProjectName
-            ),
-            new Parameter(
-                name = Constants.ParameterReference,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = Constants.ParameterDescriptionReference,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    defaultValue = Constants.ParameterDefaultReference
-                )
-            ),
-            new Parameter(
-                name = Constants.ParameterStartDate,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = AllDataConstants.ParameterDescriptionStartDate,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    format = Constants.DateTimeFormat
-                )
-            ),
-            new Parameter(
-                name = Constants.ParameterEndDate,
-                in = ParameterIn.QUERY,
-                required = false,
-                description = AllDataConstants.ParameterDescriptionEndDate,
-                schema = new Schema(
-                    implementation = classOf[String],
-                    format = Constants.DateTimeFormat
-                )
             ),
             new Parameter(
                 name = Constants.ParameterUseAnonymization,
@@ -98,14 +71,14 @@ with GitlabFetcherResponseHandler
         responses = Array(
             new ApiResponse(
                 responseCode = Constants.StatusAcceptedCode,
-                description = AllDataConstants.AllDataStatusAcceptedDescription,
+                description = ProjectConstants.ProjectStatusAcceptedDescription,
                 content = Array(
                     new Content(
                         schema = new Schema(implementation = classOf[ResponseAccepted]),
                         examples = Array(
                             new ExampleObject(
                                 name = Constants.ResponseExampleAcceptedName,
-                                value = AllDataConstants.AllDataResponseExampleAccepted
+                                value = ProjectConstants.ProjectResponseExampleAccepted
                             )
                         )
                     )
@@ -131,36 +104,6 @@ with GitlabFetcherResponseHandler
                 )
             ),
             new ApiResponse(
-                responseCode = Constants.StatusUnauthorizedCode,
-                description = Constants.StatusUnauthorizedDescription,
-                content = Array(
-                    new Content(
-                        schema = new Schema(implementation = classOf[ResponseProblem]),
-                        examples = Array(
-                            new ExampleObject(
-                                name = Constants.ResponseExampleUnauthorizedName,
-                                value = Constants.ResponseExampleUnauthorized
-                            )
-                        )
-                    )
-                )
-            ),
-            new ApiResponse(
-                responseCode = Constants.StatusNotFoundCode,
-                description = Constants.StatusNotFoundDescription,
-                content = Array(
-                    new Content(
-                        schema = new Schema(implementation = classOf[ResponseProblem]),
-                        examples = Array(
-                            new ExampleObject(
-                                name = Constants.ResponseExampleNotFoundName,
-                                value = Constants.ResponseExampleNotFound
-                            )
-                        )
-                    )
-                )
-            ),
-            new ApiResponse(
                 responseCode = Constants.StatusErrorCode,
                 description = Constants.StatusErrorDescription,
                 content = Array(
@@ -177,33 +120,26 @@ with GitlabFetcherResponseHandler
             )
         )
     )
-    def getAllDataRoute: RequestContext => Future[RouteResult] = (
-        path(AllDataConstants.AllDataPath) &
+    def getFileRoute: RequestContext => Future[RouteResult] = (
+        path(ProjectConstants.ProjectPath) &
         parameters(
-            Constants.ParameterProjectName.withDefault(""),
-            Constants.ParameterReference
-                .withDefault(Constants.ParameterDefaultReference),
-            Constants.ParameterStartDate.optional,
-            Constants.ParameterEndDate.optional,
+            Constants.ParameterProjectId.optional,
+            Constants.ParameterProjectName.optional,
             Constants.ParameterUseAnonymization
                 .withDefault(Constants.ParameterDefaultUseAnonymization)
         )
     ) {
         (
+            projectId,
             projectName,
-            reference,
-            startDate,
-            endDate,
             useAnonymization
         ) => get {
-            val options: AllDataQueryOptions = AllDataQueryOptions(
-                projectName,
-                reference,
-                startDate,
-                endDate,
-                useAnonymization
+            val options: ProjectQueryOptions = ProjectQueryOptions(
+                projectId = projectId,
+                projectName = projectName,
+                useAnonymization = useAnonymization
             )
-            getRoute(allDataActor, options)
+            getRoute(projectActor, options)
         }
     }
 }

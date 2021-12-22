@@ -1,4 +1,4 @@
-scalaVersion := "2.12.13"
+scalaVersion := "2.12.15"
 
 val coreDirectory: String = "core"
 val brokerDirectory: String = "broker"
@@ -42,3 +42,5 @@ lazy val adapterGeneralModel = project
     .in(file(adapterGeneralModelDirectory))
     .dependsOn(core)
     .dependsOn(coreAdapter)
+
+dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
