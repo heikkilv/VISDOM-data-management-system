@@ -27,4 +27,8 @@ RUN sbt gitlabFetcher/assembly
 
 FROM openjdk:8u292-jre-slim
 COPY --from=builder /builder/gitlab-fetcher/target/scala-2.12/gitlab-fetcher-0.2.jar /gitlab-fetcher-0.2.jar
+
+# to ensure that log4j exploits cannot be used
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS true
+
 CMD [ "java", "-jar", "/gitlab-fetcher-0.2.jar" ]

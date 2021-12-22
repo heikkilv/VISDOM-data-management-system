@@ -27,4 +27,8 @@ RUN sbt dataBroker/assembly
 
 FROM openjdk:8u292-jre-slim
 COPY --from=builder /builder/broker/target/scala-2.12/broker-0.2.jar /broker-0.2.jar
+
+# to ensure that log4j exploits cannot be used
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS true
+
 CMD [ "java", "-jar", "/broker-0.2.jar" ]

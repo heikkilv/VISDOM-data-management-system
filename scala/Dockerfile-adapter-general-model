@@ -66,4 +66,7 @@ ENV TARGET_JAR /${SPARK_APPLICATION_NAME}-${SPARK_APPLICATION_VERSION}.jar
 
 COPY --from=builder ${SOURCE_JAR} ${TARGET_JAR}
 
+# to ensure that log4j exploits cannot be used
+ENV LOG4J_FORMAT_MSG_NO_LOOKUPS true
+
 CMD [ "/submit.sh" ]
