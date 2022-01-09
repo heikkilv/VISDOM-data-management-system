@@ -8,8 +8,8 @@ import visdom.utils.CommonConstants
 
 
 object Session {
-    // Suppress the log messages
-    Logger.getLogger(CommonConstants.Org).setLevel(Level.OFF)
+    // Suppress the normal log messages
+    Logger.getLogger(CommonConstants.Org).setLevel(Level.ERROR)
 
     def getSparkSession(): SparkSession = {
         SparkSession
@@ -18,7 +18,6 @@ object Session {
             .appName(ApplicationName)
             .config(MongoInputUriSetting, DefaultMongoUri)
             .config(MongoOutputUriSetting, DefaultMongoUri)
-            .config(SparkCoresMax, SparkCoresMaxDefault)
             .config(SparkSchedulerMode, SparkSchedulerModeDefault)
             .config(SparkDynamicAllocationEnabled, SparkDynamicAllocationEnabledDefault)
             .config(SparkDynamicAllocationShuffleTrackingEnabled, SparkDynamicAllocationShuffleTrackingEnabledDefault)
