@@ -23,6 +23,23 @@ object GeneralUtils {
         }
     }
 
+    def toIntWithinInterval(stringValue: String, minValue: Option[Int], maxValue: Option[Int]): Option[Int] = {
+        val intValueOption: Option[Int] = toInt(stringValue)
+
+        val insideInterval: Boolean = intValueOption match {
+            case Some(intValue: Int) => (
+                (minValue.isEmpty || intValue >= minValue.getOrElse(0)) &&
+                (maxValue.isEmpty || intValue <= maxValue.getOrElse(0))
+            )
+            case None => false
+        }
+
+        insideInterval match {
+            case true => intValueOption
+            case false => None
+        }
+    }
+
     def toIntOption(value: Any): Option[Int] = {
         value match {
             case intValue: Int => Some(intValue)
@@ -126,23 +143,31 @@ object GeneralUtils {
         }
     }
 
-    def isIdNumber(idNumberString: String): Boolean = {
-        val idNumber: Int =
+    def isPositiveInteger(integerCandidateString: String): Boolean = {
+        val integerCandidate: Int =
             try {
-                idNumberString.toInt
+                integerCandidateString.toInt
             }
             catch {
                 case _: NumberFormatException => -1
             }
 
-        idNumber > 0
+        integerCandidate > 0
+    }
+
+    def isPositiveInteger(integerCandidateStringOption: Option[String]): Boolean = {
+        integerCandidateStringOption match {
+            case Some(integerCandidateString: String) => isPositiveInteger(integerCandidateString)
+            case None => true
+        }
+    }
+
+    def isIdNumber(idNumberString: String): Boolean = {
+        isPositiveInteger(idNumberString)
     }
 
     def isIdNumber(idNumberOption: Option[String]): Boolean = {
-        idNumberOption match {
-            case Some(idString: String) => isIdNumber(idString)
-            case None => true
-        }
+        isPositiveInteger(idNumberOption)
     }
 
     def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
