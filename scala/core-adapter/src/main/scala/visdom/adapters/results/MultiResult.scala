@@ -8,7 +8,7 @@ import visdom.json.JsonUtils
 
 
 
-case class MultiResult(
+final case class MultiResult(
     results: Seq[JsValue]
 )
 extends BaseResultValue {

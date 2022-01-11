@@ -6,7 +6,7 @@ import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
 
 
-case class Result(
+final case class Result(
     counts: ResultCounts,
     results: BaseResultValue
 ) {

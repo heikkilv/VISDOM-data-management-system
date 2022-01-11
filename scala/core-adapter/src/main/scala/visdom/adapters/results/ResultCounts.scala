@@ -1,7 +1,7 @@
 package visdom.adapters.results
 
 
-case class ResultCounts(
+final case class ResultCounts(
     count: Int,
     totalCount: Int,
     page: Int,

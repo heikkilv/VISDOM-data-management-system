@@ -7,7 +7,7 @@ import spray.json.JsValue
 import visdom.json.JsonUtils
 
 
-case class SingleResult(
+final case class SingleResult(
     result: JsObject
 )
 extends BaseResultValue {
