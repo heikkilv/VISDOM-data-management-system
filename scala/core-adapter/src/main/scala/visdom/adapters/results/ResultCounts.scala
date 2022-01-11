@@ -7,11 +7,16 @@ final case class ResultCounts(
     page: Int,
     pageSize: Int
 ) {
+    val maxPage: Int = pageSize == 0 match {
+        case true => 1
+        case false => (totalCount - 1) / pageSize + 1
+    }
+
     val previousPage: Option[Int] = page > 1 match {
-        case true => Some(page - 1)
+        case true => Some(Math.min(page - 1, maxPage))
         case false => None
     }
-    val nextPage: Option[Int] = page * pageSize < totalCount match {
+    val nextPage: Option[Int] = page < maxPage match {
         case true => Some(page + 1)
         case false => None
     }

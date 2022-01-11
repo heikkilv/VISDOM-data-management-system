@@ -25,11 +25,9 @@ object QueryUtils {
     ): Either[String, Result] = {
         val sparkSession: SparkSession = Session.getSparkSession()
         try {
-            Right(
-                Await.result(
-                    Future(runSparkQueryUsingCache(queryCode, queryType, queryOptions)),
-                    Duration(timeoutSeconds, TimeUnit.SECONDS)
-                )
+            Await.result(
+                Future(runSparkQueryUsingCache(queryCode, queryType, queryOptions)),
+                Duration(timeoutSeconds, TimeUnit.SECONDS)
             )
         } catch  {
             case error: TimeoutException => Left(error.getMessage())
@@ -40,28 +38,42 @@ object QueryUtils {
         queryCode: Int,
         queryType: Class[_ <: BaseQuery],
         queryOptions: BaseQueryOptions
-    ): Result = {
+    ): Either[String, Result] = {
         DefaultAdapterValues.cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: Result) => {
                 println(s"Using result from cache for query ${queryCode} with ${queryOptions}")
-                cachedResult
+                Right(cachedResult)
             }
             case None => {
-                val result: Result = runSparkQuery(queryType, queryOptions)
+                val result: Either[String, Result] = runSparkQuery(queryType, queryOptions)
 
-                DefaultAdapterValues.cache.addResult(queryCode, queryOptions, result)
+                result match {
+                    case Right(resultValue: Result) =>
+                        DefaultAdapterValues.cache.addResult(queryCode, queryOptions, resultValue)
+                    case _ =>
+                }
+
                 result
             }
         }
     }
 
-    def runSparkQuery(queryType: Class[_ <: BaseQuery], queryOptions: BaseQueryOptions): Result = {
+    def runSparkQuery[QueryOptions <: BaseQueryOptions](
+        queryType: Class[_ <: BaseQuery],
+        queryOptions: QueryOptions
+    ): Either[String, Result] = {
         val sparkSession: SparkSession = Session.getSparkSession()
-        val result: Result =
-            queryType
-                .getDeclaredConstructor()
-                .newInstance(queryOptions, sparkSession)
-                .getResults()
+        val result: Either[String, Result] =
+            try {
+                Right(
+                    queryType
+                        .getDeclaredConstructor(queryOptions.getClass(), classOf[SparkSession])
+                        .newInstance(queryOptions, sparkSession)
+                        .getResults()
+                )
+            } catch {
+                case error: java.lang.NoSuchMethodException => Left(error.toString())
+            }
 
         sparkSession.stop()
         result
