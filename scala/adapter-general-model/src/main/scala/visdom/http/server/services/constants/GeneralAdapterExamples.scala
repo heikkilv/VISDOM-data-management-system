@@ -11,4 +11,25 @@ object GeneralAdapterExamples {
         "apiAddress": "localhost:8795",
         "swaggerDefinition": "/api-docs/swagger.json"
     }"""
+
+    final val TestExampleOkName = "Test response example"
+    final val TestExampleOk = """{
+        "count": 2,
+        "total_count": 2,
+        "page": 1,
+        "page_size": 100,
+        "previous_page": null,
+        "next_page": null,
+        "results": [
+            {
+                "id": 1,
+                "data": "data1"
+            },
+            {
+                "id": 2,
+                "data": "data2"
+            }
+        ]
+    }
+    """
 }
