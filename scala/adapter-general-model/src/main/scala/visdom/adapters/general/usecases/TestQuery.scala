@@ -3,10 +3,7 @@ package visdom.adapters.general.usecases
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
-import visdom.database.mongodb.MongoConstants
-import visdom.spark.ConfigUtils
-import visdom.utils.SnakeCaseConstants
-import visdom.adapters.options.QueryWithOnlyPageOptions
+import visdom.adapters.options.QueryWithPageAndTokenOptions
 import visdom.adapters.queries.BaseQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.general.AdapterValues
@@ -14,9 +11,13 @@ import visdom.adapters.general.model.TestEvent
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.results.Result
 import visdom.adapters.utils.AdapterUtils
+import visdom.database.mongodb.MongoConstants
+import visdom.spark.ConfigUtils
+import visdom.utils.QueryUtils.EnrichedDataSet
+import visdom.utils.SnakeCaseConstants
 
 
-class TestQuery(queryOptions: QueryWithOnlyPageOptions, sparkSession: SparkSession)
+class TestQuery(queryOptions: QueryWithPageAndTokenOptions, sparkSession: SparkSession)
 extends BaseQuery(queryOptions, sparkSession) {
     import sparkSession.implicits.newProductEncoder
 
@@ -30,6 +31,7 @@ extends BaseQuery(queryOptions, sparkSession) {
                     MongoConstants.CollectionCommits
                 )
             )
+            .applyContainsFilter(SnakeCaseConstants.Message, queryOptions.token)
             .flatMap(row => CommitSchema.fromRow(row))
             .map(commitSchema => TestEvent.fromCommitSchema(commitSchema))
     }

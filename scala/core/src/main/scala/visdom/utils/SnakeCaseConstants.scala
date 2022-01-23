@@ -103,6 +103,7 @@ object SnakeCaseConstants {
     val SwaggerDefinition: String = "swagger_definition"
     val Time: String = "time"
     val Timestamp: String = "timestamp"
+    val Token: String = "token"
     val TotalCount: String = "total_count"
     val Type: String = "type"
     val Url: String = "url"
