@@ -290,6 +290,6 @@ object GeneralUtils {
     }
 
     def getUuid(inputString: String, otherInputs: String*): String = {
-        getUuid((Seq(inputString) ++ otherInputs.toSeq).mkString(CommonConstants.DoubleDot))
+        getUuid((Seq(inputString) ++ otherInputs).mkString(CommonConstants.DoubleDot))
     }
 }
