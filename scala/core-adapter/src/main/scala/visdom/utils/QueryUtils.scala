@@ -2,7 +2,9 @@ package visdom.utils
 
 import java.util.concurrent.TimeoutException
 import java.util.concurrent.TimeUnit
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.sql.functions
 import scala.concurrent.Await
 import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
@@ -16,6 +18,24 @@ import visdom.spark.Session
 
 object QueryUtils {
     implicit val ec: ExecutionContext = ExecutionContext.global
+
+    implicit class EnrichedDataSet[DataSetType, FilterType](dataset: Dataset[DataSetType]) {
+        def applyContainsFilter(columnName: String, valueOption: Option[FilterType]): Dataset[DataSetType] = {
+            valueOption match {
+                case Some(filterValue) =>
+                    dataset.filter(functions.column(columnName).contains(filterValue))
+                case None => dataset
+            }
+        }
+
+        def applyEqualsFilter(columnName: String, valueOption: Option[FilterType]): Dataset[DataSetType] = {
+            valueOption match {
+                case Some(filterValue) =>
+                    dataset.filter(functions.column(columnName) === filterValue)
+                case None => dataset
+            }
+        }
+    }
 
     def runQuery(
         queryCode: Int,
