@@ -36,7 +36,7 @@ extends BaseQuery(queryOptions, sparkSession) {
 
     def getResults(): Result = {
         val events: Dataset[TestEvent] = getEvents()
-        AdapterUtils.getResult(events, queryOptions, SnakeCaseConstants.Timestamp)
+        AdapterUtils.getResult(events, queryOptions, SnakeCaseConstants.Id)
     }
 }
 
