@@ -284,4 +284,12 @@ object GeneralUtils {
             }
         }
     }
+
+    def getUuid(inputString: String): String = {
+        memeid4s.UUID.V5(memeid4s.UUID.Nil, inputString).toString()
+    }
+
+    def getUuid(inputString: String, otherInputs: String*): String = {
+        getUuid((Seq(inputString) ++ otherInputs.toSeq).mkString(CommonConstants.DoubleDot))
+    }
 }

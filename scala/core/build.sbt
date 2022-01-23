@@ -14,8 +14,10 @@ val ScalaTestVersion: String = "3.2.10"
 val ScapeGoatVersion: String = "1.4.11"
 val SprayJsonVersion: String = "1.3.6"
 val SwaggerAkkaVersion: String = "2.6.0"
+val UuidVersion: String = "0.4.0"
 
 libraryDependencies ++= Seq(
+    "com.47deg" %% "memeid4s" % UuidVersion,
     "com.github.swagger-akka-http" %% "swagger-akka-http" % SwaggerAkkaVersion,
     "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
     "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
