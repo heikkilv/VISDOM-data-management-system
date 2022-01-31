@@ -3,6 +3,7 @@ package visdom.adapters.general.usecases
 import com.mongodb.spark.MongoSpark
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import visdom.adapters.general.model.results.CommitEventResult
 import visdom.adapters.options.QueryWithPageAndTokenOptions
 import visdom.adapters.queries.BaseQuery
 import visdom.adapters.queries.IncludesQueryCode
@@ -21,7 +22,7 @@ class TestQuery(queryOptions: QueryWithPageAndTokenOptions, sparkSession: SparkS
 extends BaseQuery(queryOptions, sparkSession) {
     import sparkSession.implicits.newProductEncoder
 
-    def getEvents(): Dataset[TestEvent] = {
+    def getEvents(): Dataset[CommitEventResult] = {
         MongoSpark
             .load[CommitSchema](
                 sparkSession,
@@ -33,11 +34,11 @@ extends BaseQuery(queryOptions, sparkSession) {
             )
             .applyContainsFilter(SnakeCaseConstants.Message, queryOptions.token)
             .flatMap(row => CommitSchema.fromRow(row))
-            .map(commitSchema => TestEvent.fromCommitSchema(commitSchema))
+            .map(commitSchema => CommitEventResult.fromCommitSchema(commitSchema))
     }
 
     def getResults(): Result = {
-        val events: Dataset[TestEvent] = getEvents()
+        val events: Dataset[CommitEventResult] = getEvents()
         AdapterUtils.getResult(events, queryOptions, SnakeCaseConstants.Id)
     }
 }
