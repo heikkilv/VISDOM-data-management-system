@@ -6,7 +6,7 @@ import spray.json.JsObject
 import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.results.Result
 import visdom.database.mongodb.MongoConnection
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 
 
 class QueryCache(databases: Seq[String]) {
@@ -40,7 +40,7 @@ class QueryCache(databases: Seq[String]) {
                                 Some(
                                     lastUpdateTime match {
                                         case Some(oldUpdateTime: Instant) =>
-                                            GeneralUtils.getLaterInstant(newUpdateTime, oldUpdateTime)
+                                            TimeUtils.getLaterInstant(newUpdateTime, oldUpdateTime)
                                         case None => newUpdateTime
                                     }
                                 )

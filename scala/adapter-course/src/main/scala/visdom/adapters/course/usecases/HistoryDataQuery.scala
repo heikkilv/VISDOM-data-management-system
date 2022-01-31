@@ -40,13 +40,14 @@ import visdom.utils.CourseUtils
 import visdom.utils.GeneralUtils
 import visdom.utils.PascalCaseConstants
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.TimeUtils
 
 // TODO: This file contains a lot copy-pasted code from CourseDataQuery. Restructure them properly
 
 
 class HistoryDataQuery(queryOptions: HistoryDataQueryOptions) {
     val queryCode: Int = 3
-    val currentTime: String = GeneralUtils.getCurrentTimeString()
+    val currentTime: String = TimeUtils.getCurrentTimeString()
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder

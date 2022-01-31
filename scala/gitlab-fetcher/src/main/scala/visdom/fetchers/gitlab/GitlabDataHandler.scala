@@ -14,8 +14,9 @@ import scalaj.http.HttpResponse
 import visdom.fetchers.DataHandler
 import visdom.http.HttpConstants
 import visdom.http.HttpUtils
-import visdom.utils.GeneralUtils
 import visdom.json.JsonUtils
+import visdom.utils.GeneralUtils
+import visdom.utils.HashUtils
 
 
 abstract class GitlabDataHandler(options: GitlabFetchOptions)
@@ -88,11 +89,11 @@ extends DataHandler(options) {
     override def getProjectName(): Option[String] = {
         options match {
             case GitlabCommitOptions(_, _, projectName, _, _, _, _, _, _, _, useAnonymization) =>
-                Some(GeneralUtils.getHash(projectName, useAnonymization))
+                Some(HashUtils.getHash(projectName, useAnonymization))
             case GitlabFileOptions(_, _, projectName, _, _, _, _, useAnonymization) =>
-                Some(GeneralUtils.getHash(projectName, useAnonymization))
+                Some(HashUtils.getHash(projectName, useAnonymization))
             case GitlabPipelinesOptions(_, _, projectName, _, _, _, _, _, _, useAnonymization) =>
-                Some(GeneralUtils.getHash(projectName, useAnonymization))
+                Some(HashUtils.getHash(projectName, useAnonymization))
             case GitlabCommitLinkOptions(_, _, projectName, _) =>
                 Some(projectName)
             case _ => None

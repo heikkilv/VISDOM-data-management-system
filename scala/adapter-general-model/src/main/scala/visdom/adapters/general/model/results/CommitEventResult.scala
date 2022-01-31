@@ -42,7 +42,7 @@ extends BaseResultValue {
                 SnakeCaseConstants.RelatedConstructs ->
                     JsonUtils.toBsonValue(relatedConstructs.map(link => link.toBsonValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toBsonValue(relatedEvents.map(link => link.toBsonValue())),
+                    JsonUtils.toBsonValue(relatedEvents.map(link => link.toBsonValue()))
             )
         )
     }
@@ -62,7 +62,7 @@ extends BaseResultValue {
                 SnakeCaseConstants.RelatedConstructs ->
                     JsonUtils.toJsonValue(relatedConstructs.map(link => link.toJsValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toJsonValue(relatedEvents.map(link => link.toJsValue())),
+                    JsonUtils.toJsonValue(relatedEvents.map(link => link.toJsValue()))
             )
         )
     }

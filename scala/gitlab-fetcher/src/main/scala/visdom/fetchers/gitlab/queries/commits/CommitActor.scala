@@ -18,7 +18,7 @@ import visdom.fetchers.gitlab.queries.Constants
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.fetcher.gitlab.CommitQueryOptions
 import visdom.http.server.ResponseUtils
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -60,8 +60,8 @@ class CommitActor extends Actor with ActorLogging {
 object CommitActor {
     // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: CommitQueryOptions): Either[String, CommitSpecificFetchParameters] = {
-        val startDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.startDate)
-        val endDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.endDate)
+        val startDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.endDate)
         val filePath: Option[String] = CommonHelpers.toFilePath(queryOptions.filePath)
 
         if (!CommonHelpers.isProjectName(queryOptions.projectName)) {
@@ -76,7 +76,7 @@ object CommitActor {
         else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
             Left(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
-        else if (startDate.isDefined && endDate.isDefined && !GeneralUtils.lessOrEqual(startDate, endDate)) {
+        else if (startDate.isDefined && endDate.isDefined && !TimeUtils.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
         else if (queryOptions.filePath.isDefined && !filePath.isDefined) {

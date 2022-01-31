@@ -24,8 +24,10 @@ import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
 import visdom.utils.FileUtils
+import visdom.utils.GeneralUtils
+import visdom.utils.HashUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -79,7 +81,7 @@ object JsonUtils {
         }
 
         def getZonedDateTimeOption(key: Any): Option[ZonedDateTime] = {
-            GeneralUtils.toZonedDateTime(document.getStringOption(key))
+            TimeUtils.toZonedDateTime(document.getStringOption(key))
         }
 
         def getDocumentOption(key: Any): Option[BsonDocument] = {
@@ -351,11 +353,11 @@ object JsonUtils {
             case BsonType.STRING => {
                 val stringValue: String = value.asString().getValue()
                 stringValue.nonEmpty match {
-                    case true => toBsonValue(GeneralUtils.getHash(stringValue))
+                    case true => toBsonValue(HashUtils.getHash(stringValue))
                     case false => value  // empty string is not hashed
                 }
             }
-            case BsonType.INT32 => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
+            case BsonType.INT32 => toBsonValue(HashUtils.getHash(value.asInt32().getValue()))
             case _ => value  // values other than strings or integers are not hashed
         }
     }

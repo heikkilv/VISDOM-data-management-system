@@ -53,6 +53,7 @@ object CommitSchema extends BaseSchemaTrait[CommitSchema] {
         FieldDataType(SnakeCaseConstants.Links, false)
     )
 
+    // scalastyle:off method.length
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def transformValues(valueOptions: Seq[Option[Any]]): Option[CommitSchema] = {
         toOption(
@@ -119,4 +120,5 @@ object CommitSchema extends BaseSchemaTrait[CommitSchema] {
             case None => None
         }
     }
+    // scalastyle:on method.length
 }

@@ -20,7 +20,7 @@ import visdom.fetchers.gitlab.queries.project.ProjectActor
 import visdom.http.server.fetcher.gitlab.AllDataQueryOptions
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -64,8 +64,8 @@ object AllDataActor {
 
     // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: AllDataQueryOptions): Either[String, AllDataSpecificFetchParameters] = {
-        val startDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.startDate)
-        val endDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.endDate)
+        val startDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.endDate)
 
         if (!CommonHelpers.isProjectName(queryOptions.projectName)) {
             Left(s"'${queryOptions.projectName}' is not a valid project name")
@@ -79,7 +79,7 @@ object AllDataActor {
         else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
             Left(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
-        else if (startDate.isDefined && endDate.isDefined && !GeneralUtils.lessOrEqual(startDate, endDate)) {
+        else if (startDate.isDefined && endDate.isDefined && !TimeUtils.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
         else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {

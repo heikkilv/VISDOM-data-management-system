@@ -20,7 +20,7 @@ import visdom.http.server.fetcher.gitlab.Projects
 import visdom.http.server.response.StatusResponse
 import visdom.http.server.ResponseUtils
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -65,8 +65,8 @@ object MultiActor {
     // scalastyle:off cyclomatic.complexity
     def checkQueryOptions(queryOptions: MultiQueryOptions): Option[String] = {
         val filePath: Option[String] = CommonHelpers.toFilePath(queryOptions.filePath)
-        val startDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.startDate)
-        val endDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.endDate)
+        val startDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.endDate)
 
         if (!CommonHelpers.isProjectNameSequence(queryOptions.projectNames)) {
             Some(s"'${queryOptions.projectNames}' is not a valid comma-separated list of project names")
@@ -86,7 +86,7 @@ object MultiActor {
         else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
             Some(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
-        else if (startDate.isDefined && endDate.isDefined && !GeneralUtils.lessOrEqual(startDate, endDate)) {
+        else if (startDate.isDefined && endDate.isDefined && !TimeUtils.lessOrEqual(startDate, endDate)) {
             Some("the endDate must be later than the startDate")
         }
         else if (!Constants.BooleanStrings.contains(queryOptions.useAnonymization)) {
@@ -111,8 +111,8 @@ object MultiActor {
                         reference = queryOptions.reference,
                         filePath = queryOptions.filePath,
                         recursive = queryOptions.recursive.toBoolean,
-                        startDate = GeneralUtils.toZonedDateTime(queryOptions.startDate),
-                        endDate = GeneralUtils.toZonedDateTime(queryOptions.endDate),
+                        startDate = TimeUtils.toZonedDateTime(queryOptions.startDate),
+                        endDate = TimeUtils.toZonedDateTime(queryOptions.endDate),
                         useAnonymization = queryOptions.useAnonymization.toBoolean,
                         projects = projectAvailability
                     )

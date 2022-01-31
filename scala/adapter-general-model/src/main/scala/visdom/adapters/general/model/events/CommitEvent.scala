@@ -11,6 +11,7 @@ import visdom.adapters.general.model.events.data.CommitData
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.adapters.general.model.artifacts.FileArtifact
 
 
@@ -69,10 +70,14 @@ extends Event {
 object CommitEvent {
     final val CommitEventType: String = "commit"
 
-    final val DefaultTime: ZonedDateTime = ZonedDateTime.of(1970, 1, 1, 0, 0, 0, 0, ZoneId.of(CommonConstants.UTC))
+    final val DefaultYear: Int = 1970
+    final val DefaultMonth: Int = 1
+    final val DefaultDay: Int = 1
+    final val DefaultTime: ZonedDateTime =
+        ZonedDateTime.of(DefaultYear, DefaultMonth, DefaultDay, 0, 0, 0, 0, ZoneId.of(CommonConstants.UTC))
 
     def toZonedDateTime(dateTimeString: String): ZonedDateTime = {
-        GeneralUtils.toZonedDateTime(dateTimeString) match {
+        TimeUtils.toZonedDateTime(dateTimeString) match {
             case Some(dateTimeValue: ZonedDateTime) => dateTimeValue
             case None => DefaultTime
         }

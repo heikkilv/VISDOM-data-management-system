@@ -10,6 +10,7 @@ import org.apache.spark.sql.functions.udf
 import spray.json.JsArray
 import spray.json.JsObject
 import spray.json.JsString
+import visdom.adapters.course.AdapterValues
 import visdom.adapters.course.AdapterValues.aPlusDatabaseName
 import visdom.adapters.course.AdapterValues.gitlabDatabaseName
 import visdom.adapters.course.schemas.CommitIdListSchema
@@ -37,12 +38,12 @@ import visdom.spark.Session
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
-import visdom.adapters.course.AdapterValues
+import visdom.utils.TimeUtils
 
 
 class CourseDataQuery(queryOptions: CourseDataQueryOptions) {
     val queryCode: Int = 1
-    val currentTime: String = GeneralUtils.getCurrentTimeString()
+    val currentTime: String = TimeUtils.getCurrentTimeString()
     val sparkSession: SparkSession = Session.getSparkSession()
     import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
