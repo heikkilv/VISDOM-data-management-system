@@ -26,4 +26,5 @@ object CommonConstants {
     final val Name: String = "name"
     final val Org: String = "org"
     final val Unknown: String = "unknown"
+    final val UTC: String = "UTC"
 }

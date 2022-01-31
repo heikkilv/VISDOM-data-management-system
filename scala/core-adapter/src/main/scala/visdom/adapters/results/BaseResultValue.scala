@@ -4,7 +4,7 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsValue
 
 
-abstract class BaseResultValue {
+trait BaseResultValue {
     def toBsonValue(): BsonValue
     def toJsValue(): JsValue
 }

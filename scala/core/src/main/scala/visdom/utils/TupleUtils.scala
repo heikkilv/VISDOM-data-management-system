@@ -22,6 +22,18 @@ object TupleUtils {
             elements match {case Seq(a, b, c, d, e, f, g, h, i, j, k, l) => (a, b, c, d, e, f, g, h, i, j, k, l)}
         def toTuple13: (A, A, A, A, A, A, A, A, A, A, A, A, A) =
             elements match {case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m) => (a, b, c, d, e, f, g, h, i, j, k, l, m)}
+        def toTuple14: (A, A, A, A, A, A, A, A, A, A, A, A, A, A) = elements match {
+            case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n) => (a, b, c, d, e, f, g, h, i, j, k, l, m, n)
+        }
+        def toTuple15: (A, A, A, A, A, A, A, A, A, A, A, A, A, A, A) = elements match {
+            case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o) => (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o)
+        }
+        def toTuple16: (A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A) = elements match {
+            case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p) => (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p)
+        }
+        def toTuple17: (A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A) = elements match {
+            case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) => (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)
+        }
     }
 
     def toOption[A, B](
@@ -301,6 +313,152 @@ object TupleUtils {
                     Some(
                         value1, value2, value3, value4, value5, value6, value7,
                         value8, value9, value10, value11, value12, value13
+                    )
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def toOption[A, B, C, D, E, F, G, H, I, J, K, L, M, N](
+        values: (Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D], (Any) => Option[E],
+            (Any) => Option[F], (Any) => Option[G], (Any) => Option[H], (Any) => Option[I], (Any) => Option[J],
+            (Any) => Option[K], (Any) => Option[L], (Any) => Option[M], (Any) => Option[N]
+        )
+    ): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => toOption(
+                (
+                    values._2, values._3, values._4, values._5, values._6, values._7, values._8,
+                    values._9, values._10, values._11, values._12, values._13, values._14
+                ),
+                (
+                    transformations._2, transformations._3, transformations._4, transformations._5,
+                    transformations._6, transformations._7, transformations._8, transformations._9,
+                    transformations._10, transformations._11, transformations._12, transformations._13,
+                    transformations._14
+                )
+            ) match {
+                case Some((
+                    value2, value3, value4, value5, value6, value7, value8,
+                    value9, value10, value11, value12, value13, value14
+                )) =>
+                    Some(
+                        value1, value2, value3, value4, value5, value6, value7,
+                        value8, value9, value10, value11, value12, value13, value14
+                    )
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def toOption[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O](
+        values: (Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D], (Any) => Option[E],
+            (Any) => Option[F], (Any) => Option[G], (Any) => Option[H], (Any) => Option[I], (Any) => Option[J],
+            (Any) => Option[K], (Any) => Option[L], (Any) => Option[M], (Any) => Option[N], (Any) => Option[O]
+        )
+    ): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => toOption(
+                (
+                    values._2, values._3, values._4, values._5, values._6, values._7, values._8,
+                    values._9, values._10, values._11, values._12, values._13, values._14, values._15
+                ),
+                (
+                    transformations._2, transformations._3, transformations._4, transformations._5,
+                    transformations._6, transformations._7, transformations._8, transformations._9,
+                    transformations._10, transformations._11, transformations._12, transformations._13,
+                    transformations._14, transformations._15
+                )
+            ) match {
+                case Some((
+                    value2, value3, value4, value5, value6, value7, value8,
+                    value9, value10, value11, value12, value13, value14, value15
+                )) =>
+                    Some(
+                        value1, value2, value3, value4, value5, value6, value7, value8,
+                        value9, value10, value11, value12, value13, value14, value15
+                    )
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def toOption[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](
+        values: (Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D], (Any) => Option[E],
+            (Any) => Option[F], (Any) => Option[G], (Any) => Option[H], (Any) => Option[I], (Any) => Option[J],
+            (Any) => Option[K], (Any) => Option[L], (Any) => Option[M], (Any) => Option[N], (Any) => Option[O],
+            (Any) => Option[P]
+        )
+    ): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => toOption(
+                (
+                    values._2, values._3, values._4, values._5, values._6, values._7, values._8, values._9,
+                    values._10, values._11, values._12, values._13, values._14, values._15, values._16
+                ),
+                (
+                    transformations._2, transformations._3, transformations._4, transformations._5,
+                    transformations._6, transformations._7, transformations._8, transformations._9,
+                    transformations._10, transformations._11, transformations._12, transformations._13,
+                    transformations._14, transformations._15, transformations._16
+                )
+            ) match {
+                case Some((
+                    value2, value3, value4, value5, value6, value7, value8, value9,
+                    value10, value11, value12, value13, value14, value15, value16
+                )) =>
+                    Some(
+                        value1, value2, value3, value4, value5, value6, value7, value8,
+                        value9, value10, value11, value12, value13, value14, value15, value16
+                    )
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def toOption[A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](
+        values: (Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any, Any),
+        transformations: (
+            (Any) => Option[A], (Any) => Option[B], (Any) => Option[C], (Any) => Option[D], (Any) => Option[E],
+            (Any) => Option[F], (Any) => Option[G], (Any) => Option[H], (Any) => Option[I], (Any) => Option[J],
+            (Any) => Option[K], (Any) => Option[L], (Any) => Option[M], (Any) => Option[N], (Any) => Option[O],
+            (Any) => Option[P], (Any) => Option[Q]
+        )
+    ): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] = {
+        transformations._1(values._1) match {
+            case Some(value1) => toOption(
+                (
+                    values._2, values._3, values._4, values._5, values._6, values._7, values._8, values._9,
+                    values._10, values._11, values._12, values._13, values._14, values._15, values._16, values._17
+                ),
+                (
+                    transformations._2, transformations._3, transformations._4, transformations._5,
+                    transformations._6, transformations._7, transformations._8, transformations._9,
+                    transformations._10, transformations._11, transformations._12, transformations._13,
+                    transformations._14, transformations._15, transformations._16, transformations._17
+                )
+            ) match {
+                case Some((
+                    value2, value3, value4, value5, value6, value7, value8, value9,
+                    value10, value11, value12, value13, value14, value15, value16, value17
+                )) =>
+                    Some(
+                        value1, value2, value3, value4, value5, value6, value7, value8, value9,
+                        value10, value11, value12, value13, value14, value15, value16, value17
                     )
                 case None => None
             }

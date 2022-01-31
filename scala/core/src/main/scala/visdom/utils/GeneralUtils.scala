@@ -170,15 +170,18 @@ object GeneralUtils {
         isPositiveInteger(idNumberOption)
     }
 
+    def toZonedDateTime(dateTimeString: String): Option[ZonedDateTime] = {
+        try {
+            Some(ZonedDateTime.parse(dateTimeString))
+        }
+        catch {
+            case error: DateTimeParseException => None
+        }
+    }
+
     def toZonedDateTime(dateTimeStringOption: Option[String]): Option[ZonedDateTime] = {
         dateTimeStringOption match {
-            case Some(dateTimeString: String) =>
-                try {
-                    Some(ZonedDateTime.parse(dateTimeString))
-                }
-                catch {
-                    case error: DateTimeParseException => None
-                }
+            case Some(dateTimeString: String) => toZonedDateTime(dateTimeString)
             case None => None
         }
     }
@@ -291,5 +294,29 @@ object GeneralUtils {
 
     def getUuid(inputString: String, otherInputs: String*): String = {
         getUuid((Seq(inputString) ++ otherInputs).mkString(CommonConstants.DoubleDot))
+    }
+
+    def seqOfSeqToSeq[A, B](itemSeq: Seq[(A, Seq[B])]): Seq[(A, B)] = {
+        itemSeq
+            .map({case (a, bSeq) => bSeq.map(b => (a, b))})
+            .flatten
+    }
+
+    def mapOfSeqToSeq[A, B](itemMap: Map[A, Seq[B]]): Seq[(A, B)] = {
+        seqOfSeqToSeq(itemMap.toSeq)
+    }
+
+    def mapOfSeqToSeq[A, B](itemMap: scala.collection.mutable.Map[A, Seq[B]]): Seq[(A, B)] = {
+        seqOfSeqToSeq(itemMap.toSeq)
+    }
+
+    def addItemToMapOfSeq[A, B](itemMap: scala.collection.mutable.Map[A, Seq[B]], key: A, value: B): Unit = {
+        itemMap.get(key) match {
+            case Some(currentValues: Seq[B]) => currentValues.contains(value) match {
+                case true =>
+                case false => itemMap.update(key, currentValues ++ Seq(value))
+            }
+            case None => itemMap.update(key, Seq(value))
+        }
     }
 }
