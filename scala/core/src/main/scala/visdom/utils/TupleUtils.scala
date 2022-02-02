@@ -1,6 +1,10 @@
 package visdom.utils
 
+import scala.reflect.ClassTag
+import shapeless.syntax.std.tuple.productTupleOps
 
+
+// scalastyle:off number.of.methods
 object TupleUtils {
     implicit class EnrichedWithToTuple[A](elements: Seq[A]) {
         def toTuple1: Tuple1[A] = elements match {case Seq(a) => Tuple1(a)}
@@ -33,6 +37,203 @@ object TupleUtils {
         }
         def toTuple17: (A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A, A) = elements match {
             case Seq(a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q) => (a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q)
+        }
+    }
+
+    def toTuple[A : ClassTag](items: Seq[Any]): Option[Tuple1[A]] = {
+        items.headOption match {
+            case Some(itemA: A) => Some(Tuple1(itemA))
+            case _ => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag](items: Seq[Any]): Option[(A, B)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B](items.drop(1)) match {
+                case Some(lastItem) => Some((firstItem._1, lastItem._1))
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag](items: Seq[Any]): Option[(A, B, C)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag](items: Seq[Any]): Option[(A, B, C, D)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag,
+                D : ClassTag, E : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag,
+                E : ClassTag, F : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag,
+                E : ClassTag, F : ClassTag, G : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag,
+                F : ClassTag, G : ClassTag, H : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag,
+                G : ClassTag, H : ClassTag, I : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag, G : ClassTag,
+                H : ClassTag, I : ClassTag, J : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag,
+                F : ClassTag, G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag,
+                K : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag,
+                F : ClassTag, G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag,
+                K : ClassTag, L : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag,
+                G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag,
+                M : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag,
+                G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag,
+                M : ClassTag, N : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag, G : ClassTag,
+                H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag, M : ClassTag, N : ClassTag,
+                O : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N, O](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag,
+                F : ClassTag, G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag,
+                K : ClassTag, L : ClassTag, M : ClassTag, N : ClassTag, O : ClassTag,
+                P : ClassTag](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N, O, P](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag,
+                G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag,
+                M : ClassTag, N : ClassTag, O : ClassTag, P : ClassTag, Q : ClassTag
+               ](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
         }
     }
 
@@ -466,3 +667,4 @@ object TupleUtils {
         }
     }
 }
+// scalastyle:on number.of.methods
