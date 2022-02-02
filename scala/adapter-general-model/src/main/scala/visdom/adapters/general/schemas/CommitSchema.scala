@@ -1,13 +1,12 @@
 package visdom.adapters.general.schemas
 
 import visdom.adapters.schemas.BaseSchema
-import visdom.adapters.schemas.BaseSchemaTrait
-import visdom.spark.FieldDataType
+import visdom.adapters.schemas.BaseSchemaTrait2
+import visdom.spark.FieldDataModel
 import visdom.utils.GeneralUtils.toStringOption
 import visdom.utils.GeneralUtils.toStringSeqOption
 import visdom.utils.SnakeCaseConstants
-import visdom.utils.TupleUtils.toOption
-import visdom.utils.TupleUtils.EnrichedWithToTuple
+import visdom.utils.TupleUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -32,93 +31,37 @@ final case class CommitSchema(
 )
 extends BaseSchema
 
-object CommitSchema extends BaseSchemaTrait[CommitSchema] {
-    def fields: Seq[FieldDataType] = Seq(
-        FieldDataType(SnakeCaseConstants.Id, false),
-        FieldDataType(SnakeCaseConstants.ShortId, false),
-        FieldDataType(SnakeCaseConstants.ParentIds, false),
-        FieldDataType(SnakeCaseConstants.ProjectName, false),
-        FieldDataType(SnakeCaseConstants.GroupName, false),
-        FieldDataType(SnakeCaseConstants.HostName, false),
-        FieldDataType(SnakeCaseConstants.Message, false),
-        FieldDataType(SnakeCaseConstants.Title, false),
-        FieldDataType(SnakeCaseConstants.CommittedDate, false),
-        FieldDataType(SnakeCaseConstants.CommitterName, false),
-        FieldDataType(SnakeCaseConstants.CommitterEmail, false),
-        FieldDataType(SnakeCaseConstants.AuthoredDate, false),
-        FieldDataType(SnakeCaseConstants.AuthorName, false),
-        FieldDataType(SnakeCaseConstants.AuthorEmail, false),
-        FieldDataType(SnakeCaseConstants.WebUrl, false),
-        FieldDataType(SnakeCaseConstants.Stats, false),
-        FieldDataType(SnakeCaseConstants.Links, false)
+object CommitSchema extends BaseSchemaTrait2[CommitSchema] {
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def fields: Seq[FieldDataModel] = Seq(
+        FieldDataModel(SnakeCaseConstants.Id, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.ShortId, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.ParentIds, false, toStringSeqOption),
+        FieldDataModel(SnakeCaseConstants.ProjectName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.GroupName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Message, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Title, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.CommittedDate, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.CommitterName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.CommitterEmail, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.AuthoredDate, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.AuthorName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.AuthorEmail, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.WebUrl, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Stats, false, CommitStatsSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.Links, false, CommitLinksSchema.fromAny)
     )
 
-    // scalastyle:off method.length
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
-    def transformValues(valueOptions: Seq[Option[Any]]): Option[CommitSchema] = {
-        toOption(
-            valueOptions.toTuple17,
-            (
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringSeqOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value),
-                (value: Any) => CommitStatsSchema.fromAny(value),
-                (value: Any) => CommitLinksSchema.fromAny(value)
-            )
-        ) match {
-            case Some((
-                id: String,
-                short_id: String,
-                parent_ids: Seq[String],
-                project_name: String,
-                group_name: String,
-                host_name: String,
-                message: String,
-                title: String,
-                committed_date: String,
-                committer_name: String,
-                committer_email: String,
-                authored_date: String,
-                author_name: String,
-                author_email: String,
-                web_url: String,
-                stats: CommitStatsSchema,
-                links: CommitLinksSchema
-            )) => Some(
-                CommitSchema(
-                    id,
-                    short_id,
-                    parent_ids,
-                    project_name,
-                    group_name,
-                    host_name,
-                    message,
-                    title,
-                    committed_date,
-                    committer_name,
-                    committer_email,
-                    authored_date,
-                    author_name,
-                    author_email,
-                    web_url,
-                    stats,
-                    links
-                )
+    def createInstance(values: Seq[Any]): Option[CommitSchema] = {
+        TupleUtils.toTuple[String, String, Seq[String], String, String, String,
+                           String, String, String, String, String, String,
+                           String, String, String, CommitStatsSchema, CommitLinksSchema](values) match {
+            case Some(inputValues) => Some(
+                (CommitSchema.apply _).tupled(inputValues)
             )
             case None => None
         }
     }
-    // scalastyle:on method.length
 }

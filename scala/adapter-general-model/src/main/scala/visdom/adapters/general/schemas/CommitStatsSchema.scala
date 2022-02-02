@@ -1,12 +1,11 @@
 package visdom.adapters.general.schemas
 
 import visdom.adapters.schemas.BaseSchema
-import visdom.adapters.schemas.BaseSchemaTrait
-import visdom.spark.FieldDataType
+import visdom.adapters.schemas.BaseSchemaTrait2
+import visdom.spark.FieldDataModel
 import visdom.utils.GeneralUtils.toIntOption
+import visdom.utils.TupleUtils
 import visdom.utils.SnakeCaseConstants
-import visdom.utils.TupleUtils.toOption
-import visdom.utils.TupleUtils.EnrichedWithToTuple
 import visdom.utils.WartRemoverConstants
 
 
@@ -17,33 +16,19 @@ final case class CommitStatsSchema(
 )
 extends BaseSchema
 
-object CommitStatsSchema extends BaseSchemaTrait[CommitStatsSchema] {
-    def fields: Seq[FieldDataType] = Seq(
-        FieldDataType(SnakeCaseConstants.Additions, false),
-        FieldDataType(SnakeCaseConstants.Deletions, false),
-        FieldDataType(SnakeCaseConstants.Total, false)
+object CommitStatsSchema extends BaseSchemaTrait2[CommitStatsSchema] {
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def fields: Seq[FieldDataModel] = Seq(
+        FieldDataModel(SnakeCaseConstants.Additions, false, toIntOption),
+        FieldDataModel(SnakeCaseConstants.Deletions, false, toIntOption),
+        FieldDataModel(SnakeCaseConstants.Total, false, toIntOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
-    def transformValues(valueOptions: Seq[Option[Any]]): Option[CommitStatsSchema] = {
-        toOption(
-            valueOptions.toTuple3,
-            (
-                (value: Any) => toIntOption(value),
-                (value: Any) => toIntOption(value),
-                (value: Any) => toIntOption(value)
-            )
-        ) match {
-            case Some((
-                additions: Int,
-                deletions: Int,
-                total: Int
-            )) => Some(
-                CommitStatsSchema(
-                    additions,
-                    deletions,
-                    total
-                )
+    def createInstance(values: Seq[Any]): Option[CommitStatsSchema] = {
+        TupleUtils.toTuple[Int, Int, Int](values) match {
+            case Some(inputValues) => Some(
+                (CommitStatsSchema.apply _).tupled(inputValues)
             )
             case None => None
         }

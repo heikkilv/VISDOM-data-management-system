@@ -1,12 +1,11 @@
 package visdom.adapters.general.schemas
 
 import visdom.adapters.schemas.BaseSchema
-import visdom.adapters.schemas.BaseSchemaTrait
-import visdom.spark.FieldDataType
+import visdom.adapters.schemas.BaseSchemaTrait2
+import visdom.spark.FieldDataModel
 import visdom.utils.GeneralUtils.toStringOption
 import visdom.utils.SnakeCaseConstants
-import visdom.utils.TupleUtils.toOption
-import visdom.utils.TupleUtils.EnrichedWithToTuple
+import visdom.utils.TupleUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -16,29 +15,18 @@ final case class CommitRefLinkSchema(
 )
 extends BaseSchema
 
-object CommitRefLinkSchema extends BaseSchemaTrait[CommitRefLinkSchema] {
-    def fields: Seq[FieldDataType] = Seq(
-        FieldDataType(SnakeCaseConstants.Type, false),
-        FieldDataType(SnakeCaseConstants.Name, false)
+object CommitRefLinkSchema extends BaseSchemaTrait2[CommitRefLinkSchema] {
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
+    def fields: Seq[FieldDataModel] = Seq(
+        FieldDataModel(SnakeCaseConstants.Type, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Name, false, toStringOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
-    def transformValues(valueOptions: Seq[Option[Any]]): Option[CommitRefLinkSchema] = {
-        toOption(
-            valueOptions.toTuple2,
-            (
-                (value: Any) => toStringOption(value),
-                (value: Any) => toStringOption(value)
-            )
-        ) match {
-            case Some((
-                refType: String,
-                name: String
-            )) => Some(
-                CommitRefLinkSchema(
-                    refType,
-                    name
-                )
+    def createInstance(values: Seq[Any]): Option[CommitRefLinkSchema] = {
+        TupleUtils.toTuple[String, String](values) match {
+            case Some(inputValues) => Some(
+                (CommitRefLinkSchema.apply _).tupled(inputValues)
             )
             case None => None
         }
