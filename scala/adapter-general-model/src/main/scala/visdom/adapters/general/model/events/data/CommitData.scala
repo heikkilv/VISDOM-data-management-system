@@ -1,12 +1,16 @@
 package visdom.adapters.general.model.events.data
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonNull
 import org.mongodb.scala.bson.BsonValue
+import spray.json.JsNull
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.schemas.CommitLinksSchema
 import visdom.adapters.general.schemas.CommitSchema
+import visdom.adapters.general.schemas.CommitStatsSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
@@ -22,7 +26,7 @@ final case class CommitData(
     authorName: String,
     authorEmail: String,
     authoredDate: String,
-    stats: CommitStats,
+    stats: Option[CommitStats],
     title: String,
     webUrl: String,
     refs: Seq[CommitRef],
@@ -41,7 +45,7 @@ with BaseResultValue {
                 SnakeCaseConstants.AuthorName -> JsonUtils.toBsonValue(authorName),
                 SnakeCaseConstants.AuthorEmail -> JsonUtils.toBsonValue(authorEmail),
                 SnakeCaseConstants.AuthoredDate -> JsonUtils.toBsonValue(authoredDate),
-                SnakeCaseConstants.Stats -> stats.toBsonValue(),
+                SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toBsonValue()).getOrElse(BsonNull()),
                 SnakeCaseConstants.Title -> JsonUtils.toBsonValue(title),
                 SnakeCaseConstants.WebUrl -> JsonUtils.toBsonValue(webUrl),
                 SnakeCaseConstants.Refs -> JsonUtils.toBsonValue(refs.map(ref => ref.toBsonValue())),
@@ -62,7 +66,7 @@ with BaseResultValue {
                 SnakeCaseConstants.AuthorName -> JsonUtils.toJsonValue(authorName),
                 SnakeCaseConstants.AuthorEmail -> JsonUtils.toJsonValue(authorEmail),
                 SnakeCaseConstants.AuthoredDate -> JsonUtils.toJsonValue(authoredDate),
-                SnakeCaseConstants.Stats -> stats.toJsValue(),
+                SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toJsValue()).getOrElse(JsNull),
                 SnakeCaseConstants.Title -> JsonUtils.toJsonValue(title),
                 SnakeCaseConstants.WebUrl -> JsonUtils.toJsonValue(webUrl),
                 SnakeCaseConstants.Refs -> JsonUtils.toJsonValue(refs.map(ref => ref.toJsValue())),
@@ -83,20 +87,19 @@ object CommitData {
             authorName = commitSchema.author_name,
             authorEmail = commitSchema.author_email,
             authoredDate =  commitSchema.authored_date,
-            stats = CommitStats(
-                additions = commitSchema.stats.additions,
-                deletions = commitSchema.stats.deletions,
-                total = commitSchema.stats.total
-            ),
+            stats = commitSchema.stats.map(stats => CommitStats.fromCommitStatsSchema(stats)),
             title = commitSchema.title,
             webUrl = commitSchema.web_url,
-            refs = commitSchema._links.refs.map(
-                commitRef => CommitRef(refType = commitRef.`type`, name = commitRef.name)
-            ),
+            refs = commitSchema._links match {
+                case Some(commitLinks: CommitLinksSchema) =>
+                    commitLinks.refs.map(commitRef => CommitRef.fromCommitRefLinksSchema(commitRef))
+                case None => Seq.empty
+            },
             // file information simplified to just the file path
-            files = commitSchema._links.files.map(
-                file => file.new_path
-            )
+            files = commitSchema._links match {
+                case Some(commitLinks: CommitLinksSchema) => commitLinks.files.map(file => file.new_path)
+                case None => Seq.empty
+            }
         )
     }
 }

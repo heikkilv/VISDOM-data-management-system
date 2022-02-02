@@ -7,6 +7,7 @@ import spray.json.JsValue
 import visdom.adapters.results.BaseResultValue
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
+import visdom.adapters.general.schemas.CommitRefLinkSchema
 
 
 final case class CommitRef(
@@ -29,6 +30,15 @@ extends BaseResultValue {
                 SnakeCaseConstants.Type -> JsonUtils.toJsonValue(refType),
                 SnakeCaseConstants.Name -> JsonUtils.toJsonValue(name)
             )
+        )
+    }
+}
+
+object CommitRef {
+    def fromCommitRefLinksSchema(commitRefLinksSchema: CommitRefLinkSchema): CommitRef = {
+        CommitRef(
+            refType = commitRefLinksSchema.`type`,
+            name = commitRefLinksSchema.name
         )
     }
 }

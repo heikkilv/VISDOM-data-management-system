@@ -26,8 +26,8 @@ final case class CommitSchema(
     author_name: String,
     author_email: String,
     web_url: String,
-    stats: CommitStatsSchema,
-    _links: CommitLinksSchema
+    stats: Option[CommitStatsSchema],
+    _links: Option[CommitLinksSchema]
 )
 extends BaseSchema
 
@@ -49,15 +49,15 @@ object CommitSchema extends BaseSchemaTrait2[CommitSchema] {
         FieldDataModel(SnakeCaseConstants.AuthorName, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.AuthorEmail, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.WebUrl, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Stats, false, CommitStatsSchema.fromAny),
-        FieldDataModel(SnakeCaseConstants.Links, false, CommitLinksSchema.fromAny)
+        FieldDataModel(SnakeCaseConstants.Stats, true, CommitStatsSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.Links, true, CommitLinksSchema.fromAny)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[CommitSchema] = {
         TupleUtils.toTuple[String, String, Seq[String], String, String, String,
-                           String, String, String, String, String, String,
-                           String, String, String, CommitStatsSchema, CommitLinksSchema](values) match {
+                           String, String, String, String, String, String, String,
+                           String, String, Option[CommitStatsSchema], Option[CommitLinksSchema]](values) match {
             case Some(inputValues) => Some(
                 (CommitSchema.apply _).tupled(inputValues)
             )
