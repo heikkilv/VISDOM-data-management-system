@@ -4,9 +4,11 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
+import visdom.adapters.general.model.base.Data
+import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
-import visdom.adapters.general.model.events.data.CommitData
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.events.data.CommitData
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.json.JsonUtils
@@ -15,15 +17,15 @@ import visdom.utils.SnakeCaseConstants
 import visdom.utils.WartRemoverConstants
 
 
-final case class CommitEventResult(
+final case class EventResult[EventData <: Data](
     id: String,
-    event_type: String,
+    eventType: String,
     time: String,
     duration: Double,
     message: String,
     origin: ItemLink,
     author: ItemLink,
-    data: CommitData,
+    data: EventData,
     relatedConstructs: Seq[ItemLink],
     relatedEvents: Seq[ItemLink]
 )
@@ -32,7 +34,7 @@ extends BaseResultValue {
         BsonDocument(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toBsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(event_type),
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(eventType),
                 SnakeCaseConstants.Time -> JsonUtils.toBsonValue(time),
                 SnakeCaseConstants.Duration -> JsonUtils.toBsonValue(duration),
                 SnakeCaseConstants.Message -> JsonUtils.toBsonValue(message),
@@ -52,7 +54,7 @@ extends BaseResultValue {
         JsObject(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toJsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(event_type),
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(eventType),
                 SnakeCaseConstants.Time -> JsonUtils.toJsonValue(time),
                 SnakeCaseConstants.Duration -> JsonUtils.toJsonValue(duration),
                 SnakeCaseConstants.Message -> JsonUtils.toJsonValue(message),
@@ -68,23 +70,26 @@ extends BaseResultValue {
     }
 }
 
-object CommitEventResult {
-    def fromCommitEvent(commitEvent: CommitEvent): CommitEventResult = {
-        CommitEventResult(
-            id = commitEvent.id,
-            event_type = commitEvent.getType,
-            time = commitEvent.time.toString(),
-            duration = commitEvent.duration,
-            message = commitEvent.message,
-            origin = commitEvent.origin,
-            author = commitEvent.author,
-            data = commitEvent.data,
-            relatedConstructs = commitEvent.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
-            relatedEvents = commitEvent.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
+object EventResult {
+    type CommitEventResult = EventResult[CommitData]
+
+    def fromEvent[EventData <: Data](event: Event, eventData: EventData): EventResult[EventData] = {
+        EventResult(
+            id = event.id,
+            eventType = event.getType,
+            time = event.time.toString(),
+            duration = event.duration,
+            message = event.message,
+            origin = event.origin,
+            author = event.author,
+            data = eventData,
+            relatedConstructs = event.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
+            relatedEvents = event.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
         )
     }
 
     def fromCommitSchema(commitSchema: CommitSchema): CommitEventResult = {
-        fromCommitEvent(new CommitEvent(commitSchema))
+        val commitEvent: CommitEvent = new CommitEvent(commitSchema)
+        fromEvent(commitEvent, commitEvent.data)
     }
 }

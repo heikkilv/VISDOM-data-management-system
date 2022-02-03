@@ -22,7 +22,7 @@ import spray.json.JsObject
 import visdom.http.HttpConstants
 import visdom.http.server.ServerConstants
 import visdom.http.server.options.OnlyPageInputOptions
-import visdom.http.server.options.PageWithTokenOptions
+import visdom.http.server.options.TestOptions
 import visdom.http.server.response.ResponseProblem
 import visdom.http.server.services.constants.GeneralAdapterConstants
 import visdom.http.server.services.constants.GeneralAdapterDescriptions
@@ -65,6 +65,20 @@ with AdapterService
                 schema = new Schema(
                     implementation = classOf[String],
                     defaultValue = GeneralAdapterConstants.DefaultPageSize
+                )
+            ),
+            new Parameter(
+                name = GeneralAdapterConstants.Target,
+                in = ParameterIn.QUERY,
+                required = true,
+                description = GeneralAdapterDescriptions.DescriptionTarget,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = GeneralAdapterConstants.DefaultTarget,
+                    allowableValues = Array(
+                        GeneralAdapterConstants.DefaultTarget,
+                        GeneralAdapterConstants.ValidTargetOrigin
+                    )
                 )
             ),
             new Parameter(
@@ -112,22 +126,25 @@ with AdapterService
         path(ServerConstants.TestPath) &
         parameters(
             GeneralAdapterConstants.Page.optional,
-            GeneralAdapterConstants.PageSize.optional
+            GeneralAdapterConstants.PageSize.optional,
+            GeneralAdapterConstants.Target.withDefault(GeneralAdapterConstants.DefaultTarget)
         ) &
         optionalHeaderValueByName(HttpConstants.HeaderPrivateToken)
     ) {
         (
             page,
             pageSize,
+            target,
             privateToken
         ) => get {
             getRoute(
                 actorRef,
-                PageWithTokenOptions(
+                TestOptions(
                     pageOptions = OnlyPageInputOptions(
                         page = page,
                         pageSize = pageSize
                     ),
+                    target = target,
                     token = privateToken
                 )
             )

@@ -32,8 +32,7 @@ final case class CommitData(
     refs: Seq[CommitRef],
     files: Seq[String]
 )
-extends Data
-with BaseResultValue {
+extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(

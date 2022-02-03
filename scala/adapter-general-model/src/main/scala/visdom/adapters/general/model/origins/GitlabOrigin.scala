@@ -1,6 +1,7 @@
 package visdom.adapters.general.model.origins
 
 import visdom.adapters.general.model.base.Origin
+import visdom.adapters.general.model.origins.data.GitlabOriginData
 import visdom.utils.GeneralUtils
 import visdom.utils.CommonConstants
 
@@ -11,7 +12,7 @@ extends Origin {
     val source: String = hostName
     val context: String = projectName
 
-    val groupName: String = projectGroup
+    val data: GitlabOriginData = GitlabOriginData(projectGroup)
 }
 
 object GitlabOrigin {

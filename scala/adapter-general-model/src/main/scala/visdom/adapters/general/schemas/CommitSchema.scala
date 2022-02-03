@@ -30,6 +30,7 @@ final case class CommitSchema(
     _links: Option[CommitLinksSchema]
 )
 extends BaseSchema
+with GitlabProjectSchemaTrait
 
 object CommitSchema extends BaseSchemaTrait2[CommitSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

@@ -19,8 +19,7 @@ final case class FileData(
     mode: String,
     commits: Seq[String]
 )
-extends Data
-with BaseResultValue {
+extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(

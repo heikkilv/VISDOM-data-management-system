@@ -4,7 +4,8 @@ import visdom.utils.GeneralUtils
 
 
 abstract class Origin
-extends LinkTrait {
+extends LinkTrait
+with DataTrait {
     val source: String
     val context: String
 
