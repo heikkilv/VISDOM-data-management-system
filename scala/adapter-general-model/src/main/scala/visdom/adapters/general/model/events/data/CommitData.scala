@@ -29,7 +29,6 @@ final case class CommitData(
     stats: Option[CommitStats],
     title: String,
     webUrl: String,
-    groupName: String,
     refs: Seq[CommitRef],
     files: Seq[String]
 )
@@ -49,7 +48,6 @@ with BaseResultValue {
                 SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toBsonValue()).getOrElse(BsonNull()),
                 SnakeCaseConstants.Title -> JsonUtils.toBsonValue(title),
                 SnakeCaseConstants.WebUrl -> JsonUtils.toBsonValue(webUrl),
-                SnakeCaseConstants.GroupName -> JsonUtils.toBsonValue(groupName),
                 SnakeCaseConstants.Refs -> JsonUtils.toBsonValue(refs.map(ref => ref.toBsonValue())),
                 SnakeCaseConstants.Files -> JsonUtils.toBsonValue(files)
             )
@@ -71,7 +69,6 @@ with BaseResultValue {
                 SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toJsValue()).getOrElse(JsNull),
                 SnakeCaseConstants.Title -> JsonUtils.toJsonValue(title),
                 SnakeCaseConstants.WebUrl -> JsonUtils.toJsonValue(webUrl),
-                SnakeCaseConstants.GroupName -> JsonUtils.toJsonValue(groupName),
                 SnakeCaseConstants.Refs -> JsonUtils.toJsonValue(refs.map(ref => ref.toJsValue())),
                 SnakeCaseConstants.Files -> JsonUtils.toJsonValue(files)
             )
@@ -93,7 +90,6 @@ object CommitData {
             stats = commitSchema.stats.map(stats => CommitStats.fromCommitStatsSchema(stats)),
             title = commitSchema.title,
             webUrl = commitSchema.web_url,
-            groupName = commitSchema.group_name,
             refs = commitSchema._links match {
                 case Some(commitLinks: CommitLinksSchema) =>
                     commitLinks.refs.map(commitRef => CommitRef.fromCommitRefLinksSchema(commitRef))

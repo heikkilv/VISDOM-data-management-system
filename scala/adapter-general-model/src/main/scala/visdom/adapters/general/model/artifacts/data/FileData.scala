@@ -17,7 +17,6 @@ final case class FileData(
     fileId: String,
     fileType: String,
     mode: String,
-    groupName: String,
     commits: Seq[String]
 )
 extends Data
@@ -28,7 +27,6 @@ with BaseResultValue {
                 SnakeCaseConstants.FileId -> JsonUtils.toBsonValue(fileId),
                 SnakeCaseConstants.Type -> JsonUtils.toBsonValue(fileType),
                 SnakeCaseConstants.Mode -> JsonUtils.toBsonValue(mode),
-                SnakeCaseConstants.GroupName -> JsonUtils.toBsonValue(groupName),
                 SnakeCaseConstants.Commits -> JsonUtils.toBsonValue(commits)
             )
         )
@@ -40,7 +38,6 @@ with BaseResultValue {
                 SnakeCaseConstants.FileId -> JsonUtils.toJsonValue(fileId),
                 SnakeCaseConstants.Type -> JsonUtils.toJsonValue(fileType),
                 SnakeCaseConstants.Mode -> JsonUtils.toJsonValue(mode),
-                SnakeCaseConstants.GroupName -> JsonUtils.toJsonValue(groupName),
                 SnakeCaseConstants.Commits -> JsonUtils.toJsonValue(commits)
             )
         )
@@ -53,7 +50,6 @@ object FileData {
             fileId = fileSchema.id,
             fileType = fileSchema.`type`,
             mode = fileSchema.mode,
-            groupName = fileSchema.group_name,
             commits = fileSchema._links match {
                 case Some(links: FileLinksSchema) => links.commits match {
                     case Some(commitLinks: Seq[String]) => commitLinks
