@@ -35,7 +35,8 @@ extends Event {
             authorEmail = commitSchema.committer_email,
             hostName = commitSchema.host_name,
             authorDescription = None,
-            userId = None
+            userId = None,
+            relatedCommitEventIds = Seq.empty
         ).link
 
     val data: CommitData = CommitData.fromCommitSchema(commitSchema)
@@ -89,5 +90,12 @@ object CommitEvent {
 
     def getId(originId: String, commitId: String): String = {
         GeneralUtils.getUuid(originId, CommitEventType, commitId)
+    }
+
+    def getId(hostName: String, projectName: String, commitId: String): String = {
+        getId(
+            originId = GitlabOrigin.getId(hostName, projectName),
+            commitId = commitId
+        )
     }
 }

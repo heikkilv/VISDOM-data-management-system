@@ -1,9 +1,11 @@
 package visdom.adapters.general.model.authors
 
+import visdom.adapters.general.model.authors.data.GitlabAuthorData
 import visdom.adapters.general.model.base.ActiveAuthorState
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.AuthorState
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.utils.GeneralUtils
 
@@ -13,7 +15,8 @@ class GitlabAuthor(
     authorEmail: String,
     hostName: String,
     authorDescription: Option[String],
-    userId: Option[Int]
+    userId: Option[Int],
+    relatedCommitEventIds: Seq[String]
 )
 extends Author {
     val name: String = authorName
@@ -34,5 +37,14 @@ extends Author {
             case Some(userIdInt: Int) => userIdInt.toString()
             case None => authorEmail
         }
+    )
+
+    addRelatedEvents(
+        relatedCommitEventIds.map(
+            commitEventId => ItemLink(
+                id = commitEventId,
+                linkType = CommitEvent.CommitEventType
+            )
+        )
     )
 }

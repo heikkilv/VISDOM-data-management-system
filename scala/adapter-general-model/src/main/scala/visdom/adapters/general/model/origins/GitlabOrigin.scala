@@ -21,4 +21,8 @@ object GitlabOrigin {
     def getGitlabOriginFromHost(hostName: String): GitlabOrigin = {
         new GitlabOrigin(hostName, CommonConstants.EmptyString, CommonConstants.EmptyString)
     }
+
+    def getId(hostName: String, projectName: String): String = {
+        GeneralUtils.getUuid(GitlabOriginType, hostName, projectName)
+    }
 }

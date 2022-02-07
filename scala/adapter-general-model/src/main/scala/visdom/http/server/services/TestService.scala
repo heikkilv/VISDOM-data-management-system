@@ -77,7 +77,9 @@ with AdapterService
                     defaultValue = GeneralAdapterConstants.DefaultTarget,
                     allowableValues = Array(
                         GeneralAdapterConstants.DefaultTarget,
-                        GeneralAdapterConstants.ValidTargetOrigin
+                        GeneralAdapterConstants.ValidTargetOrigin,
+                        GeneralAdapterConstants.ValidTargetAuthor,
+                        GeneralAdapterConstants.ValidTargetArtifact
                     )
                 )
             ),

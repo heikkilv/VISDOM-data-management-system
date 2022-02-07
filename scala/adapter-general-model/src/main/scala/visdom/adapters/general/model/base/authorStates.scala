@@ -5,4 +5,6 @@ abstract class AuthorState
 extends State
 
 final case object ActiveAuthorState
-extends AuthorState
+extends AuthorState {
+    val stateString: String = "active"
+}

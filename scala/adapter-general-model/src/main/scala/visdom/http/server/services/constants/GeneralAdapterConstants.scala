@@ -11,5 +11,7 @@ object GeneralAdapterConstants {
     final val DefaultPageSize = "100"
     final val DefaultTarget = "event"
 
+    final val ValidTargetAuthor = "author"
+    final val ValidTargetArtifact = "artifact"
     final val ValidTargetOrigin = "origin"
 }

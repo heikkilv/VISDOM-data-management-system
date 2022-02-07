@@ -16,3 +16,13 @@ final case object TestTargetOrigin
 extends TestTargetType {
     val targetType: String = GeneralAdapterConstants.ValidTargetOrigin
 }
+
+final case object TestTargetAuthor
+extends TestTargetType {
+    val targetType: String = GeneralAdapterConstants.ValidTargetAuthor
+}
+
+final case object TestTargetArtifact
+extends TestTargetType {
+    val targetType: String = GeneralAdapterConstants.ValidTargetArtifact
+}

@@ -1,4 +1,4 @@
-package visdom.adapters.general.model.authors
+package visdom.adapters.general.model.authors.data
 
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonValue
