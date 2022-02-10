@@ -6,8 +6,10 @@ import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.data.FileData
+import visdom.adapters.general.model.artifacts.states.FileState
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.authors.data.GitlabAuthorData
+import visdom.adapters.general.model.authors.states.AuthorState
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
@@ -20,8 +22,6 @@ import visdom.json.JsonUtils
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.WartRemoverConstants
-import visdom.adapters.general.model.artifacts.states.FileState
-import _root_.visdom.adapters.general.model.base.AuthorState
 
 
 final case class ArtifactResult[ArtifactData <: Data, ArtifactState <: State](
@@ -77,10 +77,6 @@ extends BaseResultValue {
 object ArtifactResult {
     type FileArtifactResult = ArtifactResult[FileData, FileState]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData, AuthorState]
-
-    // TODO: fix the following code, the link below might help
-    // https://stackoverflow.com/questions/36648128/how-to-store-custom-objects-in-dataset
-    // implicit val authorStateEncoderActive = org.apache.spark.sql.Encoders.kryo[AuthorState]
 
     def fromArtifact[ArtifactData <: Data, ArtifactState <: State](
         artifact: Artifact,

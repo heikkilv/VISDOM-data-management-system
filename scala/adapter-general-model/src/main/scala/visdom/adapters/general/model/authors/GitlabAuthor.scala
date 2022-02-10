@@ -1,9 +1,8 @@
 package visdom.adapters.general.model.authors
 
 import visdom.adapters.general.model.authors.data.GitlabAuthorData
-import visdom.adapters.general.model.base.ActiveAuthorState
+import visdom.adapters.general.model.authors.states.AuthorState
 import visdom.adapters.general.model.base.Author
-import visdom.adapters.general.model.base.AuthorState
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
@@ -19,12 +18,14 @@ class GitlabAuthor(
     relatedCommitEventIds: Seq[String]
 )
 extends Author {
+    override def getType: String = GitlabAuthor.GitlabAuthorType
+
     val name: String = authorName
     val description: String = authorDescription match {
         case Some(authorText: String) => authorText
         case None => Author.DefaultDescription
     }
-    val state: AuthorState = ActiveAuthorState  // NOTE: use active author state for everyone
+    val state: AuthorState = AuthorState.ActiveAuthorState  // NOTE: use active author state for everyone
     val origin: ItemLink = GitlabOrigin.getGitlabOriginFromHost(hostName).link
     val data: GitlabAuthorData = GitlabAuthorData(
         id = userId,
@@ -47,4 +48,8 @@ extends Author {
             )
         )
     )
+}
+
+object GitlabAuthor {
+    final val GitlabAuthorType: String = "GitLab_author"
 }

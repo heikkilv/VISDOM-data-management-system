@@ -37,7 +37,6 @@ class TestQuery(queryOptions: TestQueryOptions, sparkSession: SparkSession)
 extends BaseQuery(queryOptions, sparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newStringEncoder
-    // import ArtifactResult.authorStateEncoderActive
 
     def getEvents(): Dataset[CommitEventResult] = {
         MongoSpark

@@ -1,7 +1,6 @@
 package visdom.adapters.general.model.artifacts
 
 import visdom.adapters.general.model.artifacts.data.FileData
-import visdom.adapters.general.model.artifacts.states.FileExists
 import visdom.adapters.general.model.artifacts.states.FileState
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
@@ -29,7 +28,7 @@ extends Artifact {
     // use the full file name including the path as the description
     val description: String = fileSchema.path
     // NOTE: all files use the same state for now
-    val state: FileState = FileExists
+    val state: FileState = FileState.FileExists
     val data: FileData = FileData.fromFileSchema(fileSchema)
 
     val id: String = FileArtifact.getId(origin.id, description)
@@ -53,7 +52,7 @@ extends Artifact {
         data.commits.map(
             commitId => ItemLink(
                 id = CommitEvent.getId(origin.id, commitId),
-                linkType = getType
+                linkType = CommitEvent.CommitEventType
             )
         )
     )
