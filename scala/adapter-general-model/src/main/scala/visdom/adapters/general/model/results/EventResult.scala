@@ -11,6 +11,7 @@ import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.data.CommitData
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.results.BaseResultValue
+import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
@@ -29,7 +30,8 @@ final case class EventResult[EventData <: Data](
     relatedConstructs: Seq[ItemLink],
     relatedEvents: Seq[ItemLink]
 )
-extends BaseResultValue {
+extends BaseResultValue
+with IdValue {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(

@@ -140,6 +140,7 @@ object SnakeCaseConstants {
     val Url: String = "url"
     val UserId: String = "user_id"
     val Username: String = "username"
+    val Uuid: String = "uuid"
     val Version: String = "version"
     val WebUrl: String = "web_url"
 }

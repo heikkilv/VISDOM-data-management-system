@@ -43,3 +43,9 @@ extends BaseResponse {
         )
     }
 }
+
+object Result {
+    def getEmpty(): Result = {
+        Result(ResultCounts.getEmpty(), MultiResult(Seq.empty))
+    }
+}

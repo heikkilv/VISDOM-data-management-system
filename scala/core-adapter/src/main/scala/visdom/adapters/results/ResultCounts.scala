@@ -31,6 +31,10 @@ object ResultCounts {
         ResultCounts(1, 1, 1, DefaultPageSize)
     }
 
+    def getEmpty(): ResultCounts = {
+        ResultCounts(0, 1, 1, DefaultPageSize)
+    }
+
     def getResultCounts(count: Int, totalCount: Int, page: Int, pageSize: Int): Option[ResultCounts] = {
         (
             count >= 0 &&

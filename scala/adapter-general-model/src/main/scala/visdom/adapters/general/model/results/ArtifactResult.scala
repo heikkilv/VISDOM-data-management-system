@@ -18,6 +18,7 @@ import visdom.adapters.general.model.base.State
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.results.BaseResultValue
+import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
 import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
@@ -35,7 +36,8 @@ final case class ArtifactResult[ArtifactData <: Data, ArtifactState <: State](
     relatedConstructs: Seq[ItemLink],
     relatedEvents: Seq[ItemLink]
 )
-extends BaseResultValue {
+extends BaseResultValue
+with IdValue {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(

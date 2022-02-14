@@ -42,6 +42,9 @@ object ServerConstants {
     final val TestRootPath = "/test"
     final val TestPath = "test"
 
+    final val SingleRootPath = "/single"
+    final val SinglePath = "single"
+
     final val FalseString = "false"
     final val TrueString = "true"
     final val BooleanStrings: Set[String] = Set(FalseString, TrueString)

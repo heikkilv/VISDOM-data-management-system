@@ -10,6 +10,7 @@ import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.origins.data.GitlabOriginData
 import visdom.adapters.general.schemas.GitlabProjectSchemaTrait
 import visdom.adapters.results.BaseResultValue
+import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
 
@@ -21,7 +22,8 @@ final case class OriginResult[OriginData <: Data](
     context: String,
     data: OriginData
 )
-extends BaseResultValue {
+extends BaseResultValue
+with IdValue {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
