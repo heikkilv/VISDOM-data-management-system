@@ -14,17 +14,16 @@ object GeneralAdapterExamples {
 
     final val SingleExampleOkName = "Single response example"
     final val SingleExampleOk = """{
-        {
-            "id": "00000000-0000-0000-0000-000000000000",
-            "type": "commit",
-            "data": {}
-        }
+        "id": "00000000-0000-0000-0000-000000000000",
+        "type": "commit",
+        "data": {}
     }
     """
 
     final val SingleExampleNotFoundName = "Single response not found example"
     final val SingleExampleNotFound = """{
-        "error": "Did not find data for id '00000000-0000-0000-0000-000000000000' and type 'commit'."
+        "description": "Did not find data for id '00000000-0000-0000-0000-000000000000' and type 'commit'.",
+        "status": "NotFound"
     }
     """
 

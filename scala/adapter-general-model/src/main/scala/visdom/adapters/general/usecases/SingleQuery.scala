@@ -121,30 +121,6 @@ extends BaseQuery(queryOptions, sparkSession) {
             .map(fileSchema => ArtifactResult.fromFileSchema(fileSchema))
     }
 
-    def filterFunction[T <: IdValue](item: T): Boolean = {
-        item.id == queryOptions.uuid
-    }
-
-    def getItem[T <: IdValue](dataset: Dataset[T]): Dataset[T] = {
-        dataset.filter(filterFunction _)
-    }
-    // def getItem(dataset: Dataset[CommitEventResult]): Dataset[CommitEventResult] = {
-    //     dataset
-    //         .filter(item => item.id == queryOptions.uuid)
-    // }
-    // def getItem(dataset: Dataset[FileArtifactResult]): Dataset[FileArtifactResult] = {
-    //     dataset
-    //         .filter(item => item.id == queryOptions.uuid)
-    // }
-    // def getItem(dataset: Dataset[GitlabAuthorResult]): Dataset[GitlabAuthorResult] = {
-    //     dataset
-    //         .filter(item => item.id == queryOptions.uuid)
-    // }
-    // def getItem(dataset: Dataset[GitlabOriginResult]): Dataset[GitlabOriginResult] = {
-    //     dataset
-    //         .filter(item => item.id == queryOptions.uuid)
-    // }
-
     def getSingleResult(): Option[Dataset[_ <: BaseResultValue]] = {
         (
             queryOptions.objectType match {
@@ -155,7 +131,7 @@ extends BaseQuery(queryOptions, sparkSession) {
                 case _ => None
             }
         )
-            .map(dataset => getItem(dataset))
+            .map(dataset => SingleQuery.getItem(dataset, queryOptions.uuid))
     }
 
     def getResults(): Result = {
@@ -177,6 +153,14 @@ extends BaseQuery(queryOptions, sparkSession) {
     }
 }
 
-object SingleQuery extends IncludesQueryCode {
+object SingleQuery extends IncludesQueryCode with Serializable {
     val queryCode: Int = 102
+
+    def getItem[T <: IdValue](dataset: Dataset[T], uuid: String): Dataset[T] = {
+        def filterFunction[T <: IdValue](item: T): Boolean = {
+            item.id == uuid
+        }
+
+        dataset.filter(filterFunction _)
+    }
 }
