@@ -11,17 +11,17 @@ import visdom.utils.SnakeCaseConstants
 
 final case class ItemLink(
     id: String,
-    linkType: String
+    `type`: String
 )
 extends LinkTrait
 with BaseResultValue {
-    def getType: String = linkType
+    def getType: String = `type`
 
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toBsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(linkType)
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(`type`)
             )
         )
     }
@@ -30,7 +30,7 @@ with BaseResultValue {
         JsObject(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toJsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(linkType)
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(`type`)
             )
         )
     }
@@ -40,7 +40,7 @@ object ItemLink {
     def fromLinkTrait(objectWithLinkTrait: LinkTrait): ItemLink = {
         ItemLink(
             id = objectWithLinkTrait.id,
-            linkType = objectWithLinkTrait.getType
+            `type` = objectWithLinkTrait.getType
         )
     }
 }

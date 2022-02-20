@@ -18,17 +18,17 @@ import visdom.utils.WartRemoverConstants
 
 
 final case class CommitData(
-    commitId: String,
-    shortId: String,
-    parentIds: Seq[String],
-    committerName: String,
-    committerEmail: String,
-    authorName: String,
-    authorEmail: String,
-    authoredDate: String,
+    commit_id: String,
+    short_id: String,
+    parent_ids: Seq[String],
+    committer_name: String,
+    committer_email: String,
+    author_name: String,
+    author_email: String,
+    authored_date: String,
     stats: Option[CommitStats],
     title: String,
-    webUrl: String,
+    web_url: String,
     refs: Seq[CommitRef],
     files: Seq[String]
 )
@@ -36,17 +36,17 @@ extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
-                SnakeCaseConstants.CommitId -> JsonUtils.toBsonValue(commitId),
-                SnakeCaseConstants.ShortId -> JsonUtils.toBsonValue(shortId),
-                SnakeCaseConstants.ParentIds -> JsonUtils.toBsonValue(parentIds),
-                SnakeCaseConstants.CommitterName -> JsonUtils.toBsonValue(committerName),
-                SnakeCaseConstants.CommitterEmail -> JsonUtils.toBsonValue(committerEmail),
-                SnakeCaseConstants.AuthorName -> JsonUtils.toBsonValue(authorName),
-                SnakeCaseConstants.AuthorEmail -> JsonUtils.toBsonValue(authorEmail),
-                SnakeCaseConstants.AuthoredDate -> JsonUtils.toBsonValue(authoredDate),
+                SnakeCaseConstants.CommitId -> JsonUtils.toBsonValue(commit_id),
+                SnakeCaseConstants.ShortId -> JsonUtils.toBsonValue(short_id),
+                SnakeCaseConstants.ParentIds -> JsonUtils.toBsonValue(parent_ids),
+                SnakeCaseConstants.CommitterName -> JsonUtils.toBsonValue(committer_name),
+                SnakeCaseConstants.CommitterEmail -> JsonUtils.toBsonValue(committer_email),
+                SnakeCaseConstants.AuthorName -> JsonUtils.toBsonValue(author_name),
+                SnakeCaseConstants.AuthorEmail -> JsonUtils.toBsonValue(author_email),
+                SnakeCaseConstants.AuthoredDate -> JsonUtils.toBsonValue(authored_date),
                 SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toBsonValue()).getOrElse(BsonNull()),
                 SnakeCaseConstants.Title -> JsonUtils.toBsonValue(title),
-                SnakeCaseConstants.WebUrl -> JsonUtils.toBsonValue(webUrl),
+                SnakeCaseConstants.WebUrl -> JsonUtils.toBsonValue(web_url),
                 SnakeCaseConstants.Refs -> JsonUtils.toBsonValue(refs.map(ref => ref.toBsonValue())),
                 SnakeCaseConstants.Files -> JsonUtils.toBsonValue(files)
             )
@@ -57,17 +57,17 @@ extends Data {
     def toJsValue(): JsValue = {
         JsObject(
             Map(
-                SnakeCaseConstants.CommitId -> JsonUtils.toJsonValue(commitId),
-                SnakeCaseConstants.ShortId -> JsonUtils.toJsonValue(shortId),
-                SnakeCaseConstants.ParentIds -> JsonUtils.toJsonValue(parentIds),
-                SnakeCaseConstants.CommitterName -> JsonUtils.toJsonValue(committerName),
-                SnakeCaseConstants.CommitterEmail -> JsonUtils.toJsonValue(committerEmail),
-                SnakeCaseConstants.AuthorName -> JsonUtils.toJsonValue(authorName),
-                SnakeCaseConstants.AuthorEmail -> JsonUtils.toJsonValue(authorEmail),
-                SnakeCaseConstants.AuthoredDate -> JsonUtils.toJsonValue(authoredDate),
+                SnakeCaseConstants.CommitId -> JsonUtils.toJsonValue(commit_id),
+                SnakeCaseConstants.ShortId -> JsonUtils.toJsonValue(short_id),
+                SnakeCaseConstants.ParentIds -> JsonUtils.toJsonValue(parent_ids),
+                SnakeCaseConstants.CommitterName -> JsonUtils.toJsonValue(committer_name),
+                SnakeCaseConstants.CommitterEmail -> JsonUtils.toJsonValue(committer_email),
+                SnakeCaseConstants.AuthorName -> JsonUtils.toJsonValue(author_name),
+                SnakeCaseConstants.AuthorEmail -> JsonUtils.toJsonValue(author_email),
+                SnakeCaseConstants.AuthoredDate -> JsonUtils.toJsonValue(authored_date),
                 SnakeCaseConstants.Stats -> stats.map(statValues => statValues.toJsValue()).getOrElse(JsNull),
                 SnakeCaseConstants.Title -> JsonUtils.toJsonValue(title),
-                SnakeCaseConstants.WebUrl -> JsonUtils.toJsonValue(webUrl),
+                SnakeCaseConstants.WebUrl -> JsonUtils.toJsonValue(web_url),
                 SnakeCaseConstants.Refs -> JsonUtils.toJsonValue(refs.map(ref => ref.toJsValue())),
                 SnakeCaseConstants.Files -> JsonUtils.toJsonValue(files)
             )
@@ -78,17 +78,17 @@ extends Data {
 object CommitData {
     def fromCommitSchema(commitSchema: CommitSchema): CommitData = {
         CommitData(
-            commitId = commitSchema.id,
-            shortId = commitSchema.short_id,
-            parentIds = commitSchema.parent_ids,
-            committerName = commitSchema.committer_name,
-            committerEmail = commitSchema.committer_email,
-            authorName = commitSchema.author_name,
-            authorEmail = commitSchema.author_email,
-            authoredDate =  commitSchema.authored_date,
+            commit_id = commitSchema.id,
+            short_id = commitSchema.short_id,
+            parent_ids = commitSchema.parent_ids,
+            committer_name = commitSchema.committer_name,
+            committer_email = commitSchema.committer_email,
+            author_name = commitSchema.author_name,
+            author_email = commitSchema.author_email,
+            authored_date =  commitSchema.authored_date,
             stats = commitSchema.stats.map(stats => CommitStats.fromCommitStatsSchema(stats)),
             title = commitSchema.title,
-            webUrl = commitSchema.web_url,
+            web_url = commitSchema.web_url,
             refs = commitSchema._links match {
                 case Some(commitLinks: CommitLinksSchema) =>
                     commitLinks.refs.map(commitRef => CommitRef.fromCommitRefLinksSchema(commitRef))

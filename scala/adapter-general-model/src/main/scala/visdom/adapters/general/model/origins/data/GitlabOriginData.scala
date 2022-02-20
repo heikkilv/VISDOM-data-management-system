@@ -11,14 +11,14 @@ import visdom.utils.SnakeCaseConstants
 
 
 final case class GitlabOriginData(
-    groupName: String
+    group_name: String
 )
 extends Data {
     def toBsonValue(): BsonValue = {
-        BsonDocument(Map(SnakeCaseConstants.GroupName -> JsonUtils.toBsonValue(groupName)))
+        BsonDocument(Map(SnakeCaseConstants.GroupName -> JsonUtils.toBsonValue(group_name)))
     }
 
     def toJsValue(): JsValue = {
-        JsObject(Map(SnakeCaseConstants.GroupName -> JsonUtils.toJsonValue(groupName)))
+        JsObject(Map(SnakeCaseConstants.GroupName -> JsonUtils.toJsonValue(group_name)))
     }
 }

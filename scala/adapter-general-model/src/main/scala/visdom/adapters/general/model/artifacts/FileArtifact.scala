@@ -28,7 +28,7 @@ extends Artifact {
     // use the full file name including the path as the description
     val description: String = fileSchema.path
     // NOTE: all files use the same state for now
-    val state: FileState = FileState.FileExists
+    val state: String = FileState.FileExistsString
     val data: FileData = FileData.fromFileSchema(fileSchema)
 
     val id: String = FileArtifact.getId(origin.id, description)
@@ -40,7 +40,7 @@ extends Artifact {
             Seq(
                 ItemLink(
                     id = FileArtifact.getId(origin.id, parentFolder),
-                    linkType = FileArtifact.FileArtifactType
+                    `type` = FileArtifact.FileArtifactType
                 )
             )
         )
@@ -52,7 +52,7 @@ extends Artifact {
         data.commits.map(
             commitId => ItemLink(
                 id = CommitEvent.getId(origin.id, commitId),
-                linkType = CommitEvent.CommitEventType
+                `type` = CommitEvent.CommitEventType
             )
         )
     )

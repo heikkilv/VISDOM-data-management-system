@@ -13,3 +13,7 @@ with DataTrait {
 
     def link: ItemLink = ItemLink(id, getType)
 }
+
+object Origin {
+    final val OriginType: String = "origin"
+}

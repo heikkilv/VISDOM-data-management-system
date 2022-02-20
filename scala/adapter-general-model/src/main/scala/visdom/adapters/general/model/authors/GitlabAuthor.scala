@@ -25,7 +25,7 @@ extends Author {
         case Some(authorText: String) => authorText
         case None => Author.DefaultDescription
     }
-    val state: AuthorState = AuthorState.ActiveAuthorState  // NOTE: use active author state for everyone
+    val state: String = AuthorState.ActiveAuthorStateString  // NOTE: use active author state for everyone
     val origin: ItemLink = GitlabOrigin.getGitlabOriginFromHost(hostName).link
     val data: GitlabAuthorData = GitlabAuthorData(
         id = userId,
@@ -44,12 +44,12 @@ extends Author {
         relatedCommitEventIds.map(
             commitEventId => ItemLink(
                 id = commitEventId,
-                linkType = CommitEvent.CommitEventType
+                `type` = CommitEvent.CommitEventType
             )
         )
     )
 }
 
 object GitlabAuthor {
-    final val GitlabAuthorType: String = "GitLab_author"
+    final val GitlabAuthorType: String = "author"
 }

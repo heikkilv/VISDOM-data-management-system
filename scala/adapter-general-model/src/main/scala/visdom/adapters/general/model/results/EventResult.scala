@@ -19,16 +19,17 @@ import visdom.utils.WartRemoverConstants
 
 
 final case class EventResult[EventData <: Data](
+    _id: String,
     id: String,
-    eventType: String,
+    `type`: String,
     time: String,
     duration: Double,
     message: String,
     origin: ItemLink,
     author: ItemLink,
     data: EventData,
-    relatedConstructs: Seq[ItemLink],
-    relatedEvents: Seq[ItemLink]
+    related_constructs: Seq[ItemLink],
+    related_events: Seq[ItemLink]
 )
 extends BaseResultValue
 with IdValue {
@@ -36,7 +37,7 @@ with IdValue {
         BsonDocument(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toBsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(eventType),
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(`type`),
                 SnakeCaseConstants.Time -> JsonUtils.toBsonValue(time),
                 SnakeCaseConstants.Duration -> JsonUtils.toBsonValue(duration),
                 SnakeCaseConstants.Message -> JsonUtils.toBsonValue(message),
@@ -44,9 +45,9 @@ with IdValue {
                 SnakeCaseConstants.Author -> author.toBsonValue(),
                 SnakeCaseConstants.Data -> data.toBsonValue(),
                 SnakeCaseConstants.RelatedConstructs ->
-                    JsonUtils.toBsonValue(relatedConstructs.map(link => link.toBsonValue())),
+                    JsonUtils.toBsonValue(related_constructs.map(link => link.toBsonValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toBsonValue(relatedEvents.map(link => link.toBsonValue()))
+                    JsonUtils.toBsonValue(related_events.map(link => link.toBsonValue()))
             )
         )
     }
@@ -56,7 +57,7 @@ with IdValue {
         JsObject(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toJsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(eventType),
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(`type`),
                 SnakeCaseConstants.Time -> JsonUtils.toJsonValue(time),
                 SnakeCaseConstants.Duration -> JsonUtils.toJsonValue(duration),
                 SnakeCaseConstants.Message -> JsonUtils.toJsonValue(message),
@@ -64,9 +65,9 @@ with IdValue {
                 SnakeCaseConstants.Author -> author.toJsValue(),
                 SnakeCaseConstants.Data -> data.toJsValue(),
                 SnakeCaseConstants.RelatedConstructs ->
-                    JsonUtils.toJsonValue(relatedConstructs.map(link => link.toJsValue())),
+                    JsonUtils.toJsonValue(related_constructs.map(link => link.toJsValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toJsonValue(relatedEvents.map(link => link.toJsValue()))
+                    JsonUtils.toJsonValue(related_events.map(link => link.toJsValue()))
             )
         )
     }
@@ -77,16 +78,17 @@ object EventResult {
 
     def fromEvent[EventData <: Data](event: Event, eventData: EventData): EventResult[EventData] = {
         EventResult(
+            _id = event.id,
             id = event.id,
-            eventType = event.getType,
+            `type` = event.getType,
             time = event.time.toString(),
             duration = event.duration,
             message = event.message,
             origin = event.origin,
             author = event.author,
             data = eventData,
-            relatedConstructs = event.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
-            relatedEvents = event.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
+            related_constructs = event.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
+            related_events = event.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
         )
     }
 

@@ -16,8 +16,9 @@ import visdom.utils.SnakeCaseConstants
 
 
 final case class OriginResult[OriginData <: Data](
+    _id: String,
     id: String,
-    originType: String,
+    `type`: String,
     source: String,
     context: String,
     data: OriginData
@@ -28,7 +29,7 @@ with IdValue {
         BsonDocument(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toBsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(originType),
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(`type`),
                 SnakeCaseConstants.Source -> JsonUtils.toBsonValue(source),
                 SnakeCaseConstants.Context -> JsonUtils.toBsonValue(context),
                 SnakeCaseConstants.Data -> data.toBsonValue()
@@ -40,7 +41,7 @@ with IdValue {
         JsObject(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toJsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(originType),
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(`type`),
                 SnakeCaseConstants.Source -> JsonUtils.toJsonValue(source),
                 SnakeCaseConstants.Context -> JsonUtils.toJsonValue(context),
                 SnakeCaseConstants.Data -> data.toJsValue()
@@ -54,8 +55,9 @@ object OriginResult {
 
     def fromOrigin[OriginData <: Data](origin: Origin, originData: OriginData): OriginResult[OriginData] = {
         OriginResult(
+            _id = origin.id,
             id = origin.id,
-            originType = origin.getType,
+            `type` = origin.getType,
             source = origin.source,
             context = origin.context,
             data = originData

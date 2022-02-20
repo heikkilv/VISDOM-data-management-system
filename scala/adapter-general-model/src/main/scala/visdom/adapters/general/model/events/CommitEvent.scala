@@ -44,7 +44,7 @@ extends Event {
     val message: String = commitSchema.message
     val time: ZonedDateTime = CommitEvent.toZonedDateTime(commitSchema.committed_date)
 
-    val id: String = CommitEvent.getId(origin.id, data.commitId)
+    val id: String = CommitEvent.getId(origin.id, data.commit_id)
 
     // author and linked files as related constructs
     addRelatedConstructs(Seq(author))
@@ -52,17 +52,17 @@ extends Event {
         data.files.map(
             filePath => ItemLink(
                 id = FileArtifact.getId(origin.id, filePath),
-                linkType = FileArtifact.FileArtifactType
+                `type` = FileArtifact.FileArtifactType
             )
         )
     )
 
     // add parent commits as related events
     addRelatedEvents(
-        data.parentIds.map(
+        data.parent_ids.map(
             commitId => ItemLink(
                 id = CommitEvent.getId(origin.id, commitId),
-                linkType = getType
+                `type` = getType
             )
         )
     )

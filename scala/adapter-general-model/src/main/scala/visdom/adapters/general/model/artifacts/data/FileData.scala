@@ -8,14 +8,13 @@ import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.schemas.FileLinksSchema
 import visdom.adapters.general.schemas.FileSchema
-import visdom.adapters.results.BaseResultValue
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
 
 
 final case class FileData(
-    fileId: String,
-    fileType: String,
+    file_id: String,
+    `type`: String,
     mode: String,
     commits: Seq[String]
 )
@@ -23,8 +22,8 @@ extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
-                SnakeCaseConstants.FileId -> JsonUtils.toBsonValue(fileId),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(fileType),
+                SnakeCaseConstants.FileId -> JsonUtils.toBsonValue(file_id),
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(`type`),
                 SnakeCaseConstants.Mode -> JsonUtils.toBsonValue(mode),
                 SnakeCaseConstants.Commits -> JsonUtils.toBsonValue(commits)
             )
@@ -34,8 +33,8 @@ extends Data {
     def toJsValue(): JsValue = {
         JsObject(
             Map(
-                SnakeCaseConstants.FileId -> JsonUtils.toJsonValue(fileId),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(fileType),
+                SnakeCaseConstants.FileId -> JsonUtils.toJsonValue(file_id),
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(`type`),
                 SnakeCaseConstants.Mode -> JsonUtils.toJsonValue(mode),
                 SnakeCaseConstants.Commits -> JsonUtils.toJsonValue(commits)
             )
@@ -46,8 +45,8 @@ extends Data {
 object FileData {
     def fromFileSchema(fileSchema: FileSchema): FileData = {
         FileData(
-            fileId = fileSchema.id,
-            fileType = fileSchema.`type`,
+            file_id = fileSchema.id,
+            `type` = fileSchema.`type`,
             mode = fileSchema.mode,
             commits = fileSchema._links match {
                 case Some(links: FileLinksSchema) => links.commits match {

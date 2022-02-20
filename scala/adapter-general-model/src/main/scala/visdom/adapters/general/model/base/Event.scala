@@ -15,3 +15,7 @@ with RelatedItemsHandler {
 
     def link: ItemLink = ItemLink(id, getType)
 }
+
+object Event {
+    final val EventType: String = "event"
+}

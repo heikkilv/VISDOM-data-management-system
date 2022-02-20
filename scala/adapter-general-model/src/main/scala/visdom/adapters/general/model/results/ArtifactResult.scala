@@ -14,7 +14,6 @@ import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
-import visdom.adapters.general.model.base.State
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.results.BaseResultValue
@@ -25,16 +24,17 @@ import visdom.utils.SnakeCaseConstants
 import visdom.utils.WartRemoverConstants
 
 
-final case class ArtifactResult[ArtifactData <: Data, ArtifactState <: State](
+final case class ArtifactResult[ArtifactData <: Data](
+    _id: String,
     id: String,
-    artifactType: String,
+    `type`: String,
     name: String,
     description: String,
-    state: ArtifactState,
+    state: String,
     origin: ItemLink,
     data: ArtifactData,
-    relatedConstructs: Seq[ItemLink],
-    relatedEvents: Seq[ItemLink]
+    related_constructs: Seq[ItemLink],
+    related_events: Seq[ItemLink]
 )
 extends BaseResultValue
 with IdValue {
@@ -42,16 +42,16 @@ with IdValue {
         BsonDocument(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toBsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(artifactType),
+                SnakeCaseConstants.Type -> JsonUtils.toBsonValue(`type`),
                 SnakeCaseConstants.Name -> JsonUtils.toBsonValue(name),
                 SnakeCaseConstants.Description -> JsonUtils.toBsonValue(description),
-                SnakeCaseConstants.State -> state.toBsonValue(),
+                SnakeCaseConstants.State -> JsonUtils.toBsonValue(state),
                 SnakeCaseConstants.Origin -> origin.toBsonValue(),
                 SnakeCaseConstants.Data -> data.toBsonValue(),
                 SnakeCaseConstants.RelatedConstructs ->
-                    JsonUtils.toBsonValue(relatedConstructs.map(link => link.toBsonValue())),
+                    JsonUtils.toBsonValue(related_constructs.map(link => link.toBsonValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toBsonValue(relatedEvents.map(link => link.toBsonValue()))
+                    JsonUtils.toBsonValue(related_events.map(link => link.toBsonValue()))
             )
         )
     }
@@ -61,40 +61,40 @@ with IdValue {
         JsObject(
             Map(
                 SnakeCaseConstants.Id -> JsonUtils.toJsonValue(id),
-                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(artifactType),
+                SnakeCaseConstants.Type -> JsonUtils.toJsonValue(`type`),
                 SnakeCaseConstants.Name -> JsonUtils.toJsonValue(name),
                 SnakeCaseConstants.Description -> JsonUtils.toJsonValue(description),
-                SnakeCaseConstants.State -> state.toJsValue(),
+                SnakeCaseConstants.State -> JsonUtils.toJsonValue(state),
                 SnakeCaseConstants.Origin -> origin.toJsValue(),
                 SnakeCaseConstants.Data -> data.toJsValue(),
                 SnakeCaseConstants.RelatedConstructs ->
-                    JsonUtils.toJsonValue(relatedConstructs.map(link => link.toJsValue())),
+                    JsonUtils.toJsonValue(related_constructs.map(link => link.toJsValue())),
                 SnakeCaseConstants.RelatedEvents ->
-                    JsonUtils.toJsonValue(relatedEvents.map(link => link.toJsValue()))
+                    JsonUtils.toJsonValue(related_events.map(link => link.toJsValue()))
             )
         )
     }
 }
 
 object ArtifactResult {
-    type FileArtifactResult = ArtifactResult[FileData, FileState]
-    type GitlabAuthorResult = ArtifactResult[GitlabAuthorData, AuthorState]
+    type FileArtifactResult = ArtifactResult[FileData]
+    type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
 
-    def fromArtifact[ArtifactData <: Data, ArtifactState <: State](
+    def fromArtifact[ArtifactData <: Data](
         artifact: Artifact,
-        artifactData: ArtifactData,
-        artifactState: ArtifactState
-    ): ArtifactResult[ArtifactData, ArtifactState] = {
+        artifactData: ArtifactData
+    ): ArtifactResult[ArtifactData] = {
         ArtifactResult(
+            _id = artifact.id,
             id = artifact.id,
-            artifactType = artifact.getType,
+            `type` = artifact.getType,
             name = artifact.name,
             description = artifact.description,
-            state = artifactState,
+            state = artifact.state,
             origin = artifact.origin,
             data = artifactData,
-            relatedConstructs = artifact.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
-            relatedEvents = artifact.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
+            related_constructs = artifact.relatedConstructs.map(link => ItemLink.fromLinkTrait(link)),
+            related_events = artifact.relatedEvents.map(link => ItemLink.fromLinkTrait(link))
         )
     }
 
@@ -107,11 +107,11 @@ object ArtifactResult {
             userId = None,
             relatedCommitEventIds = gitlabAuthorSchema.related_commit_event_ids
         )
-        fromArtifact(gitlabAuthor, gitlabAuthor.data, gitlabAuthor.state)
+        fromArtifact(gitlabAuthor, gitlabAuthor.data)
     }
 
     def fromFileSchema(fileSchema: FileSchema): FileArtifactResult = {
         val fileArtifact: FileArtifact = new FileArtifact(fileSchema)
-        fromArtifact(fileArtifact, fileArtifact.data, fileArtifact.state)
+        fromArtifact(fileArtifact, fileArtifact.data)
     }
 }
