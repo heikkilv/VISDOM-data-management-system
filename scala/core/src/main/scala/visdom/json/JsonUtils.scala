@@ -14,6 +14,7 @@ import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
+import org.mongodb.scala.bson.Document
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.JavaConverters.asScalaSetConverter
 import spray.json.JsArray
@@ -128,6 +129,10 @@ object JsonUtils {
                 case Some(value: BsonValue) => document.append(key, value)
                 case None => document
             }
+        }
+
+        def removeAttribute(attributeName: String): BsonDocument = {
+            JsonUtils.removeAttribute(document, attributeName)
         }
 
         def transformAttribute(
@@ -319,6 +324,16 @@ object JsonUtils {
             case mapValue: Map[_, _] =>
                 JsObject(mapValue.map({case (key, content) => (key.toString(), toJsonValue(content))}))
             case jsonObjectConvertible: JsonObjectConvertible => jsonObjectConvertible.toJsObject()
+            case bsonString: BsonString => toJsonValue(bsonString.getValue())
+            case bsonInt32: BsonInt32 => JsNumber(bsonInt32.getValue())
+            case bsonInt64: BsonInt64 => JsNumber(bsonInt64.getValue())
+            case bsonDouble: BsonDouble => JsNumber(bsonDouble.getValue())
+            case bsonBoolean: BsonBoolean => JsBoolean(bsonBoolean.getValue())
+            case bsonArray: BsonArray => toJsonValue(bsonArray.getValues().asScala)
+            case bsonDocument: BsonDocument => toJsonValue(
+                bsonDocument.keySet().asScala.toSeq.map(key => (key, bsonDocument.get(key))).toMap[String, BsonValue]
+            )
+            case document: Document => toJsonValue(document.toBsonDocument)
             case _ => JsNull
         }
     }
@@ -480,5 +495,68 @@ object JsonUtils {
 
             constructJsObject(jsObject.fields, Map.empty)
         }
+    }
+
+    def getStringOption(jsValue: JsValue, attribute: String): Option[String] = {
+        jsValue match {
+            case JsObject(fields: Map[String, JsValue]) => fields.get(attribute) match {
+                case Some(stringValue: JsString) => Some(stringValue.toString())
+                case _ => None
+            }
+            case _ => None
+        }
+    }
+
+    // assumes that the given JSON values are JSON objects with string valued sortAttribute
+    def combineTwoSortedArrays(
+        sortAttribute: String,
+        arrayOne: Array[JsValue],
+        arrayTwo: Array[JsValue]
+    ): Array[JsValue] = {
+        def combineArraysInternal(
+            result: Array[JsValue],
+            first: Array[JsValue],
+            second: Array[JsValue]
+        ): Array[JsValue] = {
+            first.headOption match {
+                case Some(firstHead: JsObject) => second.headOption match {
+                    case Some(secondHead: JsObject) => {
+                        val firstValueOption: Option[String] = getStringOption(firstHead, sortAttribute)
+                        val secondValueOption: Option[String] = getStringOption(secondHead, sortAttribute)
+                        if (firstValueOption.isDefined && secondValueOption.isDefined) {
+                            val firstValue: String = firstValueOption.getOrElse(CommonConstants.EmptyString)
+                            val secondValue: String = secondValueOption.getOrElse(CommonConstants.EmptyString)
+                            firstValue <= secondValue match {
+                                case true => combineArraysInternal(result :+ firstHead, first.drop(1), second)
+                                case false => combineArraysInternal(result :+ secondHead, first, second.drop(1))
+                            }
+                        }
+                        else {
+                            result  // the JSON values were not objects or did not contain string valued sortAttribute
+                        }
+                    }
+                    case _ => result ++ first
+                }
+                case _ => result ++ second
+            }
+        }
+
+        combineArraysInternal(Array.empty, arrayTwo, arrayOne)
+    }
+
+    def combineSortedArrays(sortAttribute: String, arrays: Array[JsValue]*): Array[JsValue] = {
+
+        def combineArraysInternal(result: Array[JsValue], remainingArrays: Seq[Array[JsValue]]): Array[JsValue] = {
+            remainingArrays.headOption match {
+                case Some(headArray: Array[JsValue]) =>
+                    combineArraysInternal(
+                        combineTwoSortedArrays(sortAttribute, result, headArray),
+                        remainingArrays.drop(1)
+                    )
+                case None => result
+            }
+        }
+
+        combineArraysInternal(Array.empty, arrays)
     }
 }

@@ -45,6 +45,15 @@ object ServerConstants {
     final val SingleRootPath = "/single"
     final val SinglePath = "single"
 
+    final val OriginsRootPath = "/origins"
+    final val OriginsPath = "origins"
+    final val EventsRootPath = "/events"
+    final val EventsPath = "events"
+    final val AuthorsRootPath = "/authors"
+    final val AuthorsPath = "authors"
+    final val ArtifactsRootPath = "/artifacts"
+    final val ArtifactsPath = "artifacts"
+
     final val FalseString = "false"
     final val TrueString = "true"
     final val BooleanStrings: Set[String] = Set(FalseString, TrueString)

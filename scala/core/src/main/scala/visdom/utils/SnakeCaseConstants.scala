@@ -2,6 +2,7 @@ package visdom.utils
 
 
 object SnakeCaseConstants {
+    val _Id: String = "_id"
     val AdapterType: String = "adapter_type"
     val Additions: String = "additions"
     val AMode: String = "a_mode"
@@ -23,6 +24,7 @@ object SnakeCaseConstants {
     val BMode: String = "b_mode"
     val Category: String = "category"
     val CategoryG: String = "categoryG"
+    val CategoryIndex: String = "category_index"
     val CategoryP: String = "categoryP"
     val Code: String = "code"
     val Commit: String = "commit"
@@ -88,6 +90,7 @@ object SnakeCaseConstants {
     val NewPath: String = "new_path"
     val NextPage: String = "next_page"
     val Number: String = "number"
+    val ObjectType: String = "object_type"
     val Official: String = "official"
     val OldPath: String = "old_path"
     val Origin: String = "origin"
@@ -130,6 +133,7 @@ object SnakeCaseConstants {
     val SummaryHtml: String = "summary_html"
     val SwaggerDefinition: String = "swagger_definition"
     val Target: String = "target"
+    val TargetType: String = "target_type"
     val Time: String = "time"
     val Timestamp: String = "timestamp"
     val Title: String = "title"
@@ -137,6 +141,7 @@ object SnakeCaseConstants {
     val Total: String = "total"
     val TotalCount: String = "total_count"
     val Type: String = "type"
+    val TypeIndex: String = "type_index"
     val Url: String = "url"
     val UserId: String = "user_id"
     val Username: String = "username"

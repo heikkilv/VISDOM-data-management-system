@@ -17,6 +17,14 @@ object GeneralUtils {
         }
     }
 
+    def toDouble(stringValue: String): Option[Double] = {
+        try {
+            Some(stringValue.toDouble)
+        } catch {
+            case _: java.lang.NumberFormatException => None
+        }
+    }
+
     def toIntWithinInterval(stringValue: String, minValue: Option[Int], maxValue: Option[Int]): Option[Int] = {
         val intValueOption: Option[Int] = toInt(stringValue)
 
@@ -40,6 +48,16 @@ object GeneralUtils {
             case numberValue: Number => Some(numberValue.intValue())
             case stringValue: String => toInt(stringValue)
             case Some(someValue: Any) => toIntOption(someValue)
+            case _ => None
+        }
+    }
+
+    def toDoubleOption(value: Any): Option[Double] = {
+        value match {
+            case doubleValue: Double => Some(doubleValue)
+            case numberValue: Number => Some(numberValue.doubleValue())
+            case stringValue: String => toDouble(stringValue)
+            case Some(someValue: Any) => toDoubleOption(someValue)
             case _ => None
         }
     }
