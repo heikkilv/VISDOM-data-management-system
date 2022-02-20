@@ -20,6 +20,7 @@ object MongoConstants {
     val DefaultMongoMetadataDatabase: String = "metadata"
     val DefaultMongoTargetDatabase: String = "gitlab"
 
+    val CollectionArtifacts: String = "artifacts"
     val CollectionCommits: String = "commits"
     val CollectionCourses: String = "courses"
     val CollectionEvents: String = "events"
@@ -29,6 +30,7 @@ object MongoConstants {
     val CollectionJobLogs: String = "job_logs"
     val CollectionMetadata: String = "metadata"
     val CollectionModules: String = "modules"
+    val CollectionOrigins: String = "origins"
     val CollectionPipelineReports: String = "pipeline_reports"
     val CollectionPipelines: String = "pipelines"
     val CollectionPoints: String = "points"
@@ -36,6 +38,7 @@ object MongoConstants {
     val CollectionSubmissions: String = "submissions"
     val CollectionTemp: String = "temp"
 
+    val AttributeCount: String = "count"
     val AttributeDefaultId: String = "_id"
     val AttributeDocumentUpdatedCount: String = "documents_updated_count"
     val AttributeHostName: String = "host_name"
