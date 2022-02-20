@@ -10,6 +10,15 @@ object GeneralAdapterDescriptions {
     final val SingleEndpointDescription = "Returns a single entity based on type and id."
     final val SingleEndpointSummary = "Returns a single entity based on type and id."
 
+    final val OriginsEndpointDescription = "Returns the origin objects."
+    final val OriginsEndpointSummary = "Returns the origin objects."
+    final val EventsEndpointDescription = "Returns the event objects."
+    final val EventsEndpointSummary = "Returns the event objects."
+    final val AuthorsEndpointDescription = "Returns the author objects."
+    final val AuthorsEndpointSummary = "Returns the author objects."
+    final val ArtifactsEndpointDescription = "Returns the artifact objects."
+    final val ArtifactsEndpointSummary = "Returns the artifact objects."
+
     final val TestEndpointDescription = "Test endpoint for paging features."
     final val TestEndpointSummary = "Test endpoint for paging features."
 
