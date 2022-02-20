@@ -1,9 +1,9 @@
 package visdom.adapters
 
 import java.time.Instant
-import visdom.adapters.results.Result
+import visdom.adapters.results.BaseResultValue
 
 final case class QueryResult(
-    data: Result,
+    data: BaseResultValue,
     timestamp: Instant
 )

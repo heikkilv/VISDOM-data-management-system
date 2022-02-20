@@ -1,7 +1,9 @@
 package visdom.adapters.results
 
 import org.mongodb.scala.bson.BsonDocument
+import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
+import spray.json.JsValue
 import visdom.http.server.response.BaseResponse
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
@@ -11,7 +13,8 @@ final case class Result(
     counts: ResultCounts,
     results: BaseResultValue
 )
-extends BaseResponse {
+extends BaseResponse
+with BaseResultValue {
     def toBsonDocument(): BsonDocument = {
         // NOTE: should return the same as the following:
         // JsonUtils.toBsonValue(toJsObject()).asDocument()
@@ -29,6 +32,10 @@ extends BaseResponse {
         )
     }
 
+    def toBsonValue(): BsonValue = {
+        toBsonDocument()
+    }
+
     def toJsObject(): JsObject = {
         JsObject(
             Map(
@@ -41,6 +48,10 @@ extends BaseResponse {
                 SnakeCaseConstants.Results -> results.toJsValue()
             )
         )
+    }
+
+    def toJsValue(): JsValue = {
+        toJsObject()
     }
 }
 

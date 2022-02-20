@@ -4,7 +4,7 @@ import java.time.Instant
 import scala.collection.mutable
 import spray.json.JsObject
 import visdom.adapters.options.BaseQueryOptions
-import visdom.adapters.results.Result
+import visdom.adapters.results.BaseResultValue
 import visdom.database.mongodb.MongoConnection
 import visdom.utils.TimeUtils
 
@@ -12,9 +12,9 @@ import visdom.utils.TimeUtils
 class QueryCache(databases: Seq[String]) {
     private val results: mutable.Map[(Int, BaseQueryOptions), QueryResult] = mutable.Map.empty
 
-    def getResult(queryCode: Int, options: BaseQueryOptions): Option[Result] = {
+    def getResult(queryCode: Int, options: BaseQueryOptions): Option[BaseResultValue] = {
         results.get((queryCode, options)) match {
-            case Some(result: QueryResult) => getLastDatabaseUpdateTime() match {
+            case Some(result: QueryResult) => QueryCache.getLastDatabaseUpdateTime(databases) match {
                 case Some(databaseUpdateTime: Instant) => result.timestamp.compareTo(databaseUpdateTime) >= 0 match {
                     case true => Some(result.data)
                     case false => None
@@ -25,11 +25,13 @@ class QueryCache(databases: Seq[String]) {
         }
     }
 
-    def addResult(queryCode: Int, options: BaseQueryOptions, data: Result): Unit = {
+    def addResult(queryCode: Int, options: BaseQueryOptions, data: BaseResultValue): Unit = {
         val _ = results += (((queryCode, options), QueryResult(data, Instant.now())))
     }
+}
 
-    private def getLastDatabaseUpdateTime(): Option[Instant] = {
+object QueryCache {
+    def getLastDatabaseUpdateTime(databases: Seq[String]): Option[Instant] = {
         def getUpdateTimeInternal(nextDatabases: Seq[String], lastUpdateTime: Option[Instant]): Option[Instant] = {
             nextDatabases.headOption match {
                 case Some(database: String) => {
