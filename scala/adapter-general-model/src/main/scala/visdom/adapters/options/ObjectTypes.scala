@@ -7,6 +7,7 @@ import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 
 
@@ -17,7 +18,7 @@ object ObjectTypes {
     val TargetTypeArtifact: String = Artifact.ArtifactType
 
     val OriginTypes: Set[String] = Set(GitlabOrigin.GitlabOriginType)
-    val EventTypes: Set[String] = Set(CommitEvent.CommitEventType)
+    val EventTypes: Set[String] = Set(CommitEvent.CommitEventType, PipelineEvent.PipelineEventType)
     val AuthorTypes: Set[String] = Set(GitlabAuthor.GitlabAuthorType)
     val ArtifactTypes: Set[String] = Set(FileArtifact.FileArtifactType) ++ AuthorTypes
 

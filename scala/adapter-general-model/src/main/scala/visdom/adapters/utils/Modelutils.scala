@@ -15,18 +15,21 @@ import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
 import visdom.adapters.general.model.results.EventResult
 import visdom.adapters.general.model.results.EventResult.CommitEventResult
+import visdom.adapters.general.model.results.EventResult.PipelineEventResult
 import visdom.adapters.general.model.results.OriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
 import visdom.adapters.general.schemas.CommitAuthorSimpleSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
+import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
@@ -51,6 +54,20 @@ class ModelUtils(sparkSession: SparkSession) {
             )
             .flatMap(row => CommitSchema.fromRow(row))
             .map(commitSchema => EventResult.fromCommitSchema(commitSchema))
+    }
+
+    def getPipelines(): Dataset[PipelineEventResult] = {
+        MongoSpark
+            .load[PipelineSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(
+                    sparkSession,
+                    AdapterValues.gitlabDatabaseName,
+                    MongoConstants.CollectionPipelines
+                )
+            )
+            .flatMap(row => PipelineSchema.fromRow(row))
+            .map(pipelineSchema => EventResult.fromPipelineSchema(pipelineSchema))
     }
 
     def getGitlabProjects(collectionName: String): Dataset[GitlabProjectSchema] = {
@@ -130,10 +147,10 @@ class ModelUtils(sparkSession: SparkSession) {
     def updateEvents(): Unit = {
         if (!ModuleUtils.isEventCacheUpdated()) {
             GeneralQueryUtils.storeObjects(sparkSession, getCommits(), CommitEvent.CommitEventType)
+            GeneralQueryUtils.storeObjects(sparkSession, getPipelines(), PipelineEvent.PipelineEventType)
             updateEventIndexes()
         }
     }
-
 
     def updateAuthors(updateIndex: Boolean): Unit = {
         if (!ModuleUtils.isAuthorCacheUpdated()) {
@@ -242,7 +259,8 @@ object ModuleUtils {
     }
 
     def isEventCacheUpdated(): Boolean = {
-        GeneralQueryUtils.isCacheUpdated(CommitEvent.CommitEventType)
+        GeneralQueryUtils.isCacheUpdated(CommitEvent.CommitEventType) &&
+        GeneralQueryUtils.isCacheUpdated(PipelineEvent.PipelineEventType)
     }
 
     def isAuthorCacheUpdated(): Boolean = {

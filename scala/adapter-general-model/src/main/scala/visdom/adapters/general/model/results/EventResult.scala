@@ -8,8 +8,11 @@ import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.data.CommitData
+import visdom.adapters.general.model.events.data.PipelineData
 import visdom.adapters.general.schemas.CommitSchema
+import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -75,6 +78,7 @@ with IdValue {
 
 object EventResult {
     type CommitEventResult = EventResult[CommitData]
+    type PipelineEventResult = EventResult[PipelineData]
 
     def fromEvent[EventData <: Data](event: Event, eventData: EventData): EventResult[EventData] = {
         EventResult(
@@ -95,5 +99,10 @@ object EventResult {
     def fromCommitSchema(commitSchema: CommitSchema): CommitEventResult = {
         val commitEvent: CommitEvent = new CommitEvent(commitSchema)
         fromEvent(commitEvent, commitEvent.data)
+    }
+
+    def fromPipelineSchema(pipelineSchema: PipelineSchema): PipelineEventResult = {
+        val pipelineEvent: PipelineEvent = new PipelineEvent(pipelineSchema)
+        fromEvent(pipelineEvent, pipelineEvent.data)
     }
 }
