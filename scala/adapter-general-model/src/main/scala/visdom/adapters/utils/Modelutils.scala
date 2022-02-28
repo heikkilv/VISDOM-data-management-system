@@ -28,7 +28,9 @@ import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
 import visdom.adapters.general.schemas.CommitAuthorSimpleSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
+import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
+import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -70,9 +72,23 @@ class ModelUtils(sparkSession: SparkSession) {
             .map(pipelineSchema => EventResult.fromPipelineSchema(pipelineSchema))
     }
 
-    def getGitlabProjects(collectionName: String): Dataset[GitlabProjectSchema] = {
+    def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
         MongoSpark
             .load[GitlabProjectSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(
+                    sparkSession,
+                    AdapterValues.gitlabDatabaseName,
+                    MongoConstants.CollectionProjects
+                )
+            )
+            .flatMap(row => GitlabProjectSchema.fromRow(row))
+            .map(projectSchema => GitlabProjectSimpleSchema.fromProjectSchema(projectSchema))
+    }
+
+    def getGitlabProjectInformation(collectionName: String): Dataset[GitlabProjectSimpleSchema] = {
+        MongoSpark
+            .load[GitlabProjectInformationSchema](
                 sparkSession,
                 ConfigUtils.getReadConfig(
                     sparkSession,
@@ -82,25 +98,36 @@ class ModelUtils(sparkSession: SparkSession) {
             )
             .na.drop()
             .distinct()
-            .flatMap(row => GitlabProjectSchema.fromRow(row))
+            .flatMap(row => GitlabProjectInformationSchema.fromRow(row))
+            .map(informationSchema => GitlabProjectSimpleSchema.fromProjectInformationSchema(informationSchema))
     }
 
-    def getAllGitlabProjects(): Dataset[GitlabProjectSchema] = {
-        val commitProjects = getGitlabProjects(MongoConstants.CollectionCommits)
-        val fileProjects = getGitlabProjects(MongoConstants.CollectionFiles)
-        val pipelineProjects = getGitlabProjects(MongoConstants.CollectionPipelines)
+    def getAllGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
+        val projects = getGitlabProjects()
+        val commitProjects = getGitlabProjectInformation(MongoConstants.CollectionCommits)
+        val fileProjects = getGitlabProjectInformation(MongoConstants.CollectionFiles)
+        val pipelineProjects = getGitlabProjectInformation(MongoConstants.CollectionPipelines)
 
-        commitProjects
+        projects
+            .union(commitProjects)
             .union(fileProjects)
             .union(pipelineProjects)
             .distinct()
-
-        // NOTE: the project documents from projects collection could also be used for this
     }
 
     def getGitlabOrigins(): Dataset[GitlabOriginResult] = {
-        getAllGitlabProjects()
-            .map(projectSchema => OriginResult.fromGitlabProjectSchema(projectSchema))
+        val projects = getAllGitlabProjects()
+            .map(projectSchema => OriginResult.fromGitlabProjectSimpleSchema(projectSchema))
+
+        val projectWithIds: Array[String] =
+            projects
+                .filter(origin => origin.data.project_id.isDefined)
+                .map(origin => origin.id)
+                .distinct()
+                .collect()
+
+        projects
+            .filter(origin => origin.data.project_id.isDefined || !projectWithIds.contains(origin.id))
     }
 
     def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {

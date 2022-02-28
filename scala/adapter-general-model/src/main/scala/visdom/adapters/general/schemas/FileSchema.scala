@@ -21,7 +21,7 @@ final case class FileSchema(
     _links: Option[FileLinksSchema]
 )
 extends BaseSchema
-with GitlabProjectSchemaTrait
+with GitlabProjectInformationSchemaTrait
 
 object FileSchema extends BaseSchemaTrait2[FileSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

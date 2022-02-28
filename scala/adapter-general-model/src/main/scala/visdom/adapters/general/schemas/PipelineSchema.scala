@@ -35,7 +35,7 @@ final case class PipelineSchema(
     _links: Option[PipelineLinksSchema]
 )
 extends BaseSchema
-with GitlabProjectSchemaTrait
+with GitlabProjectInformationSchemaTrait
 
 object PipelineSchema extends BaseSchemaTrait2[PipelineSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

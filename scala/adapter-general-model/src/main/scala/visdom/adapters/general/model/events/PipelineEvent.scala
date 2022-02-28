@@ -25,7 +25,8 @@ extends Event {
         new GitlabOrigin(
             pipelineSchema.host_name,
             pipelineSchema.group_name,
-            pipelineSchema.project_name
+            pipelineSchema.project_name,
+            None
         ).link
 
     val author: ItemLink =

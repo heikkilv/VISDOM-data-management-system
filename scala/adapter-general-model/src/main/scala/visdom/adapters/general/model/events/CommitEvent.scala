@@ -26,7 +26,8 @@ extends Event {
         new GitlabOrigin(
             commitSchema.host_name,
             commitSchema.group_name,
-            commitSchema.project_name
+            commitSchema.project_name,
+            None
         ).link
 
     val author: ItemLink =

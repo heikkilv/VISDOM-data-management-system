@@ -18,7 +18,7 @@ extends BaseSchema
 object PipelineLinksSchema extends BaseSchemaTrait2[PipelineLinksSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def fields: Seq[FieldDataModel] = Seq(
-        FieldDataModel(SnakeCaseConstants.Commits, true, (value: Any) => toSeqOption(value, toIntOption))
+        FieldDataModel(SnakeCaseConstants.Jobs, true, (value: Any) => toSeqOption(value, toIntOption))
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

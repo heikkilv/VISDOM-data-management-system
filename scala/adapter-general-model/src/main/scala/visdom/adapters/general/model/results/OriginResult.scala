@@ -8,7 +8,7 @@ import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.origins.data.GitlabOriginData
-import visdom.adapters.general.schemas.GitlabProjectSchemaTrait
+import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -64,11 +64,12 @@ object OriginResult {
         )
     }
 
-    def fromGitlabProjectSchema(gitlabProjectSchema: GitlabProjectSchemaTrait): GitlabOriginResult = {
+    def fromGitlabProjectSimpleSchema(gitlabProjectSchema: GitlabProjectSimpleSchema): GitlabOriginResult = {
         val gitlabOrigin: GitlabOrigin = new GitlabOrigin(
             hostName = gitlabProjectSchema.host_name,
             projectGroup = gitlabProjectSchema.group_name,
-            projectName = gitlabProjectSchema.project_name
+            projectName = gitlabProjectSchema.project_name,
+            project_id = gitlabProjectSchema.project_id
         )
         fromOrigin(gitlabOrigin, gitlabOrigin.data)
     }

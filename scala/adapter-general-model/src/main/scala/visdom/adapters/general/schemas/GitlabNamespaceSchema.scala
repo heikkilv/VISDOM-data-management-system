@@ -10,28 +10,30 @@ import visdom.utils.TupleUtils
 import visdom.utils.WartRemoverConstants
 
 
-final case class GitlabProjectSchema(
+final case class GitlabNamespaceSchema(
     id: Int,
-    path_with_namespace: String,
-    namespace: GitlabNamespaceSchema,
-    host_name: String
+    name: String,
+    path: String,
+    kind: String,
+    full_path: String
 )
 extends BaseSchema
 
-object GitlabProjectSchema extends BaseSchemaTrait2[GitlabProjectSchema] {
+object GitlabNamespaceSchema extends BaseSchemaTrait2[GitlabNamespaceSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def fields: Seq[FieldDataModel] = Seq(
         FieldDataModel(SnakeCaseConstants.Id, false, toIntOption),
-        FieldDataModel(SnakeCaseConstants.PathWithNamespace, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Namespace, false, GitlabNamespaceSchema.fromAny),
-        FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption)
+        FieldDataModel(SnakeCaseConstants.Name, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Path, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Kind, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.FullPath, false, toStringOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
-    def createInstance(values: Seq[Any]): Option[GitlabProjectSchema] = {
-        TupleUtils.toTuple[Int, String, GitlabNamespaceSchema, String](values) match {
+    def createInstance(values: Seq[Any]): Option[GitlabNamespaceSchema] = {
+        TupleUtils.toTuple[Int, String, String, String, String](values) match {
             case Some(inputValues) => Some(
-                (GitlabProjectSchema.apply _).tupled(inputValues)
+                (GitlabNamespaceSchema.apply _).tupled(inputValues)
             )
             case None => None
         }

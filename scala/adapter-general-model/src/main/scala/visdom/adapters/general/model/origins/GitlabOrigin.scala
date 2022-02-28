@@ -6,20 +6,21 @@ import visdom.utils.GeneralUtils
 import visdom.utils.CommonConstants
 
 
-class GitlabOrigin(hostName: String, projectGroup: String, projectName: String)
+class GitlabOrigin(hostName: String, projectGroup: String, projectName: String, project_id: Option[Int])
 extends Origin {
     def getType: String = GitlabOrigin.GitlabOriginType
     val source: String = hostName
     val context: String = projectName
 
-    val data: GitlabOriginData = GitlabOriginData(projectGroup)
+    override val id: String = GitlabOrigin.getId(hostName, projectName)
+    val data: GitlabOriginData = GitlabOriginData(project_id, projectGroup)
 }
 
 object GitlabOrigin {
     final val GitlabOriginType: String = "GitLab"
 
     def getGitlabOriginFromHost(hostName: String): GitlabOrigin = {
-        new GitlabOrigin(hostName, CommonConstants.EmptyString, CommonConstants.EmptyString)
+        new GitlabOrigin(hostName, CommonConstants.EmptyString, CommonConstants.EmptyString, None)
     }
 
     def getId(hostName: String, projectName: String): String = {

@@ -21,7 +21,8 @@ extends Artifact {
         new GitlabOrigin(
             fileSchema.host_name,
             fileSchema.group_name,
-            fileSchema.project_name
+            fileSchema.project_name,
+            None
         ).link
 
     val name: String = fileSchema.name
