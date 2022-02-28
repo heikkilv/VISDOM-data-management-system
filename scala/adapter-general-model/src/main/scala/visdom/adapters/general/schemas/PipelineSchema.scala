@@ -21,12 +21,12 @@ final case class PipelineSchema(
     source: String,
     created_at: String,
     updated_at: String,
-    started_at: String,
-    finished_at: String,
+    started_at: Option[String],
+    finished_at: Option[String],
     tag: Boolean,
     user: PipelineUserSchema,
-    duration: Double,  // TODO: check type
-    queued_duration: Double,  // TODO: check type
+    duration: Option[Double],
+    queued_duration: Option[Double],
     detailed_status: PipelineDetailedStatusSchema,
     web_url: String,
     project_name: String,
@@ -48,12 +48,12 @@ object PipelineSchema extends BaseSchemaTrait2[PipelineSchema] {
         FieldDataModel(SnakeCaseConstants.Source, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.CreatedAt, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.UpdatedAt, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.StartedAt, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.FinishedAt, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.StartedAt, true, toStringOption),
+        FieldDataModel(SnakeCaseConstants.FinishedAt, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.Tag, false, toBooleanOption),
         FieldDataModel(SnakeCaseConstants.User, false, PipelineUserSchema.fromAny),
-        FieldDataModel(SnakeCaseConstants.Duration, false, toDoubleOption),
-        FieldDataModel(SnakeCaseConstants.QueuedDuration, false, toDoubleOption),
+        FieldDataModel(SnakeCaseConstants.Duration, true, toDoubleOption),
+        FieldDataModel(SnakeCaseConstants.QueuedDuration, true, toDoubleOption),
         FieldDataModel(SnakeCaseConstants.DetailedStatus, false, PipelineDetailedStatusSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.WebUrl, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.ProjectName, false, toStringOption),
@@ -64,9 +64,9 @@ object PipelineSchema extends BaseSchemaTrait2[PipelineSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[PipelineSchema] = {
-        TupleUtils.toTuple[Int, Int, String, String, String, String, String, String, String, String, Boolean,
-                           PipelineUserSchema, Double, Double, PipelineDetailedStatusSchema, String, String,
-                           String, String, Option[PipelineLinksSchema]](values) match {
+        TupleUtils.toTuple[Int, Int, String, String, String, String, String, String, Option[String], Option[String],
+                           Boolean, PipelineUserSchema, Option[Double], Option[Double], PipelineDetailedStatusSchema,
+                           String, String, String, String, Option[PipelineLinksSchema]](values) match {
             case Some(inputValues) => Some(
                 (PipelineSchema.apply _).tupled(inputValues)
             )

@@ -25,6 +25,7 @@ import visdom.adapters.general.model.results.EventResult.CommitEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineEventResult
 import visdom.adapters.general.model.results.OriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
+import visdom.adapters.options.ObjectTypes
 import visdom.adapters.general.schemas.CommitAuthorSimpleSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
@@ -258,15 +259,15 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateOriginsIndexes(): Unit = {
-        updateIndexes(Seq(GitlabOrigin.GitlabOriginType))
+        updateIndexes(ObjectTypes.OriginTypes.toSeq)
     }
 
     def updateEventIndexes(): Unit = {
-        updateIndexes(Seq(CommitEvent.CommitEventType))
+        updateIndexes(ObjectTypes.EventTypes.toSeq)
     }
 
     def updateArtifactIndexes(): Unit = {
-        updateIndexes(Seq(FileArtifact.FileArtifactType, GitlabAuthor.GitlabAuthorType))
+        updateIndexes(ObjectTypes.ArtifactTypes.toSeq)
     }
 
     def updateTargetCache(targetType: String): Unit = {

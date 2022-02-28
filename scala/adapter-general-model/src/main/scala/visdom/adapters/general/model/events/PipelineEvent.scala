@@ -19,7 +19,7 @@ class PipelineEvent(
 )
 extends Event {
     def getType: String = PipelineEvent.PipelineEventType
-    val duration: Double = pipelineSchema.duration
+    val duration: Double = pipelineSchema.duration.getOrElse(0.0)
 
     val origin: ItemLink =
         new GitlabOrigin(
@@ -32,7 +32,7 @@ extends Event {
     val author: ItemLink =
         new GitlabAuthor(
             authorName = pipelineSchema.user.name,
-            authorEmail = pipelineSchema.user.username,  // TODO: fix this
+            authorEmail = CommonConstants.EmptyString,
             hostName = pipelineSchema.host_name,
             authorDescription = None,
             userId = Some(pipelineSchema.user.id),
@@ -42,7 +42,12 @@ extends Event {
     val data: PipelineData = PipelineData.fromPipelineSchema(pipelineSchema)
 
     val message: String = pipelineSchema.status
-    val time: ZonedDateTime = PipelineEvent.toZonedDateTime(pipelineSchema.started_at)
+    val time: ZonedDateTime = PipelineEvent.toZonedDateTime(
+        pipelineSchema.started_at match {
+            case Some(startedAt: String) => startedAt
+            case None => pipelineSchema.created_at
+        }
+    )
 
     val id: String = PipelineEvent.getId(origin.id, data.pipeline_id)
 

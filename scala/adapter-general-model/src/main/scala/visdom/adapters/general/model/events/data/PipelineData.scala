@@ -23,7 +23,7 @@ final case class PipelineData(
     source: String,
     created_at: String,
     updated_at: String,
-    finished_at: String,
+    finished_at: Option[String],
     queued_duration: Double,
     tag: Boolean,
     detailed_status: PipelineStatus,
@@ -81,7 +81,7 @@ object PipelineData {
             created_at = pipelineSchema.created_at,
             updated_at = pipelineSchema.updated_at,
             finished_at = pipelineSchema.finished_at,
-            queued_duration = pipelineSchema.queued_duration,
+            queued_duration = pipelineSchema.queued_duration.getOrElse(0.0),
             tag = pipelineSchema.tag,
             detailed_status = PipelineStatus(
                 text = pipelineSchema.detailed_status.text,
