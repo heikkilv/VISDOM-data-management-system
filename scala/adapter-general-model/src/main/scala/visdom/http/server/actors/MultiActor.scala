@@ -19,7 +19,7 @@ class MultiActor extends Actor with ActorLogging {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case inputOptions: MultiOptions => {
-            println(s"Received multi query with options: ${inputOptions.toString()}")
+            log.info(s"Received multi query with options: ${inputOptions.toString()}")
 
             val response: BaseResponse = {
                 (

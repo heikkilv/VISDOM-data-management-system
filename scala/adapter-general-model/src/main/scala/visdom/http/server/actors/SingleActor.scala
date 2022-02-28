@@ -19,7 +19,7 @@ class SingleActor extends Actor with ActorLogging {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case inputOptions: SingleOptions => {
-            println(s"Received single query with options: ${inputOptions.toString()}")
+            log.info(s"Received single query with options: ${inputOptions.toString()}")
 
             val response: BaseResponse = {
                 (

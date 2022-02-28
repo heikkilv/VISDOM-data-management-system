@@ -10,6 +10,8 @@ import visdom.http.server.ServerConstants
 
 trait AdapterApp extends App
 {
+    org.apache.log4j.BasicConfigurator.configure()
+
     val adapterValues: AdapterValues
     val adapterRoutes: AdapterRoutes
     val adapterMetadata: Metadata

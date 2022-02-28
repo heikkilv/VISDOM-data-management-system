@@ -21,6 +21,7 @@ import visdom.adapters.results.Result
 
 object QueryUtils {
     implicit val ec: ExecutionContext = ExecutionContext.global
+    private val log = org.slf4j.LoggerFactory.getLogger("QueryUtils")
 
     implicit class EnrichedDataSet[DataSetType, FilterType](dataset: Dataset[DataSetType]) {
         def applyContainsFilter(columnName: String, valueOption: Option[FilterType]): Dataset[DataSetType] = {
@@ -72,7 +73,7 @@ object QueryUtils {
                 Duration(timeoutSeconds, TimeUnit.SECONDS)
             )
         } catch  {
-            case error: TimeoutException => println(error.getMessage())
+            case error: TimeoutException => log.error(error.getMessage())
         }
     }
 
@@ -99,7 +100,7 @@ object QueryUtils {
     ): Either[String, BaseResultValue] = {
         DefaultAdapterValues.cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
-                println(s"Using result from cache for query ${queryCode} with ${queryOptions}")
+                log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
                 Right(cachedResult)
             }
             case None => {
@@ -123,7 +124,7 @@ object QueryUtils {
     ): Option[BaseResultValue] = {
         DefaultAdapterValues.cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
-                println(s"Using result from cache for query ${queryCode} with ${queryOptions}")
+                log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
                 Some(cachedResult)
             }
             case None => {
@@ -160,7 +161,7 @@ object QueryUtils {
                 .newInstance(queryOptions, sparkSession)
                 .runQuery()
         } catch {
-            case error: java.lang.NoSuchMethodException => println(error.toString())
+            case error: java.lang.NoSuchMethodException => log.error(error.toString())
         }
 
         SparkSessionUtils.releaseSparkSession()
