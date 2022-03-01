@@ -25,7 +25,7 @@ object ObjectTypes {
         PipelineJobEvent.PipelineJobEventType
     )
     val AuthorTypes: Set[String] = Set(GitlabAuthor.GitlabAuthorType)
-    val ArtifactTypes: Set[String] = Set(FileArtifact.FileArtifactType) ++ AuthorTypes
+    val ArtifactTypes: Set[String] = Set(FileArtifact.FileArtifactType)
 
     val objectTypes: Map[String, Set[String]] = Map(
         TargetTypeOrigin -> OriginTypes,

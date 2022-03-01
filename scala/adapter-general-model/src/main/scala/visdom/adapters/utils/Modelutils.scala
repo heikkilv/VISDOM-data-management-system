@@ -180,17 +180,14 @@ class ModelUtils(sparkSession: SparkSession) {
         }
     }
 
-    def updateAuthors(updateIndex: Boolean): Unit = {
+    def updateAuthors(): Unit = {
         if (!ModuleUtils.isAuthorCacheUpdated()) {
             GeneralQueryUtils.storeObjects(sparkSession, getGitlabAuthors(), GitlabAuthor.GitlabAuthorType)
-            if (updateIndex) {
-                updateArtifactIndexes()
-            }
+            updateAuthorIndexes()
         }
     }
 
     def updateArtifacts(): Unit = {
-        updateAuthors(false)
         if (!ModuleUtils.isArtifactCacheUpdated()) {
             GeneralQueryUtils.storeObjects(sparkSession, getFiles(), FileArtifact.FileArtifactType)
             updateArtifactIndexes()
@@ -266,6 +263,10 @@ class ModelUtils(sparkSession: SparkSession) {
         updateIndexes(ObjectTypes.EventTypes.toSeq)
     }
 
+    def updateAuthorIndexes(): Unit = {
+        updateIndexes(ObjectTypes.AuthorTypes.toSeq)
+    }
+
     def updateArtifactIndexes(): Unit = {
         updateIndexes(ObjectTypes.ArtifactTypes.toSeq)
     }
@@ -275,7 +276,7 @@ class ModelUtils(sparkSession: SparkSession) {
             case Event.EventType => updateEvents()
             case Origin.OriginType => updateOrigins()
             case Artifact.ArtifactType => updateArtifacts()
-            case Author.AuthorType => updateArtifacts()
+            case Author.AuthorType => updateAuthors()
             case _ =>
         }
     }

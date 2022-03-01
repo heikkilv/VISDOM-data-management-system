@@ -20,10 +20,7 @@ object AdapterUtils {
     }
 
     def getFirstIndex(pageOptions: BaseQueryWithPageOptions, totalCount: Int): Int = {
-        Math.max(
-            Math.min(getFirstIndex(pageOptions), totalCount),
-            0
-        )
+        Math.max(getFirstIndex(pageOptions), 0)
     }
 
     def getLastIndex(pageOptions: BaseQueryWithPageOptions): Int = {
@@ -31,10 +28,7 @@ object AdapterUtils {
     }
 
     def getLastIndex(pageOptions: BaseQueryWithPageOptions, totalCount: Int): Int = {
-        Math.max(
-            Math.min(getLastIndex(pageOptions), totalCount),
-            0
-        )
+        Math.max(getLastIndex(pageOptions), 0)
     }
 
     def getResultCount(totalCount: Int, pageOptions: BaseQueryWithPageOptions): Int = {
