@@ -163,6 +163,11 @@ class ModelUtils(sparkSession: SparkSession) {
             )
     }
 
+    def getHostNames(): Dataset[String] = {
+        getAllGitlabProjects()
+            .map(project => project.host_name)
+    }
+
     def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
         MongoSpark
             .load[GitlabProjectSchema](
@@ -206,8 +211,22 @@ class ModelUtils(sparkSession: SparkSession) {
             .distinct()
     }
 
+    def getGitlabHostOrigins(): Dataset[GitlabProjectSimpleSchema] = {
+        getHostNames()
+            .map(
+                hostName => GitlabProjectSimpleSchema(
+                    project_id = None,
+                    project_name = CommonConstants.EmptyString,
+                    group_name = CommonConstants.EmptyString,
+                    host_name = hostName
+                )
+            )
+    }
+
     def getGitlabOrigins(): Dataset[GitlabOriginResult] = {
         val projects = getAllGitlabProjects()
+            .union(getGitlabHostOrigins())
+            .distinct()
             .map(projectSchema => OriginResult.fromGitlabProjectSimpleSchema(projectSchema))
 
         val projectWithIds: Array[String] =
