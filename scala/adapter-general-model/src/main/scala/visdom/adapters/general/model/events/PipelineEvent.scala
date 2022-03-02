@@ -5,6 +5,7 @@ import java.time.ZoneId
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.origins.GitlabOrigin
+import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.events.data.PipelineData
@@ -51,7 +52,26 @@ extends Event {
 
     val id: String = PipelineEvent.getId(origin.id, data.pipeline_id)
 
-    // TODO: add construct and event links
+    // add links to the jobs contained in the pipeline
+    addRelatedEvents(
+        data.jobs.map(
+            jobId => ItemLink(
+                PipelineJobEvent.getId(origin.id, jobId),
+                PipelineJobEvent.PipelineJobEventType
+            )
+        )
+    )
+
+    // add links to the author and the pipeline report
+    addRelatedConstructs(
+        Seq(
+            author,
+            ItemLink(
+                PipelineReportArtifact.getId(origin.id, data.pipeline_id),
+                PipelineReportArtifact.PipelineReportArtifactType
+            )
+        )
+    )
 }
 
 object PipelineEvent {

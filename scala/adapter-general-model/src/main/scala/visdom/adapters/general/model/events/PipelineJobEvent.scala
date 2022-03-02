@@ -52,7 +52,16 @@ extends Event {
 
     val id: String = PipelineJobEvent.getId(origin.id, data.job_id)
 
-    // TODO: add construct and event links
+    // add a link to the author
+    addRelatedConstructs(Seq(author))
+
+    // add links to the related pipeline and commit events
+    addRelatedEvents(
+        Seq(
+            ItemLink(PipelineEvent.getId(origin.id, data.pipeline_id), PipelineEvent.PipelineEventType),
+            ItemLink(CommitEvent.getId(origin.id, data.commit_id), CommitEvent.CommitEventType)
+        )
+    )
 }
 
 object PipelineJobEvent {
