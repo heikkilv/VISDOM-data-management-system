@@ -16,7 +16,7 @@ class PipelineReportArtifact(
     projectName: String
 )
 extends Artifact {
-    def getType: String = FileArtifact.FileArtifactType
+    def getType: String = PipelineReportArtifact.PipelineReportArtifactType
 
     val origin: ItemLink =
         new GitlabOrigin(
