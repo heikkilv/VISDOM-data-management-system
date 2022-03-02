@@ -107,7 +107,7 @@ class ModelUtils(sparkSession: SparkSession) {
                 pipelineJobSchema =>
                     EventResult.fromPipelineJobSchema(
                         pipelineJobSchema,
-                        pipelineProjectNames.get(pipelineJobSchema.pipeline.id).getOrElse(CommonConstants.EmptyString)
+                        pipelineProjectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
                     )
             )
     }

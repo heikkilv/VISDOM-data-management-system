@@ -126,8 +126,6 @@ object GeneralQueryUtils {
     ): Result = {
         val cacheCollections: Seq[MongoCollection[Document]] =
             objectTypes.map(objectType => MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType))
-        val totalCount: Int =
-            cacheCollections.map(collection => MongoConnection.getDocumentCount(collection).toInt).sum
 
         val resultData: Seq[JsValue] = cleanCacheResults(
             cacheCollections.map(
@@ -136,8 +134,8 @@ object GeneralQueryUtils {
                     List(
                         MongoConnection.getBetweenFilter(
                             indexAttribute,
-                            JsonUtils.toBsonValue(AdapterUtils.getFirstIndex(pageOptions, totalCount)),
-                            JsonUtils.toBsonValue(AdapterUtils.getLastIndex(pageOptions, totalCount))
+                            JsonUtils.toBsonValue(AdapterUtils.getFirstIndex(pageOptions)),
+                            JsonUtils.toBsonValue(AdapterUtils.getLastIndex(pageOptions))
                         )
                     )
                 )
@@ -146,7 +144,11 @@ object GeneralQueryUtils {
             indexAttribute
         )
 
-        toResult(resultData, totalCount, pageOptions)
+        toResult(
+            resultData,
+            cacheCollections.map(collection => MongoConnection.getDocumentCount(collection).toInt).sum,
+            pageOptions
+        )
     }
 
     private def getCacheResults(
