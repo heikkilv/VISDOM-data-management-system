@@ -52,7 +52,7 @@ class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newStringEncoder
 
-    def getCommits(): Dataset[CommitEventResult] = {
+    def getCommitSchemas(): Dataset[CommitSchema] = {
         MongoSpark
             .load[CommitSchema](
                 sparkSession,
