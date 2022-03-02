@@ -45,6 +45,9 @@ object ServerConstants {
     final val SingleRootPath = "/single"
     final val SinglePath = "single"
 
+    final val UpdateRootPath = "/update"
+    final val UpdatePath = "update"
+
     final val OriginsRootPath = "/origins"
     final val OriginsPath = "origins"
     final val EventsRootPath = "/events"

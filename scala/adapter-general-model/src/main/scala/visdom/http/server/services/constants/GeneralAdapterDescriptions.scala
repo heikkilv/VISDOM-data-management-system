@@ -33,4 +33,8 @@ object GeneralAdapterDescriptions {
     final val SingleNotFoundDescription = "Did not find the object."
 
     final val TestStatusOkDescription = "Successfully fetched result data."
+
+    final val UpdateEndpointSummary = "Updates the object cache."
+    final val UpdateEndpointDescription = "Updates the object cache for all origins, events, artifacts and authors to make queries faster."
+    final val UpdateOkDescription = "The cache has been updated."
 }

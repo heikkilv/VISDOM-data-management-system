@@ -47,4 +47,9 @@ object GeneralAdapterExamples {
         ]
     }
     """
+
+    final val UpdateExampleName = "Cache update example"
+    final val UpdateExample = """{
+        "message": "The cache has been updated."
+    }"""
 }

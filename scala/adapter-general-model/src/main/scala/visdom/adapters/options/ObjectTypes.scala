@@ -14,6 +14,8 @@ import visdom.adapters.general.model.origins.GitlabOrigin
 
 
 object ObjectTypes {
+    final val TargetTypeAll: String = "All"
+
     val TargetTypeOrigin: String = Origin.OriginType
     val TargetTypeEvent: String = Event.EventType
     val TargetTypeAuthor: String = Author.AuthorType

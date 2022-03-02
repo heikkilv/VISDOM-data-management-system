@@ -393,6 +393,8 @@ class ModelUtils(sparkSession: SparkSession) {
             case Origin.OriginType => updateOrigins()
             case Artifact.ArtifactType => updateArtifacts()
             case Author.AuthorType => updateAuthors()
+            case ObjectTypes.TargetTypeAll =>
+                ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
     }
