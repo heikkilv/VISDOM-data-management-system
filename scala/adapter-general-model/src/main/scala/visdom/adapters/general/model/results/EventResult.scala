@@ -100,8 +100,8 @@ object EventResult {
         )
     }
 
-    def fromCommitSchema(commitSchema: CommitSchema): CommitEventResult = {
-        val commitEvent: CommitEvent = new CommitEvent(commitSchema)
+    def fromCommitSchema(commitSchema: CommitSchema, pipelineJobIds: Seq[Int]): CommitEventResult = {
+        val commitEvent: CommitEvent = new CommitEvent(commitSchema, pipelineJobIds)
         fromEvent(commitEvent, commitEvent.data)
     }
 

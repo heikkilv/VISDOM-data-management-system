@@ -63,7 +63,27 @@ class ModelUtils(sparkSession: SparkSession) {
                 )
             )
             .flatMap(row => CommitSchema.fromRow(row))
-            .map(commitSchema => EventResult.fromCommitSchema(commitSchema))
+    }
+
+    def getCommitJobs(): Map[String, Seq[Int]] = {
+        getPipelineJobSchemas()
+            .map(jobSchema => (jobSchema.id, jobSchema.commit.id))
+            .collect()
+            .groupBy({case (_, commitId) => commitId})
+            .mapValues(array => array.map({case (jobId, _) => jobId}))
+    }
+
+    def getCommits(): Dataset[CommitEventResult] = {
+        val commitJobs: Map[String, Seq[Int]] = getCommitJobs()
+
+        getCommitSchemas()
+            .map(
+                commitSchema =>
+                    EventResult.fromCommitSchema(
+                        commitSchema,
+                        commitJobs.getOrElse(commitSchema.id, Seq.empty)
+                    )
+            )
     }
 
     def getPipelineSchemas(): Dataset[PipelineSchema] = {
@@ -91,9 +111,7 @@ class ModelUtils(sparkSession: SparkSession) {
             .toMap
     }
 
-    def getPipelineJobs(): Dataset[PipelineJobEventResult] = {
-        val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
-
+    def getPipelineJobSchemas(): Dataset[PipelineJobSchema] = {
         MongoSpark
             .load[PipelineJobSchema](
                 sparkSession,
@@ -104,6 +122,12 @@ class ModelUtils(sparkSession: SparkSession) {
                 )
             )
             .flatMap(row => PipelineJobSchema.fromRow(row))
+    }
+
+    def getPipelineJobs(): Dataset[PipelineJobEventResult] = {
+        val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
+
+        getPipelineJobSchemas()
             // include only the jobs that have a known pipeline
             .filter(pipelineJob => pipelineProjectNames.keySet.contains(pipelineJob.pipeline.id))
             .map(

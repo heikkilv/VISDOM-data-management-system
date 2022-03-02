@@ -16,7 +16,8 @@ import visdom.adapters.general.model.artifacts.FileArtifact
 
 
 class CommitEvent(
-    commitSchema: CommitSchema
+    commitSchema: CommitSchema,
+    pipelineJobIds: Seq[Int]
 )
 extends Event {
     def getType: String = CommitEvent.CommitEventType
@@ -67,6 +68,16 @@ extends Event {
             )
         )
     )
+
+    // add links to related pipeline job events
+    addRelatedEvents(
+        pipelineJobIds.map(
+            jobId => ItemLink(
+                id = PipelineJobEvent.getId(origin.id, jobId),
+                `type`= PipelineJobEvent.PipelineJobEventType
+            )
+        )
+    )
 }
 
 object CommitEvent {
@@ -85,8 +96,8 @@ object CommitEvent {
         }
     }
 
-    def fromCommitSchema(commitSchema: CommitSchema): CommitEvent = {
-        new CommitEvent(commitSchema)
+    def fromCommitSchema(commitSchema: CommitSchema, pipelineJobIds: Seq[Int]): CommitEvent = {
+        new CommitEvent(commitSchema, pipelineJobIds)
     }
 
     def getId(originId: String, commitId: String): String = {
