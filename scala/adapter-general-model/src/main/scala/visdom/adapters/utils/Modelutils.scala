@@ -16,6 +16,7 @@ import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
+import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
@@ -23,6 +24,7 @@ import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
 import visdom.adapters.general.model.results.EventResult
 import visdom.adapters.general.model.results.EventResult.CommitEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineEventResult
+import visdom.adapters.general.model.results.EventResult.PipelineJobEventResult
 import visdom.adapters.general.model.results.OriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
 import visdom.adapters.options.ObjectTypes
@@ -32,6 +34,7 @@ import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
+import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -39,6 +42,7 @@ import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.CommonConstants
 
 
 class ModelUtils(sparkSession: SparkSession) {
@@ -59,7 +63,7 @@ class ModelUtils(sparkSession: SparkSession) {
             .map(commitSchema => EventResult.fromCommitSchema(commitSchema))
     }
 
-    def getPipelines(): Dataset[PipelineEventResult] = {
+    def getPipelineSchemas(): Dataset[PipelineSchema] = {
         MongoSpark
             .load[PipelineSchema](
                 sparkSession,
@@ -70,7 +74,42 @@ class ModelUtils(sparkSession: SparkSession) {
                 )
             )
             .flatMap(row => PipelineSchema.fromRow(row))
+    }
+
+    def getPipelines(): Dataset[PipelineEventResult] = {
+        getPipelineSchemas()
             .map(pipelineSchema => EventResult.fromPipelineSchema(pipelineSchema))
+    }
+
+    def getPipelineProjectNames(): Map[Int, String] = {
+        getPipelineSchemas()
+            .map(pipelineSchema => (pipelineSchema.id, pipelineSchema.project_name))
+            .collect()
+            .toMap
+    }
+
+    def getPipelineJobs(): Dataset[PipelineJobEventResult] = {
+        val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
+
+        MongoSpark
+            .load[PipelineJobSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(
+                    sparkSession,
+                    AdapterValues.gitlabDatabaseName,
+                    MongoConstants.CollectionJobs
+                )
+            )
+            .flatMap(row => PipelineJobSchema.fromRow(row))
+            // include only the jobs that have a known pipeline
+            .filter(pipelineJob => pipelineProjectNames.keySet.contains(pipelineJob.pipeline.id))
+            .map(
+                pipelineJobSchema =>
+                    EventResult.fromPipelineJobSchema(
+                        pipelineJobSchema,
+                        pipelineProjectNames.get(pipelineJobSchema.pipeline.id).getOrElse(CommonConstants.EmptyString)
+                    )
+            )
     }
 
     def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
@@ -176,6 +215,7 @@ class ModelUtils(sparkSession: SparkSession) {
         if (!ModuleUtils.isEventCacheUpdated()) {
             GeneralQueryUtils.storeObjects(sparkSession, getCommits(), CommitEvent.CommitEventType)
             GeneralQueryUtils.storeObjects(sparkSession, getPipelines(), PipelineEvent.PipelineEventType)
+            GeneralQueryUtils.storeObjects(sparkSession, getPipelineJobs(), PipelineJobEvent.PipelineJobEventType)
             updateEventIndexes()
         }
     }
@@ -284,30 +324,34 @@ class ModelUtils(sparkSession: SparkSession) {
 
 object ModuleUtils {
     def isOriginCacheUpdated(): Boolean = {
-        GeneralQueryUtils.isCacheUpdated(GitlabOrigin.GitlabOriginType)
+        isTargetCacheUpdated(Origin.OriginType)
     }
 
     def isEventCacheUpdated(): Boolean = {
-        GeneralQueryUtils.isCacheUpdated(CommitEvent.CommitEventType) &&
-        GeneralQueryUtils.isCacheUpdated(PipelineEvent.PipelineEventType)
+        isTargetCacheUpdated(Event.EventType)
     }
 
     def isAuthorCacheUpdated(): Boolean = {
-        GeneralQueryUtils.isCacheUpdated(GitlabAuthor.GitlabAuthorType)
+        isTargetCacheUpdated(Author.AuthorType)
     }
 
     def isArtifactCacheUpdated(): Boolean = {
-        isAuthorCacheUpdated() &&
-        GeneralQueryUtils.isCacheUpdated(FileArtifact.FileArtifactType)
+        isTargetCacheUpdated(Artifact.ArtifactType)
     }
 
     def isTargetCacheUpdated(targetType: String): Boolean = {
-        targetType match {
-            case Event.EventType => isEventCacheUpdated()
-            case Origin.OriginType => isOriginCacheUpdated()
-            case Artifact.ArtifactType => isArtifactCacheUpdated()
-            case Author.AuthorType => isAuthorCacheUpdated()
-            case _ => false
+        (
+            targetType match {
+                case Event.EventType => Some(ObjectTypes.EventTypes)
+                case Origin.OriginType => Some(ObjectTypes.OriginTypes)
+                case Artifact.ArtifactType => Some(ObjectTypes.ArtifactTypes)
+                case Author.AuthorType => Some(ObjectTypes.AuthorTypes)
+                case _ => None
+            }
+        ) match {
+            case Some(objectTypes: Set[String]) =>
+                objectTypes.forall(objectType => GeneralQueryUtils.isCacheUpdated(objectType))
+            case None => false
         }
     }
 }
