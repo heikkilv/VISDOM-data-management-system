@@ -44,8 +44,8 @@ import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.spark.ConfigUtils
-import visdom.utils.SnakeCaseConstants
 import visdom.utils.CommonConstants
+import visdom.utils.SnakeCaseConstants
 
 
 class ModelUtils(sparkSession: SparkSession) {
@@ -70,7 +70,12 @@ class ModelUtils(sparkSession: SparkSession) {
             .map(jobSchema => (jobSchema.id, jobSchema.commit.id))
             .collect()
             .groupBy({case (_, commitId) => commitId})
-            .mapValues(array => array.map({case (jobId, _) => jobId}))
+            .map({
+                case (commitId, jobIdArray) => (
+                    commitId,
+                    jobIdArray.map({case (jobId, _) => jobId}).toSeq
+                )
+            })
     }
 
     def getCommits(): Dataset[CommitEventResult] = {
