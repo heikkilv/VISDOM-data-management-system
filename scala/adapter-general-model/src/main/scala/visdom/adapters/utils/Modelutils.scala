@@ -10,6 +10,7 @@ import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
@@ -21,6 +22,7 @@ import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
+import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
 import visdom.adapters.general.model.results.EventResult
 import visdom.adapters.general.model.results.EventResult.CommitEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineEventResult
@@ -35,6 +37,7 @@ import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
+import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -108,6 +111,30 @@ class ModelUtils(sparkSession: SparkSession) {
                     EventResult.fromPipelineJobSchema(
                         pipelineJobSchema,
                         pipelineProjectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
+                    )
+            )
+    }
+
+    def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
+        val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
+
+        MongoSpark
+            .load[PipelineReportSchema](
+                sparkSession,
+                ConfigUtils.getReadConfig(
+                    sparkSession,
+                    AdapterValues.gitlabDatabaseName,
+                    MongoConstants.CollectionPipelineReports
+                )
+            )
+            .flatMap(row => PipelineReportSchema.fromRow(row))
+            // include only the reports that have a known pipeline
+            .filter(report => pipelineProjectNames.keySet.contains(report.pipeline_id))
+            .map(
+                reportSchema =>
+                    ArtifactResult.fromPipelineReportSchema(
+                        reportSchema,
+                        pipelineProjectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
                     )
             )
     }
@@ -230,6 +257,7 @@ class ModelUtils(sparkSession: SparkSession) {
     def updateArtifacts(): Unit = {
         if (!ModuleUtils.isArtifactCacheUpdated()) {
             GeneralQueryUtils.storeObjects(sparkSession, getFiles(), FileArtifact.FileArtifactType)
+            GeneralQueryUtils.storeObjects(sparkSession, getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
             updateArtifactIndexes()
         }
     }
@@ -238,21 +266,21 @@ class ModelUtils(sparkSession: SparkSession) {
         objectTypes: Seq[String]
     ): Seq[(String, MongoCollection[Document], List[BsonDocument])] = {
         objectTypes
-                .map(
-                    objectType => (
-                        objectType,
-                        MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType)
-                    )
+            .map(
+                objectType => (
+                    objectType,
+                    MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType)
                 )
-                .map({
-                    case (objectType, collection) => (
-                        objectType,
-                        collection,
-                        MongoConnection
-                            .getDocuments(collection, List.empty)
-                            .map(document => document.toBsonDocument)
-                    )
-                })
+            )
+            .map({
+                case (objectType, collection) => (
+                    objectType,
+                    collection,
+                    MongoConnection
+                        .getDocuments(collection, List.empty)
+                        .map(document => document.toBsonDocument)
+                )
+            })
     }
 
     def updateIndexes(objectTypes: Seq[String]): Unit = {

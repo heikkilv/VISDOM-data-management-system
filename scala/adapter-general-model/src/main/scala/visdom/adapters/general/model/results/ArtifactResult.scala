@@ -5,17 +5,18 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.artifacts.data.FileData
-import visdom.adapters.general.model.artifacts.states.FileState
+import visdom.adapters.general.model.artifacts.data.PipelineReportData
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.authors.data.GitlabAuthorData
-import visdom.adapters.general.model.authors.states.AuthorState
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
+import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -78,6 +79,7 @@ with IdValue {
 
 object ArtifactResult {
     type FileArtifactResult = ArtifactResult[FileData]
+    type PipelineReportArtifactResult = ArtifactResult[PipelineReportData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
 
     def fromArtifact[ArtifactData <: Data](
@@ -113,5 +115,13 @@ object ArtifactResult {
     def fromFileSchema(fileSchema: FileSchema): FileArtifactResult = {
         val fileArtifact: FileArtifact = new FileArtifact(fileSchema)
         fromArtifact(fileArtifact, fileArtifact.data)
+    }
+
+    def fromPipelineReportSchema(
+        pipelineReportSchema: PipelineReportSchema,
+        projectName: String
+    ): PipelineReportArtifactResult = {
+        val reportArtifact: PipelineReportArtifact = new PipelineReportArtifact(pipelineReportSchema, projectName)
+        fromArtifact(reportArtifact, reportArtifact.data)
     }
 }
