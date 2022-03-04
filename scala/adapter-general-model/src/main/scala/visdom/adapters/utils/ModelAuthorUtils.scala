@@ -2,11 +2,13 @@ package visdom.adapters.utils
 
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.CommitAuthorResult
 import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
+import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
 import visdom.adapters.general.schemas.CommitAuthorSchema
 import visdom.adapters.general.schemas.GitlabUserEventSchema
 import visdom.database.mongodb.MongoConstants
@@ -58,21 +60,31 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
         modelUtils.loadMongoData[CommitAuthorSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitAuthorSchema.fromRow(row))
             .groupByKey(authorSchema => (authorSchema.host_name, authorSchema.committer_email))
-            .reduceGroups(
-                (firstAuthorSchema, secondAuthorSchema) =>
-                    CommitAuthorSchema.reduceSchemas(firstAuthorSchema, secondAuthorSchema)
+            .mapValues(
+                authorSchema => CommitAuthorProcessedSchema(
+                    committerEmail = authorSchema.committer_email,
+                    committerName = authorSchema.committer_name,
+                    hostName = authorSchema.host_name,
+                    commitEventIds = Seq(
+                        CommitEvent.getId(authorSchema.host_name, authorSchema.project_name, authorSchema.id)
+                    )
+                )
             )
-            .map({case (_, authorSchema) => ArtifactResult.fromCommitAuthorSchema(authorSchema)})
+            .reduceGroups((first, second) => CommitAuthorProcessedSchema.reduceSchemas(first, second))
+            .map({case (_, authorSchema) => ArtifactResult.fromCommitAuthorProcessedSchema(authorSchema)})
     }
 
     private def filterEventList(eventList: Seq[(String, String)], eventType: String): Seq[String] = {
-        eventList.flatMap({
-            case (idString, typeString) =>
-                typeString match {
-                    case string: String if string == eventType => Some(idString)
-                    case _ => None
-                }
-        })
+        eventList
+            .map({
+                case (idString, typeString) =>
+                    typeString match {
+                        case string: String if string == eventType => Some(idString)
+                        case _ => None
+                    }
+            })
+            .filter(eventIdOption => eventIdOption.isDefined)
+            .map(eventIdOption => eventIdOption.getOrElse(CommonConstants.EmptyString))
     }
 
     def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {

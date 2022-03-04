@@ -16,7 +16,7 @@ import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
-import visdom.adapters.general.schemas.CommitAuthorSchema
+import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
@@ -106,12 +106,12 @@ object ArtifactResult {
         )
     }
 
-    def fromCommitAuthorSchema(commitAuthorSchema: CommitAuthorSchema): CommitAuthorResult = {
+    def fromCommitAuthorProcessedSchema(commitAuthorSchema: CommitAuthorProcessedSchema): CommitAuthorResult = {
         val commitAuthor: CommitAuthor = new CommitAuthor(
-            authorName = commitAuthorSchema.committer_name,
-            authorEmail = commitAuthorSchema.committer_email,
-            hostName = commitAuthorSchema.host_name,
-            relatedCommitEventIds = commitAuthorSchema.related_commit_event_ids
+            authorName = commitAuthorSchema.committerName,
+            authorEmail = commitAuthorSchema.committerEmail,
+            hostName = commitAuthorSchema.hostName,
+            relatedCommitEventIds = commitAuthorSchema.commitEventIds
         )
         fromArtifact(commitAuthor, commitAuthor.data)
     }
