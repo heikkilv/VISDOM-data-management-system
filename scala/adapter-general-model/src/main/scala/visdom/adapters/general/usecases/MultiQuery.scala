@@ -9,13 +9,13 @@ import visdom.adapters.queries.BaseSparkQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.utils.GeneralQueryUtils
-import visdom.adapters.utils.ModuleUtils
+import visdom.adapters.utils.ModelUtils
 
 
 class MultiQuery(queryOptions: MultiQueryOptions)
 extends BaseCacheQuery(queryOptions) {
     def cacheCheck(): Boolean = {
-        ModuleUtils.isTargetCacheUpdated(queryOptions.targetType)
+        ModelUtils.isTargetCacheUpdated(queryOptions.targetType)
     }
 
     def updateCache(): (Class[_ <: BaseSparkQuery], BaseQueryOptions) = {

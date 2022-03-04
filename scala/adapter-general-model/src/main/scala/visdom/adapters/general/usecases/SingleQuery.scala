@@ -8,7 +8,7 @@ import visdom.adapters.queries.BaseSparkQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.utils.GeneralQueryUtils
-import visdom.adapters.utils.ModuleUtils
+import visdom.adapters.utils.ModelUtils
 import visdom.utils.CommonConstants
 
 
@@ -16,7 +16,7 @@ class SingleQuery(queryOptions: SingleQueryOptions)
 extends BaseCacheQuery(queryOptions) {
     def cacheCheck(): Boolean = {
         ObjectTypes.getTargetType(queryOptions.objectType) match {
-            case Some(targetType: String) => ModuleUtils.isTargetCacheUpdated(targetType)
+            case Some(targetType: String) => ModelUtils.isTargetCacheUpdated(targetType)
             case None => false
         }
     }
