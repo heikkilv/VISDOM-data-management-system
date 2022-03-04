@@ -74,34 +74,33 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .map({case (_, authorSchema) => ArtifactResult.fromCommitAuthorProcessedSchema(authorSchema)})
     }
 
-    private def filterEventList(eventList: Seq[(String, String)], eventType: String): Seq[String] = {
-        eventList
-            .map({
-                case (idString, typeString) =>
-                    typeString match {
-                        case string: String if string == eventType => Some(idString)
-                        case _ => None
-                    }
-            })
-            .filter(eventIdOption => eventIdOption.isDefined)
-            .map(eventIdOption => eventIdOption.getOrElse(CommonConstants.EmptyString))
-    }
-
     def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {
         getPipelineUserEvents()
             .union(getPipelineJobUserEvents())
             .distinct()
             .groupByKey(schema => (schema.hostName, schema.userSchema.id))
-            .mapValues(schema => (Seq((schema.eventId, schema.eventType)), schema.userSchema))
-            // combine event lists and use the first found schema for each user
-            .reduceGroups((first, second) => (first._1 ++ second._1, first._2))
+            .mapValues(
+                schema => (
+                    schema.eventType match {
+                        case PipelineEvent.PipelineEventType => Seq(schema.eventId)
+                        case _ => Seq.empty
+                    },
+                    schema.eventType match {
+                        case PipelineJobEvent.PipelineJobEventType => Seq(schema.eventId)
+                        case _ => Seq.empty
+                    },
+                    schema.userSchema
+                )
+            )
+            // combine the event lists and use the first found schema for each user
+            .reduceGroups((first, second) => (first._1 ++ second._1, first._2 ++ second._2, first._3))
             .map({
-                case ((hostName, _), (eventList, userSchema)) =>
+                case ((hostName, _), (pipelineEventIds, pipelineJobEventIds, userSchema)) =>
                     ArtifactResult.fromUserData(
                         pipelineUserSchema = userSchema,
                         hostName = hostName,
-                        pipelineEventIds = filterEventList(eventList, PipelineEvent.PipelineEventType),
-                        pipelineJobEventIds = filterEventList(eventList, PipelineJobEvent.PipelineJobEventType)
+                        pipelineEventIds = pipelineEventIds,
+                        pipelineJobEventIds = pipelineJobEventIds
                     )
             })
     }
