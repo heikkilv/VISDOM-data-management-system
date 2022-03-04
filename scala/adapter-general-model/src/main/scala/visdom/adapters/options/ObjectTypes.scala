@@ -2,6 +2,7 @@ package visdom.adapters.options
 
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Author
@@ -21,13 +22,18 @@ object ObjectTypes {
     val TargetTypeAuthor: String = Author.AuthorType
     val TargetTypeArtifact: String = Artifact.ArtifactType
 
-    val OriginTypes: Set[String] = Set(GitlabOrigin.GitlabOriginType)
+    val OriginTypes: Set[String] = Set(
+        GitlabOrigin.GitlabOriginType
+    )
     val EventTypes: Set[String] = Set(
         CommitEvent.CommitEventType,
         PipelineEvent.PipelineEventType,
         PipelineJobEvent.PipelineJobEventType
     )
-    val AuthorTypes: Set[String] = Set(GitlabAuthor.GitlabAuthorType)
+    val AuthorTypes: Set[String] = Set(
+        CommitAuthor.CommitAuthorType,
+        GitlabAuthor.GitlabAuthorType
+    )
     val ArtifactTypes: Set[String] = Set(
         FileArtifact.FileArtifactType,
         PipelineReportArtifact.PipelineReportArtifactType

@@ -4,52 +4,58 @@ import visdom.adapters.general.model.authors.data.GitlabAuthorData
 import visdom.adapters.general.model.authors.states.AuthorState
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.ItemLink
-import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.events.PipelineEvent
+import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.utils.GeneralUtils
 
 
 class GitlabAuthor(
+    userId: Int,
+    username: String,
     authorName: String,
-    authorEmail: String,
+    authorState: String,
     hostName: String,
-    authorDescription: Option[String],
-    userId: Option[Int],
-    relatedCommitEventIds: Seq[String]
+    relatedPipelineEventIds: Seq[String],
+    relatedPipelineJobEventIds: Seq[String]
 )
 extends Author {
     override def getType: String = GitlabAuthor.GitlabAuthorType
 
     val name: String = authorName
-    val description: String = authorDescription match {
-        case Some(authorText: String) => authorText
-        case None => Author.DefaultDescription
-    }
-    val state: String = AuthorState.ActiveAuthorStateString  // NOTE: use active author state for everyone
+    val description: String = Author.DefaultDescription
+    val state: String = GitlabAuthor.getState(authorState)
     val origin: ItemLink = GitlabOrigin.getGitlabOriginFromHost(hostName).link
     val data: GitlabAuthorData = GitlabAuthorData(
-        id = userId,
-        email = authorEmail
+        user_id = userId,
+        username = username
     )
 
-    val id: String = GeneralUtils.getUuid(
-        origin.id,
-        userId match {
-            case Some(userIdInt: Int) => userIdInt.toString()
-            case None => authorEmail
-        }
-    )
+    val id: String = GitlabAuthor.getId(origin.id, userId)
 
     addRelatedEvents(
-        relatedCommitEventIds.map(
-            commitEventId => ItemLink(
-                id = commitEventId,
-                `type` = CommitEvent.CommitEventType
-            )
+        relatedPipelineEventIds.map(
+            pipelineEventId => ItemLink(pipelineEventId, PipelineEvent.PipelineEventType)
+        ) ++
+        relatedPipelineJobEventIds.map(
+            pipelineJobEventId => ItemLink(pipelineJobEventId, PipelineJobEvent.PipelineJobEventType)
         )
     )
 }
 
 object GitlabAuthor {
-    final val GitlabAuthorType: String = "author"
+    final val GitlabAuthorType: String = "GitLab_user"
+
+    def getId(originId: String, userId: Int): String = {
+        GeneralUtils.getUuid(originId, GitlabAuthorType, userId.toString())
+    }
+
+    def getState(inputState: String): String = {
+        inputState match {
+            case AuthorState.ActiveAuthorStateString => inputState
+            case AuthorState.BlockedAuthorStateString => inputState
+            // mark all other input states as "inactive"
+            case _ => AuthorState.InActiveAuthorStateString
+        }
+    }
 }

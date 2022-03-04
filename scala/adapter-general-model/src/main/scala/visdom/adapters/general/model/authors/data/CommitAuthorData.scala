@@ -9,16 +9,14 @@ import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
 
 
-final case class GitlabAuthorData(
-    user_id: Int,
-    username: String
+final case class CommitAuthorData(
+    email: String
 )
 extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
-                SnakeCaseConstants.UserId -> JsonUtils.toBsonValue(user_id),
-                SnakeCaseConstants.Username -> JsonUtils.toBsonValue(username)
+                SnakeCaseConstants.Email -> JsonUtils.toBsonValue(email)
             )
         )
     }
@@ -26,8 +24,7 @@ extends Data {
     def toJsValue(): JsValue = {
         JsObject(
             Map(
-                SnakeCaseConstants.UserId -> JsonUtils.toJsonValue(user_id),
-                SnakeCaseConstants.Username -> JsonUtils.toJsonValue(username)
+                SnakeCaseConstants.Email -> JsonUtils.toJsonValue(email)
             )
         )
     }

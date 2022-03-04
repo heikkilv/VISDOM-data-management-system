@@ -32,12 +32,13 @@ extends Event {
 
     val author: ItemLink =
         new GitlabAuthor(
+            userId = pipelineJobSchema.user.id,
+            username = pipelineJobSchema.user.username,
             authorName = pipelineJobSchema.user.name,
-            authorEmail = CommonConstants.EmptyString,
+            authorState = pipelineJobSchema.user.state,
             hostName = pipelineJobSchema.host_name,
-            authorDescription = None,
-            userId = Some(pipelineJobSchema.user.id),
-            relatedCommitEventIds = Seq.empty
+            relatedPipelineEventIds = Seq.empty,
+            relatedPipelineJobEventIds = Seq.empty
         ).link
 
     val data: PipelineJobData = PipelineJobData.fromPipelineJobSchema(pipelineJobSchema)

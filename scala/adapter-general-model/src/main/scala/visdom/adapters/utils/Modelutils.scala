@@ -1,6 +1,7 @@
 package visdom.adapters.utils
 
 import com.mongodb.spark.MongoSpark
+import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import org.mongodb.scala.MongoCollection
@@ -8,6 +9,7 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.general.AdapterValues
+import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
@@ -20,6 +22,7 @@ import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.ArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.CommitAuthorResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
 import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
@@ -30,14 +33,16 @@ import visdom.adapters.general.model.results.EventResult.PipelineJobEventResult
 import visdom.adapters.general.model.results.OriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
 import visdom.adapters.options.ObjectTypes
-import visdom.adapters.general.schemas.CommitAuthorSimpleSchema
+import visdom.adapters.general.schemas.CommitAuthorSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
+import visdom.adapters.general.schemas.GitlabUserEventSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
+import visdom.adapters.general.schemas.PipelineUserSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -49,19 +54,14 @@ import visdom.utils.SnakeCaseConstants
 
 
 class ModelUtils(sparkSession: SparkSession) {
+    import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
+    import sparkSession.implicits.newSequenceEncoder
     import sparkSession.implicits.newStringEncoder
 
     def getCommitSchemas(): Dataset[CommitSchema] = {
         MongoSpark
-            .load[CommitSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionCommits
-                )
-            )
+            .load[CommitSchema](sparkSession, getReadConfig(MongoConstants.CollectionCommits))
             .flatMap(row => CommitSchema.fromRow(row))
     }
 
@@ -93,14 +93,7 @@ class ModelUtils(sparkSession: SparkSession) {
 
     def getPipelineSchemas(): Dataset[PipelineSchema] = {
         MongoSpark
-            .load[PipelineSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionPipelines
-                )
-            )
+            .load[PipelineSchema](sparkSession, getReadConfig(MongoConstants.CollectionPipelines))
             .flatMap(row => PipelineSchema.fromRow(row))
     }
 
@@ -118,14 +111,7 @@ class ModelUtils(sparkSession: SparkSession) {
 
     def getPipelineJobSchemas(): Dataset[PipelineJobSchema] = {
         MongoSpark
-            .load[PipelineJobSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionJobs
-                )
-            )
+            .load[PipelineJobSchema](sparkSession, getReadConfig(MongoConstants.CollectionJobs))
             .flatMap(row => PipelineJobSchema.fromRow(row))
     }
 
@@ -148,14 +134,7 @@ class ModelUtils(sparkSession: SparkSession) {
         val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
 
         MongoSpark
-            .load[PipelineReportSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionPipelineReports
-                )
-            )
+            .load[PipelineReportSchema](sparkSession, getReadConfig(MongoConstants.CollectionPipelineReports))
             .flatMap(row => PipelineReportSchema.fromRow(row))
             // include only the reports that have a known pipeline
             .filter(report => pipelineProjectNames.keySet.contains(report.pipeline_id))
@@ -175,28 +154,14 @@ class ModelUtils(sparkSession: SparkSession) {
 
     def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
         MongoSpark
-            .load[GitlabProjectSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionProjects
-                )
-            )
+            .load[GitlabProjectSchema](sparkSession, getReadConfig(MongoConstants.CollectionProjects))
             .flatMap(row => GitlabProjectSchema.fromRow(row))
             .map(projectSchema => GitlabProjectSimpleSchema.fromProjectSchema(projectSchema))
     }
 
     def getGitlabProjectInformation(collectionName: String): Dataset[GitlabProjectSimpleSchema] = {
         MongoSpark
-            .load[GitlabProjectInformationSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    collectionName
-                )
-            )
+            .load[GitlabProjectInformationSchema](sparkSession, getReadConfig(collectionName))
             .na.drop()
             .distinct()
             .flatMap(row => GitlabProjectInformationSchema.fromRow(row))
@@ -245,36 +210,88 @@ class ModelUtils(sparkSession: SparkSession) {
             .filter(origin => origin.data.project_id.isDefined || !projectWithIds.contains(origin.id))
     }
 
-    def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {
-        MongoSpark
-            .load[CommitAuthorSimpleSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionCommits
+    private def getPipelineUserEvents(): Dataset[GitlabUserEventSchema] = {
+        getPipelineSchemas()
+            .map(
+                pipelineSchema => GitlabUserEventSchema(
+                    hostName = pipelineSchema.host_name,
+                    eventId = PipelineEvent.getId(
+                        hostName = pipelineSchema.host_name,
+                        projectName = pipelineSchema.project_name,
+                        pipelineId = pipelineSchema.id
+                    ),
+                    eventType = PipelineEvent.PipelineEventType,
+                    userSchema = pipelineSchema.user
+                )
+            ).distinct()
+    }
+
+    private def getPipelineJobUserEvents(): Dataset[GitlabUserEventSchema] = {
+         val pipelineProjectNames: Map[Int, String] = getPipelineProjectNames()
+
+        getPipelineJobSchemas()
+            .map(
+                pipelineJobSchema => GitlabUserEventSchema(
+                    hostName = pipelineJobSchema.host_name,
+                    eventId = PipelineJobEvent.getId(
+                        hostName = pipelineJobSchema.host_name,
+                        projectName = pipelineProjectNames.getOrElse(
+                            pipelineJobSchema.pipeline.id,
+                            CommonConstants.EmptyString
+                        ),
+                        jobId = pipelineJobSchema.id
+                    ),
+                    eventType = PipelineJobEvent.PipelineJobEventType,
+                    userSchema = pipelineJobSchema.user
                 )
             )
-            .flatMap(row => CommitAuthorSimpleSchema.fromRow(row))
-            .map(commitSchema => GitlabAuthorSchema.fromCommitAuthorSimpleSchema(commitSchema))
+            .distinct()
+    }
+
+    def getCommitAuthors(): Dataset[CommitAuthorResult] = {
+        MongoSpark
+            .load[CommitAuthorSchema](sparkSession, getReadConfig(MongoConstants.CollectionCommits))
+            .flatMap(row => CommitAuthorSchema.fromRow(row))
             .groupByKey(authorSchema => (authorSchema.host_name, authorSchema.committer_email))
             .reduceGroups(
                 (firstAuthorSchema, secondAuthorSchema) =>
-                    GitlabAuthorSchema.reduceSchemas(firstAuthorSchema, secondAuthorSchema)
+                    CommitAuthorSchema.reduceSchemas(firstAuthorSchema, secondAuthorSchema)
             )
-            .map({case (_, authorSchema) => ArtifactResult.fromGitlabAuthorSchema(authorSchema)})
+            .map({case (_, authorSchema) => ArtifactResult.fromCommitAuthorSchema(authorSchema)})
+    }
+
+    private def filterEventList(eventList: Seq[(String, String)], eventType: String): Seq[String] = {
+        eventList.flatMap({
+            case (idString, typeString) =>
+                typeString match {
+                    case string: String if string == eventType => Some(idString)
+                    case _ => None
+                }
+        })
+    }
+
+    def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {
+        getPipelineUserEvents()
+            .union(getPipelineJobUserEvents())
+            .distinct()
+            .groupByKey(schema => (schema.hostName, schema.userSchema.id))
+            .mapValues(schema => (Seq((schema.eventId, schema.eventType)), schema.userSchema))
+            // combine event lists and use the first found schema for each user
+            .reduceGroups((first, second) => (first._1 ++ second._1, first._2))
+            .map({
+                case ((hostName, _), (eventList, userSchema)) =>
+                    ArtifactResult.fromUserData(
+                        pipelineUserSchema = userSchema,
+                        hostName = hostName,
+                        pipelineEventIds = filterEventList(eventList, PipelineEvent.PipelineEventType),
+                        pipelineJobEventIds = filterEventList(eventList, PipelineJobEvent.PipelineJobEventType)
+                    )
+            })
     }
 
     def getFiles(): Dataset[FileArtifactResult] = {
         MongoSpark
-            .load[FileSchema](
-                sparkSession,
-                ConfigUtils.getReadConfig(
-                    sparkSession,
-                    AdapterValues.gitlabDatabaseName,
-                    MongoConstants.CollectionFiles
-                )
-            )
+            .load[FileSchema](sparkSession, getReadConfig(MongoConstants.CollectionFiles))
             .flatMap(row => FileSchema.fromRow(row))
             .map(fileSchema => ArtifactResult.fromFileSchema(fileSchema))
     }
@@ -297,6 +314,7 @@ class ModelUtils(sparkSession: SparkSession) {
 
     def updateAuthors(): Unit = {
         if (!ModuleUtils.isAuthorCacheUpdated()) {
+            GeneralQueryUtils.storeObjects(sparkSession, getCommitAuthors(), CommitAuthor.CommitAuthorType)
             GeneralQueryUtils.storeObjects(sparkSession, getGitlabAuthors(), GitlabAuthor.GitlabAuthorType)
             updateAuthorIndexes()
         }
@@ -397,6 +415,14 @@ class ModelUtils(sparkSession: SparkSession) {
                 ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
+    }
+
+    private def getReadConfig(collectionName: String): ReadConfig = {
+        ConfigUtils.getReadConfig(
+            sparkSession,
+            AdapterValues.gitlabDatabaseName,
+            collectionName
+        )
     }
 }
 

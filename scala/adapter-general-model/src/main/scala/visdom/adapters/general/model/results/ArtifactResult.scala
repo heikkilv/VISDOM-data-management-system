@@ -8,15 +8,19 @@ import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.artifacts.data.FileData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
+import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
+import visdom.adapters.general.model.authors.data.CommitAuthorData
 import visdom.adapters.general.model.authors.data.GitlabAuthorData
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.schemas.CommitAuthorSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
+import visdom.adapters.general.schemas.PipelineUserSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -80,6 +84,8 @@ with IdValue {
 object ArtifactResult {
     type FileArtifactResult = ArtifactResult[FileData]
     type PipelineReportArtifactResult = ArtifactResult[PipelineReportData]
+
+    type CommitAuthorResult = ArtifactResult[CommitAuthorData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
 
     def fromArtifact[ArtifactData <: Data](
@@ -100,14 +106,30 @@ object ArtifactResult {
         )
     }
 
-    def fromGitlabAuthorSchema(gitlabAuthorSchema: GitlabAuthorSchema): GitlabAuthorResult = {
+    def fromCommitAuthorSchema(commitAuthorSchema: CommitAuthorSchema): CommitAuthorResult = {
+        val commitAuthor: CommitAuthor = new CommitAuthor(
+            authorName = commitAuthorSchema.committer_name,
+            authorEmail = commitAuthorSchema.committer_email,
+            hostName = commitAuthorSchema.host_name,
+            relatedCommitEventIds = commitAuthorSchema.related_commit_event_ids
+        )
+        fromArtifact(commitAuthor, commitAuthor.data)
+    }
+
+    def fromUserData(
+        pipelineUserSchema: PipelineUserSchema,
+        hostName: String,
+        pipelineEventIds: Seq[String],
+        pipelineJobEventIds: Seq[String]
+    ): GitlabAuthorResult = {
         val gitlabAuthor: GitlabAuthor = new GitlabAuthor(
-            authorName = gitlabAuthorSchema.committer_name,
-            authorEmail = gitlabAuthorSchema.committer_email,
-            hostName = gitlabAuthorSchema.host_name,
-            authorDescription = None,
-            userId = None,
-            relatedCommitEventIds = gitlabAuthorSchema.related_commit_event_ids
+            userId = pipelineUserSchema.id,
+            username = pipelineUserSchema.username,
+            authorName = pipelineUserSchema.name,
+            authorState = pipelineUserSchema.state,
+            hostName = hostName,
+            relatedPipelineEventIds = pipelineEventIds,
+            relatedPipelineJobEventIds = pipelineJobEventIds
         )
         fromArtifact(gitlabAuthor, gitlabAuthor.data)
     }

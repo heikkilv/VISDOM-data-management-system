@@ -2,17 +2,17 @@ package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
 import java.time.ZoneId
+import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.authors.CommitAuthor
+import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
-import visdom.adapters.general.model.origins.GitlabOrigin
-import visdom.adapters.general.model.authors.GitlabAuthor
-import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.events.data.CommitData
+import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 import visdom.utils.TimeUtils
-import visdom.adapters.general.model.artifacts.FileArtifact
 
 
 class CommitEvent(
@@ -32,12 +32,10 @@ extends Event {
         ).link
 
     val author: ItemLink =
-        new GitlabAuthor(
+        new CommitAuthor(
             authorName = commitSchema.committer_name,
             authorEmail = commitSchema.committer_email,
             hostName = commitSchema.host_name,
-            authorDescription = None,
-            userId = None,
             relatedCommitEventIds = Seq.empty
         ).link
 
