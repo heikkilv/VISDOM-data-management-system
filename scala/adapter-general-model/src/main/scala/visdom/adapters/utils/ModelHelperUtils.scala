@@ -3,6 +3,7 @@ package visdom.adapters.utils
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.schemas.GitlabEventPushDataSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
+import visdom.utils.CommonConstants
 
 
 object ModelHelperUtils {
@@ -42,28 +43,23 @@ object ModelHelperUtils {
             targetCommit: String,
             previousCommits: Set[String]
         ): Set[String] = {
-            previousCommits.size < commitCount match {
-                case true => currentCommits.headOption match {
-                    case Some(currentCommit: String) => {
-                        currentCommit != targetCommit &&
-                        !previousCommits.contains(currentCommit) &&
-                        !targetAncestors.contains(currentCommit) match {
-                            case true => {
-                                val newParents: Seq[String] = parentCommitMap.get(currentCommit) match {
-                                    case Some(parents: Seq[String]) => parents
-                                        .filter(parent => parent != targetCommit && !previousCommits.contains(parent))
-                                    case None => Seq.empty
-                                }
-                                getParentCommits(
-                                    currentCommits.drop(1) ++ newParents,
-                                    targetCommit,
-                                    previousCommits + currentCommit
-                                )
-                            }
-                            case false => getParentCommits(currentCommits.drop(1), targetCommit, previousCommits)
+            previousCommits.size < commitCount && currentCommits.nonEmpty match {
+                case true => {
+                    val currentCommit: String = currentCommits.headOption.getOrElse(CommonConstants.EmptyString)
+                    currentCommit != targetCommit &&
+                    !previousCommits.contains(currentCommit) &&
+                    !targetAncestors.contains(currentCommit) match {
+                        case true => {
+                            val newParents: Seq[String] = parentCommitMap.getOrElse(currentCommit, Seq.empty)
+                                .filter(parent => parent != targetCommit && !previousCommits.contains(parent))
+                            getParentCommits(
+                                currentCommits.drop(1) ++ newParents,
+                                targetCommit,
+                                previousCommits + currentCommit
+                            )
                         }
+                        case false => getParentCommits(currentCommits.drop(1), targetCommit, previousCommits)
                     }
-                    case None => previousCommits
                 }
                 case false => previousCommits
             }

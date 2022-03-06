@@ -108,8 +108,8 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     ArtifactResult.fromUserData(
                         pipelineUserSchema = userSchema,
                         hostName = hostName,
-                        committerIds = authorCommitters.get((hostName, userSchema.id)).getOrElse(Seq.empty),
-                        commitEventIds = authorCommits.get((hostName, userSchema.id)).getOrElse(Seq.empty),
+                        committerIds = authorCommitters.getOrElse((hostName, userSchema.id), Seq.empty),
+                        commitEventIds = authorCommits.getOrElse((hostName, userSchema.id), Seq.empty),
                         pipelineEventIds = pipelineEventIds,
                         pipelineJobEventIds = pipelineJobEventIds
                     )
