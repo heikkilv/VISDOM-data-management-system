@@ -88,11 +88,14 @@ class GitlabEventHandler(options: GitlabEventOptions)
         options.useAnonymization match {
             case true => Some(
                 Seq(
+                    Seq(GitlabConstants.AttributeAuthorId),
                     Seq(GitlabConstants.AttributeAuthorUsername),
+                    Seq(GitlabConstants.AttributeAuthor, GitlabConstants.AttributeId),
                     Seq(GitlabConstants.AttributeAuthor, GitlabConstants.AttributeUsername),
                     Seq(GitlabConstants.AttributeAuthor, GitlabConstants.AttributeName),
                     Seq(GitlabConstants.AttributeAuthor, GitlabConstants.AttributeAvatarUrl),
                     Seq(GitlabConstants.AttributeAuthor, GitlabConstants.AttributeWebUrl),
+                    Seq(GitlabConstants.AttributeNote, GitlabConstants.AttributeAuthor, GitlabConstants.AttributeId),
                     Seq(GitlabConstants.AttributeNote, GitlabConstants.AttributeAuthor, GitlabConstants.AttributeUsername),
                     Seq(GitlabConstants.AttributeNote, GitlabConstants.AttributeAuthor, GitlabConstants.AttributeName),
                     Seq(GitlabConstants.AttributeNote, GitlabConstants.AttributeAuthor, GitlabConstants.AttributeAvatarUrl),
