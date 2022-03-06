@@ -1,6 +1,8 @@
 package visdom.adapters.utils
 
+import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.GitlabEventPushDataSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
 import visdom.utils.CommonConstants
@@ -98,5 +100,25 @@ object ModelHelperUtils {
             }
             case None => Seq.empty
         }
+    }
+
+    def getAuthorId(hostName: String, userId: Int): String = {
+        GitlabAuthor.getId(GitlabOrigin.getId(hostName), userId)
+    }
+
+    def getReverseMapping(mappingToSequence: Map[String, Seq[String]]): Map[String, Seq[String]] = {
+        mappingToSequence
+            .map({case (_, sequence) => sequence})
+            .flatten
+            .map(
+                item => (
+                    item,
+                    mappingToSequence
+                        .filter({case (_, sequence) => sequence.contains(item)})
+                        .map({case (identifier, _) => identifier})
+                        .toSeq
+                )
+            )
+            .toMap
     }
 }

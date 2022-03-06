@@ -2,9 +2,11 @@ package visdom.adapters.utils
 
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.CommitAuthorResult
 import visdom.adapters.general.model.results.ArtifactResult.GitlabAuthorResult
@@ -56,7 +58,21 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .distinct()
     }
 
+    def getCommitterUsers(): Map[String, Seq[String]] = {
+        ModelHelperUtils.getReverseMapping(
+            modelUtils.getUserCommitterMap()
+                .map({
+                    case ((hostName, userId), committerIds) => (
+                        ModelHelperUtils.getAuthorId(hostName, userId),
+                        committerIds
+                    )
+                })
+        )
+    }
+
     def getCommitAuthors(): Dataset[CommitAuthorResult] = {
+        val committerUsers: Map[String, Seq[String]] = getCommitterUsers()
+
         modelUtils.loadMongoData[CommitAuthorSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitAuthorSchema.fromRow(row))
             .groupByKey(authorSchema => (authorSchema.host_name, authorSchema.committer_email))
@@ -67,6 +83,10 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     hostName = authorSchema.host_name,
                     commitEventIds = Seq(
                         CommitEvent.getId(authorSchema.host_name, authorSchema.project_name, authorSchema.id)
+                    ),
+                    gitlabAuthorIds = committerUsers.getOrElse(
+                        CommitAuthor.getId(GitlabOrigin.getId(authorSchema.host_name), authorSchema.committer_email),
+                        Seq.empty
                     )
                 )
             )

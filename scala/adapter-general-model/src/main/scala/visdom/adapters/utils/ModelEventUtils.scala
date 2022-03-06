@@ -36,27 +36,15 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getCommitUsers(): Map[String, Seq[String]] = {
-        val authorIdMap: Map[String, Seq[String]] = modelUtils.getUserCommitMap()
-            .map({
-                case ((hostName, userId), commitEventIds) => (
-                    GitlabAuthor.getId(GitlabOrigin.getId(hostName), userId),
-                    commitEventIds
-                )
-            })
-
-        authorIdMap
-            .map({case (_, commitEventIds) => commitEventIds})
-            .flatten
-            .map(
-                commitEventId => (
-                    commitEventId,
-                    authorIdMap
-                        .filter({case (_, commitEventIds) => commitEventIds.contains(commitEventId)})
-                        .map({case (authorId, _) => authorId})
-                        .toSeq
-                )
-            )
-            .toMap
+        ModelHelperUtils.getReverseMapping(
+            modelUtils.getUserCommitMap()
+                .map({
+                    case ((hostName, userId), commitEventIds) => (
+                        ModelHelperUtils.getAuthorId(hostName, userId),
+                        commitEventIds
+                    )
+                })
+        )
     }
 
     def getCommits(): Dataset[CommitEventResult] = {

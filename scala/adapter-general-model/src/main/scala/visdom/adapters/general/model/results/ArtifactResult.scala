@@ -111,7 +111,8 @@ object ArtifactResult {
             authorName = commitAuthorSchema.committerName,
             authorEmail = commitAuthorSchema.committerEmail,
             hostName = commitAuthorSchema.hostName,
-            relatedCommitEventIds = commitAuthorSchema.commitEventIds
+            relatedCommitEventIds = commitAuthorSchema.commitEventIds,
+            relatedAuthorIds = commitAuthorSchema.gitlabAuthorIds
         )
         fromArtifact(commitAuthor, commitAuthor.data)
     }

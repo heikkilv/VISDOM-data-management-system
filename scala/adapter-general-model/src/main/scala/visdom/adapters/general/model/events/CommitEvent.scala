@@ -38,7 +38,8 @@ extends Event {
             authorName = commitSchema.committer_name,
             authorEmail = commitSchema.committer_email,
             hostName = commitSchema.host_name,
-            relatedCommitEventIds = Seq.empty
+            relatedCommitEventIds = Seq.empty,
+            relatedAuthorIds = Seq.empty
         ).link
 
     val data: CommitData = CommitData.fromCommitSchema(commitSchema)

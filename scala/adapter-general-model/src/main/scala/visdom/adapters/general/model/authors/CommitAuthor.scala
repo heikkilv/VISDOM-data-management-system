@@ -13,7 +13,8 @@ class CommitAuthor(
     authorName: String,
     authorEmail: String,
     hostName: String,
-    relatedCommitEventIds: Seq[String]
+    relatedCommitEventIds: Seq[String],
+    relatedAuthorIds: Seq[String]
 )
 extends Author {
     override def getType: String = CommitAuthor.CommitAuthorType
@@ -25,6 +26,12 @@ extends Author {
     val data: CommitAuthorData = CommitAuthorData(authorEmail)
 
     val id: String = CommitAuthor.getId(origin.id, authorEmail)
+
+    addRelatedConstructs(
+        relatedAuthorIds.map(
+            authorId => ItemLink(authorId, GitlabAuthor.GitlabAuthorType)
+        )
+    )
 
     addRelatedEvents(
         relatedCommitEventIds.map(

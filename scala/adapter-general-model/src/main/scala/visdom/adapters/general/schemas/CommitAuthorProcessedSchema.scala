@@ -4,7 +4,8 @@ final case class CommitAuthorProcessedSchema(
     committerName: String,
     committerEmail: String,
     hostName: String,
-    commitEventIds: Seq[String]
+    commitEventIds: Seq[String],
+    gitlabAuthorIds: Seq[String]
 )
 
 object CommitAuthorProcessedSchema {
@@ -18,7 +19,9 @@ object CommitAuthorProcessedSchema {
             committerEmail = firstAuthorSchema.committerEmail,
             hostName = firstAuthorSchema.hostName,
             commitEventIds =
-                firstAuthorSchema.commitEventIds ++ secondAuthorSchema.commitEventIds
+                firstAuthorSchema.commitEventIds ++ secondAuthorSchema.commitEventIds,
+            gitlabAuthorIds =
+                firstAuthorSchema.gitlabAuthorIds ++ secondAuthorSchema.gitlabAuthorIds
         )
     }
 }
