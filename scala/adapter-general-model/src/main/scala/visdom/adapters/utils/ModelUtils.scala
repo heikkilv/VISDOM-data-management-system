@@ -5,6 +5,7 @@ import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
@@ -23,37 +24,115 @@ import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.options.ObjectTypes
+import visdom.adapters.general.schemas.CommitSimpleSchema
+import visdom.adapters.general.schemas.GitlabEventSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
+import visdom.utils.CommonConstants
 import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
 
 
 class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
+    import sparkSession.implicits.newSequenceEncoder
 
     private val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
     private val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
     private val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
     private val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
 
+    def getProjectNameMap(): Map[Int, String] = {
+        getPipelineProjectNames() ++
+        originUtils.getGitlabProjects()
+            .flatMap(schema => schema.project_id match {
+                case Some(projectId: Int) => Some(projectId, schema.project_name)
+                case None => None
+            })
+            .persist(StorageLevel.MEMORY_ONLY)
+            .collect()
+            .toMap
+    }
+
+    def getCommitParentMap(): Map[String, Seq[String]] = {
+        loadMongoData[CommitSimpleSchema](MongoConstants.CollectionCommits)
+            .flatMap(row => CommitSimpleSchema.fromRow(row))
+            .map(commitSchema => (commitSchema.id, commitSchema.parent_ids))
+            .persist(StorageLevel.MEMORY_ONLY)
+            .collect()
+            .toMap
+    }
+
+    def getCommitCommitterMap(): Map[String, String] = {
+        loadMongoData[CommitSimpleSchema](MongoConstants.CollectionCommits)
+            .flatMap(row => CommitSimpleSchema.fromRow(row))
+            .map(
+                commitSchema => (
+                    CommitEvent.getId(commitSchema.host_name, commitSchema.project_name, commitSchema.id),
+                    CommitAuthor.getId(GitlabOrigin.getId(commitSchema.host_name), commitSchema.committer_email)
+                )
+            )
+            .persist(StorageLevel.MEMORY_ONLY)
+            .collect()
+            .toMap
+    }
+
+    def getUserCommitMap(): Map[(String, Int), Seq[String]] = {
+        val projectNameMap: Map[Int, String] = getProjectNameMap()
+        val commitParentMap: Map[String,Seq[String]] = getCommitParentMap()
+
+        loadMongoData[GitlabEventSchema](MongoConstants.CollectionEvents)
+            .flatMap(row => GitlabEventSchema.fromRow(row))
+            .map(
+                schema => (
+                    schema.host_name,
+                    schema.author_id,
+                    ModelHelperUtils.getEventCommits(projectNameMap, commitParentMap, schema)
+                )
+            )
+            .groupByKey({case (hostName, userId, _) => (hostName, userId)})
+            .mapValues({case (_, _, commitEventIds) => commitEventIds})
+            .reduceGroups((first, second) => first ++ second)
+            .persist(StorageLevel.MEMORY_ONLY)
+            .collect()
+            .toMap
+    }
+
+    def getUserCommitterMap(): Map[(String, Int), Seq[String]] = {
+        val commitCommitterMap: Map[String,String] = getCommitCommitterMap()
+
+        getUserCommitMap
+            .map({
+                case ((hostName, userId), commitEventIds) => (
+                    (hostName, userId),
+                    commitEventIds.map(commitEventId => commitCommitterMap.get(commitEventId))
+                        .filter(commitEventId => commitEventId.isDefined)
+                        .map(commitEventId => commitEventId.getOrElse(CommonConstants.EmptyString))
+                        .distinct
+                )
+            })
+    }
+
     def getPipelineSchemas(): Dataset[PipelineSchema] = {
         loadMongoData[PipelineSchema](MongoConstants.CollectionPipelines)
             .flatMap(row => PipelineSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
     }
 
     def getPipelineJobSchemas(): Dataset[PipelineJobSchema] = {
         loadMongoData[PipelineJobSchema](MongoConstants.CollectionJobs)
             .flatMap(row => PipelineJobSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
     }
 
     def getPipelineProjectNames(): Map[Int, String] = {
         getPipelineSchemas()
             .map(pipelineSchema => (pipelineSchema.id, pipelineSchema.project_name))
+            .persist(StorageLevel.MEMORY_ONLY)
             .collect()
             .toMap
     }

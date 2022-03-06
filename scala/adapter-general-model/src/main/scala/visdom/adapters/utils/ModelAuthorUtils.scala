@@ -35,7 +35,7 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     private def getPipelineJobUserEvents(): Dataset[GitlabUserEventSchema] = {
-         val pipelineProjectNames: Map[Int, String] = modelUtils.getPipelineProjectNames()
+         val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
 
         modelUtils.getPipelineJobSchemas()
             .map(
@@ -43,7 +43,7 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     hostName = pipelineJobSchema.host_name,
                     eventId = PipelineJobEvent.getId(
                         hostName = pipelineJobSchema.host_name,
-                        projectName = pipelineProjectNames.getOrElse(
+                        projectName = projectNames.getOrElse(
                             pipelineJobSchema.pipeline.id,
                             CommonConstants.EmptyString
                         ),
@@ -75,12 +75,16 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getGitlabAuthors(): Dataset[GitlabAuthorResult] = {
+        val authorCommits: Map[(String, Int), Seq[String]] = modelUtils.getUserCommitMap()
+        val authorCommitters: Map[(String, Int), Seq[String]] = modelUtils.getUserCommitterMap()
+
         getPipelineUserEvents()
             .union(getPipelineJobUserEvents())
             .distinct()
             .groupByKey(schema => (schema.hostName, schema.userSchema.id))
             .mapValues(
                 schema => (
+                    schema.userSchema,
                     schema.eventType match {
                         case PipelineEvent.PipelineEventType => Seq(schema.eventId)
                         case _ => Seq.empty
@@ -88,17 +92,24 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     schema.eventType match {
                         case PipelineJobEvent.PipelineJobEventType => Seq(schema.eventId)
                         case _ => Seq.empty
-                    },
-                    schema.userSchema
+                    }
                 )
             )
-            // combine the event lists and use the first found schema for each user
-            .reduceGroups((first, second) => (first._1 ++ second._1, first._2 ++ second._2, first._3))
+            // combine the event id lists and use the first found schema for each user
+            .reduceGroups(
+                (first, second) => (
+                    first._1,
+                    first._2 ++ second._2,
+                    first._3 ++ second._3
+                )
+            )
             .map({
-                case ((hostName, _), (pipelineEventIds, pipelineJobEventIds, userSchema)) =>
+                case ((hostName, _), (userSchema, pipelineEventIds, pipelineJobEventIds)) =>
                     ArtifactResult.fromUserData(
                         pipelineUserSchema = userSchema,
                         hostName = hostName,
+                        committerIds = authorCommitters.get((hostName, userSchema.id)).getOrElse(Seq.empty),
+                        commitEventIds = authorCommits.get((hostName, userSchema.id)).getOrElse(Seq.empty),
                         pipelineEventIds = pipelineEventIds,
                         pipelineJobEventIds = pipelineJobEventIds
                     )

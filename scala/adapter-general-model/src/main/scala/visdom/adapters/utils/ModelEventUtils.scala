@@ -51,16 +51,16 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getPipelineJobs(): Dataset[PipelineJobEventResult] = {
-        val pipelineProjectNames: Map[Int, String] = modelUtils.getPipelineProjectNames()
+        val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
 
         modelUtils.getPipelineJobSchemas()
-            // include only the jobs that have a known pipeline
-            .filter(pipelineJob => pipelineProjectNames.keySet.contains(pipelineJob.pipeline.id))
+            // include only the jobs that have a known project name
+            .filter(pipelineJob => projectNames.keySet.contains(pipelineJob.pipeline.id))
             .map(
                 pipelineJobSchema =>
                     EventResult.fromPipelineJobSchema(
                         pipelineJobSchema,
-                        pipelineProjectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
                     )
             )
     }

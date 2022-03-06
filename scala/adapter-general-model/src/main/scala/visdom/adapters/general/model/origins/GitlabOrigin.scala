@@ -17,10 +17,14 @@ extends Origin {
 }
 
 object GitlabOrigin {
-    final val GitlabOriginType: String = "GitLab"
+    final val GitlabOriginType: String = "gitlab"
 
     def getGitlabOriginFromHost(hostName: String): GitlabOrigin = {
         new GitlabOrigin(hostName, CommonConstants.EmptyString, CommonConstants.EmptyString, None)
+    }
+
+    def getId(hostName: String): String = {
+        getId(hostName, CommonConstants.EmptyString)
     }
 
     def getId(hostName: String, projectName: String): String = {

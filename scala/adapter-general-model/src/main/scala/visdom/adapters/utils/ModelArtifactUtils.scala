@@ -21,17 +21,17 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
-        val pipelineProjectNames: Map[Int, String] = modelUtils.getPipelineProjectNames()
+        val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
 
         modelUtils.loadMongoData[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
             .flatMap(row => PipelineReportSchema.fromRow(row))
-            // include only the reports that have a known pipeline
-            .filter(report => pipelineProjectNames.keySet.contains(report.pipeline_id))
+            // include only the reports that have a known project name
+            .filter(report => projectNames.keySet.contains(report.pipeline_id))
             .map(
                 reportSchema =>
                     ArtifactResult.fromPipelineReportSchema(
                         reportSchema,
-                        pipelineProjectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
                     )
             )
     }

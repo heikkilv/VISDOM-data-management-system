@@ -4,6 +4,7 @@ import visdom.adapters.general.model.authors.data.GitlabAuthorData
 import visdom.adapters.general.model.authors.states.AuthorState
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.origins.GitlabOrigin
@@ -16,6 +17,8 @@ class GitlabAuthor(
     authorName: String,
     authorState: String,
     hostName: String,
+    relatedCommitterIds: Seq[String],
+    relatedCommitEventIds: Seq[String],
     relatedPipelineEventIds: Seq[String],
     relatedPipelineJobEventIds: Seq[String]
 )
@@ -33,7 +36,16 @@ extends Author {
 
     val id: String = GitlabAuthor.getId(origin.id, userId)
 
+    addRelatedConstructs(
+        relatedCommitterIds.map(
+            committerId => ItemLink(committerId, CommitAuthor.CommitAuthorType)
+        )
+    )
+
     addRelatedEvents(
+        relatedCommitEventIds.map(
+            commitEventId => ItemLink(commitEventId, CommitEvent.CommitEventType)
+        ) ++
         relatedPipelineEventIds.map(
             pipelineEventId => ItemLink(pipelineEventId, PipelineEvent.PipelineEventType)
         ) ++
@@ -44,7 +56,7 @@ extends Author {
 }
 
 object GitlabAuthor {
-    final val GitlabAuthorType: String = "GitLab_user"
+    final val GitlabAuthorType: String = "gitlab_user"
 
     def getId(originId: String, userId: Int): String = {
         GeneralUtils.getUuid(originId, GitlabAuthorType, userId.toString())

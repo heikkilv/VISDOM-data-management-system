@@ -119,6 +119,8 @@ object ArtifactResult {
     def fromUserData(
         pipelineUserSchema: PipelineUserSchema,
         hostName: String,
+        committerIds: Seq[String],
+        commitEventIds: Seq[String],
         pipelineEventIds: Seq[String],
         pipelineJobEventIds: Seq[String]
     ): GitlabAuthorResult = {
@@ -128,6 +130,8 @@ object ArtifactResult {
             authorName = pipelineUserSchema.name,
             authorState = pipelineUserSchema.state,
             hostName = hostName,
+            relatedCommitterIds = committerIds,
+            relatedCommitEventIds = commitEventIds,
             relatedPipelineEventIds = pipelineEventIds,
             relatedPipelineJobEventIds = pipelineJobEventIds
         )

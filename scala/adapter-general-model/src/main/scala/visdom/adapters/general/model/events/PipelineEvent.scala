@@ -37,6 +37,8 @@ extends Event {
             authorName = pipelineSchema.user.name,
             authorState = pipelineSchema.user.state,
             hostName = pipelineSchema.host_name,
+            relatedCommitterIds = Seq.empty,
+            relatedCommitEventIds = Seq.empty,
             relatedPipelineEventIds = Seq.empty,
             relatedPipelineJobEventIds = Seq.empty
         ).link
