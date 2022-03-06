@@ -27,6 +27,7 @@ object Session {
             .config(SparkDynamicAllocationMinExecutors, SparkDynamicAllocationMinExecutorsDefault)
             .config(SparkDynamicAllocationMaxExecutors, SparkDynamicAllocationMaxExecutorsDefault)
             .config(SparkSqlDatetimeJava8APIEnabled, SparkSqlDatetimeJava8APIEnabledDefault)
+            .config(SparkSqlShufflePartitions, SparkSqlShufflePartitionsDefault)
             .getOrCreate()
     }
 }

@@ -48,6 +48,7 @@ object Constants {
     val SparkDynamicAllocationMinExecutors: String = "spark.dynamicAllocation.minExecutors"
     val SparkDynamicAllocationMaxExecutors: String = "spark.dynamicAllocation.maxExecutors"
     val SparkSqlDatetimeJava8APIEnabled: String = "spark.sql.datetime.java8API.enabled"
+    val SparkSqlShufflePartitions: String = "spark.sql.shuffle.partitions"
 
     val SparkCoresMaxDefault: Int = 6
     val SparkSchedulerModeDefault: String = "FAIR"
@@ -59,6 +60,7 @@ object Constants {
     val SparkDynamicAllocationMinExecutorsDefault: Int = 1
     val SparkDynamicAllocationMaxExecutorsDefault: Int = 6
     val SparkSqlDatetimeJava8APIEnabledDefault: Boolean = true
+    val SparkSqlShufflePartitionsDefault: Int = 5
 
     val ApplicationName: String = sys.env.getOrElse(EnvironmentApplicationName, DefaultApplicationName)
 

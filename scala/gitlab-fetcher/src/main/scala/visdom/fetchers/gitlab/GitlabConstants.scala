@@ -67,6 +67,7 @@ object GitlabConstants {
     val AttributeApiVersion: String = "api_version"
     val AttributeApplicationName: String = "application_name"
     val AttributeAuthor: String = "author"
+    val AttributeAuthorId: String = "author_id"
     val AttributeAuthorEmail: String = "author_email"
     val AttributeAuthorName: String = "author_name"
     val AttributeAvatarUrl: String = "avatar_url"
