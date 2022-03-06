@@ -2,6 +2,8 @@ package visdom.http.server.actors
 
 import akka.actor.Actor
 import akka.actor.ActorLogging
+import java.util.concurrent.TimeUnit
+import scala.concurrent.duration.Duration
 import spray.json.JsObject
 import visdom.adapters.general.usecases.CacheUpdater
 import visdom.adapters.options.CacheQueryOptions
@@ -25,7 +27,7 @@ class UpdateActor extends Actor with ActorLogging {
             QueryUtils.runSparkQuery(
                 queryType = classOf[CacheUpdater],
                 queryOptions = CacheQueryOptions(ObjectTypes.TargetTypeAll),
-                timeoutSeconds = 100 * HttpConstants.DefaultWaitDurationSeconds
+                timeoutSeconds = Duration(1, TimeUnit.HOURS).toSeconds
             )
 
             val response: JsonResponse = JsonResponse(
