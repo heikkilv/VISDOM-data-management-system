@@ -4,6 +4,7 @@ import java.time.ZonedDateTime
 import java.time.ZoneId
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.authors.CommitAuthor
+import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
@@ -17,7 +18,8 @@ import visdom.utils.TimeUtils
 
 class CommitEvent(
     commitSchema: CommitSchema,
-    pipelineJobIds: Seq[Int]
+    pipelineJobIds: Seq[Int],
+    gitlabAuthorIds: Seq[String]
 )
 extends Event {
     def getType: String = CommitEvent.CommitEventType
@@ -47,8 +49,9 @@ extends Event {
     val id: String = CommitEvent.getId(origin.id, data.commit_id)
 
     // author and linked files as related constructs
-    addRelatedConstructs(Seq(author))
     addRelatedConstructs(
+        Seq(author) ++
+        gitlabAuthorIds.map(authorId => ItemLink(authorId, GitlabAuthor.GitlabAuthorType)) ++
         data.files.map(
             filePath => ItemLink(
                 id = FileArtifact.getId(origin.id, filePath),
@@ -94,8 +97,12 @@ object CommitEvent {
         }
     }
 
-    def fromCommitSchema(commitSchema: CommitSchema, pipelineJobIds: Seq[Int]): CommitEvent = {
-        new CommitEvent(commitSchema, pipelineJobIds)
+    def fromCommitSchema(
+        commitSchema: CommitSchema,
+        pipelineJobIds: Seq[Int],
+        gitlabAuthorIds: Seq[String]
+    ): CommitEvent = {
+        new CommitEvent(commitSchema, pipelineJobIds, gitlabAuthorIds)
     }
 
     def getId(originId: String, commitId: String): String = {

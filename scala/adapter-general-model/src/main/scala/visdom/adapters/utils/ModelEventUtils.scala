@@ -3,6 +3,9 @@ package visdom.adapters.utils
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import visdom.adapters.general.schemas.CommitSchema
+import visdom.adapters.general.model.authors.GitlabAuthor
+import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.model.results.EventResult
 import visdom.adapters.general.model.results.EventResult.CommitEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineEventResult
@@ -32,15 +35,44 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
+    def getCommitUsers(): Map[String, Seq[String]] = {
+        val authorIdMap: Map[String, Seq[String]] = modelUtils.getUserCommitMap()
+            .map({
+                case ((hostName, userId), commitEventIds) => (
+                    GitlabAuthor.getId(GitlabOrigin.getId(hostName), userId),
+                    commitEventIds
+                )
+            })
+
+        authorIdMap
+            .map({case (_, commitEventIds) => commitEventIds})
+            .flatten
+            .map(
+                commitEventId => (
+                    commitEventId,
+                    authorIdMap
+                        .filter({case (_, commitEventIds) => commitEventIds.contains(commitEventId)})
+                        .map({case (authorId, _) => authorId})
+                        .toSeq
+                )
+            )
+            .toMap
+    }
+
     def getCommits(): Dataset[CommitEventResult] = {
         val commitJobs: Map[String, Seq[Int]] = getCommitJobs()
+        val commitUsers: Map[String, Seq[String]] = getCommitUsers()
 
         getCommitSchemas()
             .map(
                 commitSchema =>
                     EventResult.fromCommitSchema(
                         commitSchema,
-                        commitJobs.getOrElse(commitSchema.id, Seq.empty)
+                        commitJobs.getOrElse(commitSchema.id, Seq.empty),
+                        commitUsers.getOrElse(
+                            CommitEvent.getId(commitSchema.host_name, commitSchema.project_name, commitSchema.id),
+                            Seq.empty
+                        )
                     )
             )
     }
