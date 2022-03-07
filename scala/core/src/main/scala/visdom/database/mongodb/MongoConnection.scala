@@ -90,6 +90,12 @@ object MongoConnection {
             .getCollection(MongoConstants.CollectionMetadata)
     }
 
+    def getCollection(databaseName: String, collectionName: String): MongoCollection[Document] = {
+        mongoClient
+            .getDatabase(databaseName)
+            .getCollection(collectionName)
+    }
+
     def getLastUpdateTime(databaseName: String): Option[Instant] = {
         (
             try {
@@ -117,12 +123,73 @@ object MongoConnection {
         }
     }
 
+    def getCacheUpdateTime(databaseName: String, objectType: String): Option[Instant] = {
+        (
+            try {
+                Await.result(
+                    mongoClient
+                        .getDatabase(databaseName)
+                        .getCollection(MongoConstants.CollectionMetadata)
+                        .find(Filters.equal(MongoConstants.AttributeType, objectType))
+                        .limit(1)
+                        .headOption(),
+                    MongoConstants.DefaultMaxQueryDelay
+                )
+            } catch {
+                case _: TimeoutException => None
+            }
+        ) match {
+            case Some(document: Document) => {
+                document.get(MongoConstants.AttributeTimestamp) match {
+                    case Some(timestamp: BsonDateTime) => Some(Instant.ofEpochMilli(timestamp.getValue()))
+                    case _ => None
+                }
+            }
+            case None => None
+        }
+    }
+
     def getEqualFilter(attributeName: String, attributeValue: BsonValue): Bson = {
         Filters.equal(attributeName, attributeValue)
     }
 
+    def getLessThanFilter(attributeName: String, attributeValue: BsonValue): Bson = {
+        Filters.lt(attributeName, attributeValue)
+    }
+
+    def getLessThanEqualFilter(attributeName: String, attributeValue: BsonValue): Bson = {
+        Filters.lte(attributeName, attributeValue)
+    }
+
     def getGreaterThanFilter(attributeName: String, attributeValue: BsonValue): Bson = {
         Filters.gt(attributeName, attributeValue)
+    }
+
+    def getGreaterThanEqualFilter(attributeName: String, attributeValue: BsonValue): Bson = {
+        Filters.gte(attributeName, attributeValue)
+    }
+
+    def getBetweenFilter(attribute: String, lowLimit: BsonValue, highLimit: BsonValue): Bson = {
+        Filters.and(
+            getGreaterThanEqualFilter(attribute, lowLimit),
+            getLessThanEqualFilter(attribute, highLimit)
+        )
+    }
+
+    def getDocumentCount(collection: MongoCollection[Document]): Long = {
+        (
+            try {
+                Await.result(
+                    collection.countDocuments().headOption(),
+                    MongoConstants.DefaultMaxQueryDelay
+                )
+            } catch {
+                case _: TimeoutException => None
+            }
+        ) match {
+            case Some(count: Long) => count
+            case None => 0
+        }
     }
 
     def getDocuments(

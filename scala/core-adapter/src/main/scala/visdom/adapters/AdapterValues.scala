@@ -8,6 +8,7 @@ import visdom.http.server.swagger.SwaggerConstants
 import visdom.utils.CommonConstants
 import visdom.utils.AdapterEnvironmentVariables.AdapterVariableMap
 import visdom.utils.AdapterEnvironmentVariables.EnvironmentAPlusDatabase
+import visdom.utils.AdapterEnvironmentVariables.EnvironmentCacheDatabase
 import visdom.utils.AdapterEnvironmentVariables.EnvironmentGitlabDatabase
 import visdom.utils.EnvironmentVariables.EnvironmentApplicationName
 import visdom.utils.EnvironmentVariables.EnvironmentHostName
@@ -39,6 +40,7 @@ trait AdapterValues {
 
     val aPlusDatabaseName: String = getEnvironmentVariable(EnvironmentAPlusDatabase, AdapterVariableMap)
     val gitlabDatabaseName: String = getEnvironmentVariable(EnvironmentGitlabDatabase, AdapterVariableMap)
+    val cacheDatabaseName: String = getEnvironmentVariable(EnvironmentCacheDatabase, AdapterVariableMap)
 
     val cache: QueryCache = new QueryCache(Seq(aPlusDatabaseName, gitlabDatabaseName))
 

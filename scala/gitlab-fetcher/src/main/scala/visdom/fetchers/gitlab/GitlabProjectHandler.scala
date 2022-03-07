@@ -73,11 +73,6 @@ class GitlabProjectHandler(options: GitlabProjectOptions)
                     Seq(GitlabConstants.AttributeReadmeUrl),
                     Seq(GitlabConstants.AttributeLicenseUrl),
                     Seq(GitlabConstants.AttributeAvatarUrl),
-                    Seq(GitlabConstants.AttributeNamespace, GitlabConstants.AttributeName),
-                    Seq(GitlabConstants.AttributeNamespace, GitlabConstants.AttributePath),
-                    Seq(GitlabConstants.AttributeNamespace, GitlabConstants.AttributeFullPath),
-                    Seq(GitlabConstants.AttributeNamespace, GitlabConstants.AttributeAvatarUrl),
-                    Seq(GitlabConstants.AttributeNamespace, GitlabConstants.AttributeWebUrl),
                     Seq(GitlabConstants.AttributeContainerRegistryImagePrefix),
                     Seq(GitlabConstants.AttributeSharedWithGroups, GitlabConstants.AttributeGroupName),
                     Seq(GitlabConstants.AttributeSharedWithGroups, GitlabConstants.AttributeGroupFullPath)

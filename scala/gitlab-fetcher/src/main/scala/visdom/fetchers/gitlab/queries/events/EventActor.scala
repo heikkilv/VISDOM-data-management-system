@@ -17,7 +17,7 @@ import visdom.http.server.response.StatusResponse
 import visdom.http.server.fetcher.gitlab.EventQueryOptions
 import visdom.http.server.ResponseUtils
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -49,8 +49,8 @@ class EventActor extends Actor with ActorLogging {
 object EventActor {
     // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: EventQueryOptions): Either[String, EventSpecificFetchParameters] = {
-        val dateAfter: Option[ZonedDateTime] = GeneralUtils.toZonedDateTimeFromDate(queryOptions.dateAfter)
-        val dateBefore: Option[ZonedDateTime] = GeneralUtils.toZonedDateTimeFromDate(queryOptions.dateBefore)
+        val dateAfter: Option[ZonedDateTime] = TimeUtils.toZonedDateTimeFromDate(queryOptions.dateAfter)
+        val dateBefore: Option[ZonedDateTime] = TimeUtils.toZonedDateTimeFromDate(queryOptions.dateBefore)
         val actionType: String = queryOptions.actionType.getOrElse(CommonConstants.EmptyString)
         val targetType: String = queryOptions.targetType.getOrElse(CommonConstants.EmptyString)
 
@@ -63,7 +63,7 @@ object EventActor {
         else if (queryOptions.dateBefore.isDefined && !dateBefore.isDefined) {
             Left(s"'${queryOptions.dateBefore.getOrElse("")}' is not valid date in ISO 8601 format")
         }
-        else if (dateAfter.isDefined && dateBefore.isDefined && !GeneralUtils.lessOrEqual(dateAfter, dateAfter)) {
+        else if (dateAfter.isDefined && dateBefore.isDefined && !TimeUtils.lessOrEqual(dateAfter, dateAfter)) {
             Left("the dateBefore must be later than the dateAfter")
         }
         else if (queryOptions.actionType.isDefined && !Constants.ActionTypes.contains(actionType)) {

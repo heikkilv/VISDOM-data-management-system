@@ -1,10 +1,9 @@
 package visdom.adapters
 
 import java.time.Instant
-import spray.json.JsObject
-
+import visdom.adapters.results.BaseResultValue
 
 final case class QueryResult(
-    data: JsObject,
+    data: BaseResultValue,
     timestamp: Instant
 )

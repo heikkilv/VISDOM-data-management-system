@@ -18,6 +18,7 @@ val SparkVersion: String = "3.1.1"
 val ScalajVersion: String = "2.4.2"
 val ScalaTestVersion: String = "3.2.10"
 val ScapeGoatVersion: String = "1.4.11"
+val ShapelessVersion: String = "2.3.7"
 val SprayJsonVersion: String = "1.3.6"
 val SwaggerAkkaVersion: String = "2.6.0"
 
@@ -42,10 +43,16 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
 
-scalacOptions ++= Seq("-deprecation")
+scalacOptions ++= Seq("-deprecation", "-feature")
 
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.apache.spark")
+
+// to get rid of class not found errors with shapeless library
+// from https://github.com/pureconfig/pureconfig/issues/337#issue-280450747
+assembly / assemblyShadeRules := Seq(
+  ShadeRule.rename("shapeless.**" -> "new_shapeless.@1").inAll
+)
 
 // to get rid of deduplicate errors, from https://stackoverflow.com/a/67937671
 ThisBuild / assemblyMergeStrategy := {

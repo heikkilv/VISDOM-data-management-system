@@ -4,6 +4,7 @@ package visdom.utils
 object CommonConstants {
     final val AtSign: String = "@"
     final val Comma: String = ","
+    final val Dollar: String = "$"
     final val Dot: String = "."
     final val DoubleDot: String = ":"
     final val DoubleDotChar: Char = ':'
@@ -26,4 +27,5 @@ object CommonConstants {
     final val Name: String = "name"
     final val Org: String = "org"
     final val Unknown: String = "unknown"
+    final val UTC: String = "UTC"
 }

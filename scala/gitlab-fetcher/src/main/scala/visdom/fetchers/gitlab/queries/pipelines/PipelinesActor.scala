@@ -19,7 +19,7 @@ import visdom.http.server.ResponseUtils
 import visdom.http.server.ServerProtocol
 import visdom.http.server.fetcher.gitlab.PipelinesQueryOptions
 import visdom.http.server.response.StatusResponse
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -61,8 +61,8 @@ class PipelinesActor extends Actor with ActorLogging with ServerProtocol {
 object PipelinesActor {
     // scalastyle:off cyclomatic.complexity
     def getFetchOptions(queryOptions: PipelinesQueryOptions): Either[String, PipelinesSpecificFetchParameters] = {
-        val startDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.startDate)
-        val endDate: Option[ZonedDateTime] = GeneralUtils.toZonedDateTime(queryOptions.endDate)
+        val startDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.startDate)
+        val endDate: Option[ZonedDateTime] = TimeUtils.toZonedDateTime(queryOptions.endDate)
 
         if (!CommonHelpers.isProjectName(queryOptions.projectName)) {
             Left(s"'${queryOptions.projectName}' is not a valid project name")
@@ -76,7 +76,7 @@ object PipelinesActor {
         else if (queryOptions.endDate.isDefined && !endDate.isDefined) {
             Left(s"'${queryOptions.endDate.getOrElse("")}' is not valid datetime in ISO 8601 format with timezone")
         }
-        else if (startDate.isDefined && endDate.isDefined && !GeneralUtils.lessOrEqual(startDate, endDate)) {
+        else if (startDate.isDefined && endDate.isDefined && !TimeUtils.lessOrEqual(startDate, endDate)) {
             Left("the endDate must be later than the startDate")
         }
         else if (!Constants.BooleanStrings.contains(queryOptions.includeReports)) {

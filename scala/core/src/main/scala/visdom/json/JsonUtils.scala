@@ -14,6 +14,7 @@ import org.mongodb.scala.bson.BsonInt32
 import org.mongodb.scala.bson.BsonInt64
 import org.mongodb.scala.bson.BsonBoolean
 import org.mongodb.scala.bson.BsonDouble
+import org.mongodb.scala.bson.Document
 import scala.collection.JavaConverters.asScalaBufferConverter
 import scala.collection.JavaConverters.asScalaSetConverter
 import spray.json.JsArray
@@ -24,8 +25,11 @@ import spray.json.JsObject
 import spray.json.JsString
 import spray.json.JsValue
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
 import visdom.utils.FileUtils
+import visdom.utils.GeneralUtils
+import visdom.utils.HashUtils
+import visdom.utils.TimeUtils
+import visdom.utils.WartRemoverConstants
 
 
 object JsonUtils {
@@ -78,7 +82,7 @@ object JsonUtils {
         }
 
         def getZonedDateTimeOption(key: Any): Option[ZonedDateTime] = {
-            GeneralUtils.toZonedDateTime(document.getStringOption(key))
+            TimeUtils.toZonedDateTime(document.getStringOption(key))
         }
 
         def getDocumentOption(key: Any): Option[BsonDocument] = {
@@ -125,6 +129,10 @@ object JsonUtils {
                 case Some(value: BsonValue) => document.append(key, value)
                 case None => document
             }
+        }
+
+        def removeAttribute(attributeName: String): BsonDocument = {
+            JsonUtils.removeAttribute(document, attributeName)
         }
 
         def transformAttribute(
@@ -247,6 +255,8 @@ object JsonUtils {
         }
     }
 
+    // scalastyle:off cyclomatic.complexity
+    @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def toBsonValue[T](value: T): BsonValue = {
         value match {
             case bsonValue: BsonValue => bsonValue
@@ -255,12 +265,33 @@ object JsonUtils {
             case longValue: Long => BsonInt64(longValue)
             case doubleValue: Double => BsonDouble(doubleValue)
             case booleanValue: Boolean => BsonBoolean(booleanValue)
+            case instant: Instant => BsonDateTime(instant.toEpochMilli())
             case zonedDateTimeValue: ZonedDateTime => BsonDateTime(
                 zonedDateTimeValue.toInstant().toEpochMilli()
             )
+            case bigDecimal: BigDecimal =>
+                if (bigDecimal.isValidInt) {
+                    BsonInt32(bigDecimal.toInt)
+                }
+                else if (bigDecimal.isValidLong) {
+                    BsonInt64(bigDecimal.toLong)
+                }
+                else {
+                    BsonDouble(bigDecimal.toDouble)
+                }
+            case Some(optionValue) => toBsonValue(optionValue)
+            case seqValue: Seq[_] => BsonArray.fromIterable(seqValue.map(content => toBsonValue(content)))
+            case mapValue: Map[_, _] =>
+                BsonDocument(mapValue.map({case (key, content) => (key.toString(), toBsonValue(content))}))
+            case jsString: JsString => toBsonValue(jsString.value)
+            case jsNumber: JsNumber => toBsonValue(jsNumber.value)
+            case jsBoolean: JsBoolean => toBsonValue(jsBoolean.value)
+            case jsArray: JsArray => toBsonValue(jsArray.elements)
+            case jsObject: JsObject => toBsonValue(jsObject.fields)
             case _ => BsonNull()
         }
     }
+    // scalastyle:on cyclomatic.complexity
 
     def toBsonArray[T](values: Seq[T]): BsonArray = {
         BsonArray.fromIterable(values.map(value => toBsonValue(value)))
@@ -293,6 +324,16 @@ object JsonUtils {
             case mapValue: Map[_, _] =>
                 JsObject(mapValue.map({case (key, content) => (key.toString(), toJsonValue(content))}))
             case jsonObjectConvertible: JsonObjectConvertible => jsonObjectConvertible.toJsObject()
+            case bsonString: BsonString => toJsonValue(bsonString.getValue())
+            case bsonInt32: BsonInt32 => JsNumber(bsonInt32.getValue())
+            case bsonInt64: BsonInt64 => JsNumber(bsonInt64.getValue())
+            case bsonDouble: BsonDouble => JsNumber(bsonDouble.getValue())
+            case bsonBoolean: BsonBoolean => JsBoolean(bsonBoolean.getValue())
+            case bsonArray: BsonArray => toJsonValue(bsonArray.getValues().asScala)
+            case bsonDocument: BsonDocument => toJsonValue(
+                bsonDocument.keySet().asScala.toSeq.map(key => (key, bsonDocument.get(key))).toMap[String, BsonValue]
+            )
+            case document: Document => toJsonValue(document.toBsonDocument)
             case _ => JsNull
         }
     }
@@ -327,11 +368,11 @@ object JsonUtils {
             case BsonType.STRING => {
                 val stringValue: String = value.asString().getValue()
                 stringValue.nonEmpty match {
-                    case true => toBsonValue(GeneralUtils.getHash(stringValue))
+                    case true => toBsonValue(HashUtils.getHash(stringValue))
                     case false => value  // empty string is not hashed
                 }
             }
-            case BsonType.INT32 => toBsonValue(GeneralUtils.getHash(value.asInt32().getValue()))
+            case BsonType.INT32 => toBsonValue(HashUtils.getHash(value.asInt32().getValue()))
             case _ => value  // values other than strings or integers are not hashed
         }
     }
@@ -454,5 +495,68 @@ object JsonUtils {
 
             constructJsObject(jsObject.fields, Map.empty)
         }
+    }
+
+    def getStringOption(jsValue: JsValue, attribute: String): Option[String] = {
+        jsValue match {
+            case JsObject(fields: Map[String, JsValue]) => fields.get(attribute) match {
+                case Some(stringValue: JsString) => Some(stringValue.toString())
+                case _ => None
+            }
+            case _ => None
+        }
+    }
+
+    // assumes that the given JSON values are JSON objects with string valued sortAttribute
+    def combineTwoSortedArrays(
+        sortAttribute: String,
+        arrayOne: Array[JsValue],
+        arrayTwo: Array[JsValue]
+    ): Array[JsValue] = {
+        def combineArraysInternal(
+            result: Array[JsValue],
+            first: Array[JsValue],
+            second: Array[JsValue]
+        ): Array[JsValue] = {
+            first.headOption match {
+                case Some(firstHead: JsObject) => second.headOption match {
+                    case Some(secondHead: JsObject) => {
+                        val firstValueOption: Option[String] = getStringOption(firstHead, sortAttribute)
+                        val secondValueOption: Option[String] = getStringOption(secondHead, sortAttribute)
+                        if (firstValueOption.isDefined && secondValueOption.isDefined) {
+                            val firstValue: String = firstValueOption.getOrElse(CommonConstants.EmptyString)
+                            val secondValue: String = secondValueOption.getOrElse(CommonConstants.EmptyString)
+                            firstValue <= secondValue match {
+                                case true => combineArraysInternal(result :+ firstHead, first.drop(1), second)
+                                case false => combineArraysInternal(result :+ secondHead, first, second.drop(1))
+                            }
+                        }
+                        else {
+                            result  // the JSON values were not objects or did not contain string valued sortAttribute
+                        }
+                    }
+                    case _ => result ++ first
+                }
+                case _ => result ++ second
+            }
+        }
+
+        combineArraysInternal(Array.empty, arrayTwo, arrayOne)
+    }
+
+    def combineSortedArrays(sortAttribute: String, arrays: Array[JsValue]*): Array[JsValue] = {
+
+        def combineArraysInternal(result: Array[JsValue], remainingArrays: Seq[Array[JsValue]]): Array[JsValue] = {
+            remainingArrays.headOption match {
+                case Some(headArray: Array[JsValue]) =>
+                    combineArraysInternal(
+                        combineTwoSortedArrays(sortAttribute, result, headArray),
+                        remainingArrays.drop(1)
+                    )
+                case None => result
+            }
+        }
+
+        combineArraysInternal(Array.empty, arrays)
     }
 }

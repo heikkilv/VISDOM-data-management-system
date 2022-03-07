@@ -33,6 +33,8 @@ object HttpConstants {
     val PathRepository: String = "repository"
     val PathTree: String = "tree"
 
+    val HeaderPrivateToken: String = "private-token"
+
     final val HttpPrefix: String = "http://"
     final val HttpsPrefix: String = "https://"
 

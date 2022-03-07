@@ -12,10 +12,14 @@ val SparkVersion: String = "3.1.1"
 val ScalajVersion: String = "2.4.2"
 val ScalaTestVersion: String = "3.2.10"
 val ScapeGoatVersion: String = "1.4.11"
+val ShapelessVersion: String = "2.3.7"
 val SprayJsonVersion: String = "1.3.6"
 val SwaggerAkkaVersion: String = "2.6.0"
+val UuidVersion: String = "0.4.0"
 
 libraryDependencies ++= Seq(
+    "com.47deg" %% "memeid4s" % UuidVersion,
+    "com.chuusai" %% "shapeless" % ShapelessVersion,
     "com.github.swagger-akka-http" %% "swagger-akka-http" % SwaggerAkkaVersion,
     "com.typesafe.akka" %% "akka-actor" % AkkaVersion,
     "com.typesafe.akka" %% "akka-actor-typed" % AkkaVersion,
@@ -40,7 +44,7 @@ ThisBuild / scapegoatVersion := ScapeGoatVersion
 
 wartremoverErrors ++= Warts.unsafe
 
-scalacOptions ++= Seq("-deprecation")
+scalacOptions ++= Seq("-deprecation", "-feature")
 
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.apache.spark")

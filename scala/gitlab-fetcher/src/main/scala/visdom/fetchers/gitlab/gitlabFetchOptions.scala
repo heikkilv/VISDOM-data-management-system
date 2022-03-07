@@ -5,7 +5,7 @@ import org.mongodb.scala.MongoDatabase
 import visdom.fetchers.FetchOptions
 import visdom.http.server.fetcher.gitlab.Projects
 import visdom.utils.CommonConstants
-import visdom.utils.GeneralUtils
+import visdom.utils.TimeUtils
 
 
 abstract class GitlabFetchOptions
@@ -175,8 +175,8 @@ final case class MultiSpecificSingleFetchParameters(
             reference,
             filePath.getOrElse(CommonConstants.EmptyString),
             recursive,
-            GeneralUtils.zonedDateTimeToString(startDate),
-            GeneralUtils.zonedDateTimeToString(endDate),
+            TimeUtils.zonedDateTimeToString(startDate),
+            TimeUtils.zonedDateTimeToString(endDate),
             useAnonymization
         ).toString()
     }
