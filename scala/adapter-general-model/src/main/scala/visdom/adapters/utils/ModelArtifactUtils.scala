@@ -16,26 +16,23 @@ import visdom.utils.SnakeCaseConstants
 class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
-    import sparkSession.implicits.newStringEncoder
 
     def getFiles(): Dataset[FileArtifactResult] = {
         val allFiles: Dataset[FileSchema] =
             modelUtils.loadMongoData[FileSchema](MongoConstants.CollectionFiles)
                 .flatMap(row => FileSchema.fromRow(row))
 
-        val fileParentMap: Map[(String, String, String), String] =
+        val fileParentMap: Map[(String, String, String), Seq[String]] =
             allFiles
-                .filter(fileSchema => fileSchema.`type` == SnakeCaseConstants.Blob)
                 .map(
                     fileSchema => (
-                        fileSchema.host_name,
-                        fileSchema.project_name,
-                        fileSchema.path,
+                        fileSchema,
                         GeneralUtils.getUpperFolder(fileSchema.path)
                     )
                 )
-                .groupByKey({case (hostName, projectName, _, upperFolder) => (hostName, projectName, upperFolder)})
-                .mapValues({case (_, _, path, _) => Seq(path)})
+                .filter(schemaWithParentFolder => schemaWithParentFolder._2 != CommonConstants.EmptyString)
+                .groupByKey({case (schema, parentFolder) => (schema.host_name, schema.project_name, parentFolder)})
+                .mapValues({case (schema, _) => Seq(schema.path)})
                 .reduceGroups((first, second) => first ++ second)
                 .collect()
                 .toMap
@@ -45,7 +42,10 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 fileSchema => ArtifactResult.fromFileSchema(
                     fileSchema,
                     fileSchema.`type` == SnakeCaseConstants.Tree match {
-                        case true => fileParentMap.getOrElse((fileSchema.host_name, fileSchema.project_name, fileSchema.path), Seq.empty)
+                        case true => fileParentMap.getOrElse(
+                            (fileSchema.host_name, fileSchema.project_name, fileSchema.path),
+                            Seq.empty
+                        )
                         case false => Seq.empty
                     }
                 )
