@@ -245,6 +245,20 @@ object JsonUtils {
                 JsonUtils.keyTransform(key => prefix + key)
             )
         }
+
+        def filterAttributes(retainedAttributes: Seq[String]): BsonDocument = {
+            BsonDocument(
+                retainedAttributes
+                    .map(
+                        attribute =>
+                            document
+                                .getOption(attribute)
+                                .map(value => (attribute, value))
+                    )
+                    .flatten
+                    .toMap
+            )
+        }
     }
 
     implicit class EnrichedBsonArray(array: BsonArray) {

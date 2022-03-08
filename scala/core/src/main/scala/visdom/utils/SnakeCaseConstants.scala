@@ -51,6 +51,7 @@ object SnakeCaseConstants {
     val CourseId: String = "course_id"
     val CreatedAt: String = "created_at"
     val Data: String = "data"
+    val DataAttributes: String = "data_attributes"
     val Database: String = "database"
     val DataByGrades: String = "data_by_grades"
     val DataByWeeks: String = "data_by_weeks"

@@ -2,12 +2,14 @@ package visdom.http.server.options
 
 import visdom.adapters.options.MultiQueryOptions
 import visdom.adapters.options.ObjectTypes
+import visdom.utils.CommonConstants
 
 
 final case class MultiOptions(
     pageOptions: OnlyPageInputOptions,
     targetType: String,
-    objectType: String
+    objectType: String,
+    dataAttributes: Option[String]
 )
 extends BaseInputOptions {
     def toQueryOptions(): MultiQueryOptions = {
@@ -21,6 +23,7 @@ extends BaseInputOptions {
                 case true => None
                 case false => Some(objectType)
             },
+            dataAttributes = dataAttributes.map(attributesString => attributesString.split(CommonConstants.Comma)),
             page = queryPageOptions.page,
             pageSize = queryPageOptions.pageSize
         )

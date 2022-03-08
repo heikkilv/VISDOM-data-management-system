@@ -2,6 +2,7 @@ package visdom.http.server.services.constants
 
 
 object GeneralAdapterConstants {
+    final val Data = "data"
     final val Page = "page"
     final val PageSize = "pageSize"
     final val PrivateToken = "Private-Token"

@@ -22,6 +22,7 @@ object GeneralAdapterDescriptions {
     final val TestEndpointDescription = "Test endpoint for paging features."
     final val TestEndpointSummary = "Test endpoint for paging features."
 
+    final val DescriptionData = "A comma-separated list of data attributes included in the response. Default: all attributes included"
     final val DescriptionPage = "The page number used in filtering the results"
     final val DescriptionPageSize = "The page size used in filtering the results"
     final val DescriptionPrivateToken = "If value is given, only commits that contain the given value are considered"
