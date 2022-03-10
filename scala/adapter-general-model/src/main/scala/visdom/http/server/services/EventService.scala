@@ -86,6 +86,22 @@ with AdapterService
                 schema = new Schema(
                     implementation = classOf[String]
                 )
+            ),
+            new Parameter(
+                name = GeneralAdapterConstants.Links,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = GeneralAdapterDescriptions.DescriptionLinks,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = GeneralAdapterConstants.DefaultLinks,
+                    allowableValues = Array(
+                        GeneralAdapterConstants.All,
+                        GeneralAdapterConstants.Events,
+                        GeneralAdapterConstants.Constructs,
+                        GeneralAdapterConstants.None
+                    )
+                )
             )
         ),
         responses = Array(
@@ -127,14 +143,16 @@ with AdapterService
             GeneralAdapterConstants.Page.optional,
             GeneralAdapterConstants.PageSize.optional,
             GeneralAdapterConstants.Type.withDefault(CommonConstants.EmptyString),
-            GeneralAdapterConstants.Data.optional
+            GeneralAdapterConstants.Data.optional,
+            GeneralAdapterConstants.Links.withDefault(GeneralAdapterConstants.DefaultLinks)
         )
     ) {
         (
             page,
             pageSize,
             objectType,
-            dataAttributes
+            dataAttributes,
+            includedLInks
         ) => get {
             getRoute(
                 actorRef,
@@ -145,7 +163,8 @@ with AdapterService
                     ),
                     targetType = ObjectTypes.TargetTypeEvent,
                     objectType = objectType,
-                    dataAttributes = dataAttributes
+                    dataAttributes = dataAttributes,
+                    includedLinks = includedLInks
                 )
             )
         }

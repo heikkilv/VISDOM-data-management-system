@@ -87,11 +87,16 @@ object GeneralQueryUtils {
         GeneralQueryUtils.updateCacheMetadata(objectType)
     }
 
-    private def cleanCacheResult(result: BsonDocument, dataAttributes: Option[Seq[String]]): BsonDocument = {
+    private def cleanCacheResult(
+        result: BsonDocument,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
+    ): BsonDocument = {
         val initialResult: BsonDocument = result
             .removeAttribute(SnakeCaseConstants._Id)
             .removeAttribute(SnakeCaseConstants.CategoryIndex)
             .removeAttribute(SnakeCaseConstants.TypeIndex)
+            .removeAttributes(extraAttributes)
 
         dataAttributes match {
             case Some(attributes: Seq[String]) => initialResult.getDocumentOption(SnakeCaseConstants.Data) match {
@@ -106,6 +111,7 @@ object GeneralQueryUtils {
     private def cleanCacheResults(
         results: Seq[BsonDocument],
         dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         indexAttribute: String
     ): Seq[JsValue] = {
         results
@@ -115,7 +121,7 @@ object GeneralQueryUtils {
                     case None => 0
                 }
             )
-            .map(document => JsonUtils.toJsonValue(cleanCacheResult(document, dataAttributes)))
+            .map(document => JsonUtils.toJsonValue(cleanCacheResult(document, dataAttributes, extraAttributes)))
     }
 
     private def toResult(resultData: Seq[JsValue], totalCount: Int, pageOptions: BaseQueryWithPageOptions): Result = {
@@ -136,6 +142,7 @@ object GeneralQueryUtils {
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
         dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         indexAttribute: String
     ): Result = {
         val cacheCollections: Seq[MongoCollection[Document]] =
@@ -156,6 +163,7 @@ object GeneralQueryUtils {
                     .map(document => document.toBsonDocument)
             ).flatten,
             dataAttributes,
+            extraAttributes,
             indexAttribute
         )
 
@@ -170,6 +178,7 @@ object GeneralQueryUtils {
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
         dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         indexAttribute: String,
         filter: Bson
     ): Result = {
@@ -183,6 +192,7 @@ object GeneralQueryUtils {
                     .map(document => document.toBsonDocument)
             ).flatten,
             dataAttributes,
+            extraAttributes,
             indexAttribute
         )
 
@@ -197,35 +207,53 @@ object GeneralQueryUtils {
     def getCacheResults(
         objectType: String,
         pageOptions: BaseQueryWithPageOptions,
-        dataAttributes: Option[Seq[String]]
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
     ): Result = {
-        getCacheResults(Seq(objectType), pageOptions, dataAttributes, SnakeCaseConstants.TypeIndex)
+        getCacheResults(Seq(objectType), pageOptions, dataAttributes, extraAttributes, SnakeCaseConstants.TypeIndex)
     }
 
     def getCacheResults(
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
-        dataAttributes: Option[Seq[String]]
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
     ): Result = {
-        getCacheResults(objectTypes, pageOptions, dataAttributes, SnakeCaseConstants.CategoryIndex)
+        getCacheResults(objectTypes, pageOptions, dataAttributes, extraAttributes, SnakeCaseConstants.CategoryIndex)
     }
 
     def getCacheResults(
         objectType: String,
         pageOptions: BaseQueryWithPageOptions,
         dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         filter: Bson
     ): Result = {
-        getCacheResults(Seq(objectType), pageOptions, dataAttributes, SnakeCaseConstants.TypeIndex, filter)
+        getCacheResults(
+            Seq(objectType),
+            pageOptions,
+            dataAttributes,
+            extraAttributes,
+            SnakeCaseConstants.TypeIndex,
+            filter
+        )
     }
 
     def getCacheResults(
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
         dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         filter: Bson
     ): Result = {
-        getCacheResults(objectTypes, pageOptions, dataAttributes, SnakeCaseConstants.CategoryIndex, filter)
+        getCacheResults(
+            objectTypes,
+            pageOptions,
+            dataAttributes,
+            extraAttributes,
+            SnakeCaseConstants.CategoryIndex,
+            filter
+        )
     }
 
     def getCacheResult(singleOptions: SingleQueryOptions): Option[SingleResult] = {
@@ -236,7 +264,7 @@ object GeneralQueryUtils {
             )
         )
         .headOption
-        .map(document => JsonUtils.toJsonValue(cleanCacheResult(document.toBsonDocument, None)) match {
+        .map(document => JsonUtils.toJsonValue(cleanCacheResult(document.toBsonDocument, None, Seq.empty)) match {
             case jsObject: JsObject => Some(SingleResult(jsObject))
             case _ => None
         })

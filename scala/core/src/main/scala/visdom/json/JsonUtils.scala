@@ -135,6 +135,14 @@ object JsonUtils {
             JsonUtils.removeAttribute(document, attributeName)
         }
 
+        def removeAttributes(attributeNames: Seq[String]): BsonDocument = {
+            attributeNames.headOption match {
+                case Some(attributeName: String) =>
+                    document.removeAttribute(attributeName).removeAttributes(attributeNames.drop(1))
+                case None => document
+            }
+        }
+
         def transformAttribute(
             key: String,
             transformFunction: (String, BsonValue) => (String, BsonValue)

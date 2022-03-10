@@ -145,7 +145,8 @@ with AdapterService
                     ),
                     targetType = ObjectTypes.TargetTypeOrigin,
                     objectType = objectType,
-                    dataAttributes = dataAttributes
+                    dataAttributes = dataAttributes,
+                    includedLinks = GeneralAdapterConstants.All
                 )
             )
         }

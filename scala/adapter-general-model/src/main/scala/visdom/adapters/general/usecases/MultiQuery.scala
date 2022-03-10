@@ -15,6 +15,11 @@ import visdom.adapters.utils.ModelUtils
 class MultiQuery(queryOptions: MultiQueryOptions)
 extends BaseCacheQuery(queryOptions) {
     private val dataAttributes: Option[Seq[String]] = queryOptions.dataAttributes
+    private val extraAttributes: Seq[String] =
+        queryOptions.includedLinks.linkAttributes
+            .filter({case (_, isIncluded) => !isIncluded})
+            .map({case (attributeName, _) => attributeName})
+            .toSeq
 
     def cacheCheck(): Boolean = {
         ModelUtils.isTargetCacheUpdated(queryOptions.targetType)
@@ -27,10 +32,17 @@ extends BaseCacheQuery(queryOptions) {
     def getResults(): Option[BaseResultValue] = {
         queryOptions.objectType match {
             case Some(objectType: String) =>
-                Some(GeneralQueryUtils.getCacheResults(objectType, queryOptions, dataAttributes))
+                Some(GeneralQueryUtils.getCacheResults(objectType, queryOptions, dataAttributes, extraAttributes))
             case None => ObjectTypes.objectTypes.get(queryOptions.targetType) match {
                 case Some(objectTypes: Set[String]) =>
-                    Some(GeneralQueryUtils.getCacheResults(objectTypes.toSeq, queryOptions, dataAttributes))
+                    Some(
+                        GeneralQueryUtils.getCacheResults(
+                            objectTypes.toSeq,
+                            queryOptions,
+                            dataAttributes,
+                            extraAttributes
+                        )
+                    )
                 case None => None
             }
         }

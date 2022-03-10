@@ -89,6 +89,7 @@ object SnakeCaseConstants {
     val HostName: String = "host_name"
     val Icon: String = "icon"
     val Id: String = "id"
+    val IncludedLinks: String = "included_links"
     val Index: String = "index"
     val Information: String = "information"
     val InstanceName: String = "instance_name"
