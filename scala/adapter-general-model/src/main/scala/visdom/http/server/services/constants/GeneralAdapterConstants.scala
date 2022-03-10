@@ -11,6 +11,7 @@ object GeneralAdapterConstants {
     final val Page = "page"
     final val PageSize = "pageSize"
     final val PrivateToken = "Private-Token"
+    final val Query = "query"
     final val Target = "target"
     final val Type = "type"
     final val Uuid = "uuid"

@@ -1,5 +1,6 @@
 package visdom.http.server.options
 
+import visdom.adapters.options.AttributeFilter
 import visdom.adapters.options.MultiQueryOptions
 import visdom.adapters.options.ObjectTypes
 import visdom.http.server.services.constants.GeneralAdapterConstants
@@ -10,12 +11,14 @@ final case class MultiOptions(
     pageOptions: OnlyPageInputOptions,
     targetType: String,
     objectType: String,
+    query: Option[String],
     dataAttributes: Option[String],
     includedLinks: String
 )
 extends BaseInputOptions {
     def toQueryOptions(): MultiQueryOptions = {
         val queryPageOptions = pageOptions.toOnlyPageOptions()
+
         MultiQueryOptions(
             targetType = ObjectTypes.objectTypes.contains(targetType) match {
                 case true => targetType
@@ -25,6 +28,7 @@ extends BaseInputOptions {
                 case true => None
                 case false => Some(objectType)
             },
+            query = MultiOptions.getAttributeFilters(query),
             dataAttributes = dataAttributes.map(attributesString => attributesString.split(CommonConstants.Comma)),
             includedLinks = includedLinks match {
                 case GeneralAdapterConstants.None => LinksNone
@@ -35,5 +39,26 @@ extends BaseInputOptions {
             page = queryPageOptions.page,
             pageSize = queryPageOptions.pageSize
         )
+    }
+}
+
+object MultiOptions {
+    def getAttributeFilters(queryStringOption: Option[String]): Option[Seq[AttributeFilter]] = {
+        (
+            queryStringOption.map(
+                queryString =>
+                    queryString
+                        .split(CommonConstants.Semicolon)
+                        .map(attributeQuery => AttributeFilter.fromString(attributeQuery))
+                        .flatten
+                        .toSeq
+            )
+        ) match {
+            case Some(filters: Seq[AttributeFilter]) => filters.nonEmpty match {
+                case true => Some(filters)
+                case false => None
+            }
+            case None => None
+        }
     }
 }

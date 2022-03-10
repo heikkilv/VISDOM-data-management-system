@@ -27,6 +27,7 @@ object GeneralAdapterDescriptions {
     final val DescriptionPage = "The page number used in filtering the results"
     final val DescriptionPageSize = "The page size used in filtering the results"
     final val DescriptionPrivateToken = "If value is given, only commits that contain the given value are considered"
+    final val DescriptionQuery = "Filter query to be applied."
     final val DescriptionTarget = "Either 'event' or 'origin'. Default: 'event'"
     final val DescriptionType = "The type of the object"
     final val DescriptionUuid = "The unique id of the object"

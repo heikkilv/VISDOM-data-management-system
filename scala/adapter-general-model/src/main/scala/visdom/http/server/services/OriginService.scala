@@ -79,6 +79,16 @@ with AdapterService
                 )
             ),
             new Parameter(
+                name = GeneralAdapterConstants.Query,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = GeneralAdapterDescriptions.DescriptionQuery,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    example = GeneralAdapterExamples.ExampleQuery
+                )
+            ),
+            new Parameter(
                 name = GeneralAdapterConstants.Data,
                 in = ParameterIn.QUERY,
                 required = false,
@@ -127,6 +137,7 @@ with AdapterService
             GeneralAdapterConstants.Page.optional,
             GeneralAdapterConstants.PageSize.optional,
             GeneralAdapterConstants.Type.withDefault(CommonConstants.EmptyString),
+            GeneralAdapterConstants.Query.optional,
             GeneralAdapterConstants.Data.optional
         )
     ) {
@@ -134,6 +145,7 @@ with AdapterService
             page,
             pageSize,
             objectType,
+            query,
             dataAttributes
         ) => get {
             getRoute(
@@ -145,6 +157,7 @@ with AdapterService
                     ),
                     targetType = ObjectTypes.TargetTypeOrigin,
                     objectType = objectType,
+                    query = query,
                     dataAttributes = dataAttributes,
                     includedLinks = GeneralAdapterConstants.All
                 )

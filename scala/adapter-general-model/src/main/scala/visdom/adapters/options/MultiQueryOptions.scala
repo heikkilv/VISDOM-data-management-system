@@ -9,6 +9,7 @@ import visdom.utils.SnakeCaseConstants
 final case class MultiQueryOptions(
     targetType: String,
     objectType: Option[String],
+    query: Option[Seq[AttributeFilter]],
     dataAttributes: Option[Seq[String]],
     includedLinks: LinkTypes,
     page: Int,
