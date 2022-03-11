@@ -36,4 +36,6 @@ object CommonConstants {
     final val Org: String = "org"
     final val Unknown: String = "unknown"
     final val UTC: String = "UTC"
+
+    final val MinusOne: Int = -1
 }
