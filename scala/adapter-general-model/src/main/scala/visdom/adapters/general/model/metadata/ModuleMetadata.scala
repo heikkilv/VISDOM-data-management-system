@@ -4,12 +4,14 @@ import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.base.Metadata
 import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.model.origins.AplusOrigin
+import visdom.adapters.general.schemas.ModuleAdditionalSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.utils.GeneralUtils
 
 
 class ModuleMetadata(
-    moduleSchema: ModuleSchema
+    moduleSchema: ModuleSchema,
+    moduleAdditionalSchema: ModuleAdditionalSchema
 )
 extends Metadata {
     def getType: String = CourseMetadata.CourseMetadataType
@@ -30,7 +32,7 @@ extends Metadata {
     }
     val description: String = moduleSchema.display_name.raw
 
-    val data: ModuleData = ModuleData.fromModuleSchema(moduleSchema)
+    val data: ModuleData = ModuleData.fromModuleSchema(moduleSchema, moduleAdditionalSchema)
 
     val id: String = ModuleMetadata.getId(origin.id, data.module_id)
 
@@ -58,7 +60,7 @@ object ModuleMetadata {
         GeneralUtils.getUuid(originId, ModuleMetadataType, moduleId.toString())
     }
 
-    def fromModuleSchema(moduleSchema: ModuleSchema): ModuleMetadata = {
-        new ModuleMetadata(moduleSchema)
+    def fromModuleSchema(moduleSchema: ModuleSchema, additionalSchema: ModuleAdditionalSchema): ModuleMetadata = {
+        new ModuleMetadata(moduleSchema, additionalSchema)
     }
 }

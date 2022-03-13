@@ -16,6 +16,7 @@ import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.ModuleSchema
+import visdom.adapters.general.schemas.ModuleAdditionalSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -99,8 +100,11 @@ object MetadataResult {
         fromMetadata(courseMetadata, courseMetadata.data)
     }
 
-    def fromModuleSchema(moduleSchema: ModuleSchema): ModuleMetadataResult = {
-        val moduleMetadata: ModuleMetadata = new ModuleMetadata(moduleSchema)
+    def fromModuleSchema(
+        moduleSchema: ModuleSchema,
+        moduleAdditionalSchema: ModuleAdditionalSchema
+    ): ModuleMetadataResult = {
+        val moduleMetadata: ModuleMetadata = new ModuleMetadata(moduleSchema, moduleAdditionalSchema)
         fromMetadata(moduleMetadata, moduleMetadata.data)
     }
 

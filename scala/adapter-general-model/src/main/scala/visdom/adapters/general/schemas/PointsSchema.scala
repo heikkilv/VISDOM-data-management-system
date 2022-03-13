@@ -25,7 +25,8 @@ final case class PointsSchema(
     points_by_difficulty: PointsDifficultySchema,
     course_id: Int,
     host_name: String,
-    modules: Seq[PointsModuleSchema]
+    modules: Seq[PointsModuleSchema],
+    metadata: PointsMetadataSchema
 )
 extends BaseSchema
 
@@ -44,13 +45,14 @@ object PointsSchema extends BaseSchemaTrait2[PointsSchema] {
         FieldDataModel(SnakeCaseConstants.PointsByDifficulty, false, PointsDifficultySchema.fromAny),
         FieldDataModel(SnakeCaseConstants.CourseId, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Modules, false, (value: Any) => toSeqOption(value, PointsModuleSchema.fromAny))
+        FieldDataModel(SnakeCaseConstants.Modules, false, (value: Any) => toSeqOption(value, PointsModuleSchema.fromAny)),
+        FieldDataModel(SnakeCaseConstants.Metadata, false, PointsMetadataSchema.fromAny)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[PointsSchema] = {
-        TupleUtils.toTuple[Int, String, String, String, String, String, Boolean, Int, Int,
-                           PointsDifficultySchema, Int, String, Seq[PointsModuleSchema]](values) match {
+        TupleUtils.toTuple[Int, String, String, String, String, String, Boolean, Int, Int,PointsDifficultySchema,
+                           Int, String, Seq[PointsModuleSchema], PointsMetadataSchema](values) match {
             case Some(inputValues) => Some(
                 (PointsSchema.apply _).tupled(inputValues)
             )

@@ -123,6 +123,7 @@ object SnakeCaseConstants {
     val Kind: String = "kind"
     val Label: String = "label"
     val Language: String = "language"
+    val LastModified: String = "last_modified"
     val LatePenaltyApplied: String = "late_penalty_applied"
     val LateSubmissionCoefficient: String = "late_submission_coefficient"
     val LateSubmissionDate: String = "late_submission_date"

@@ -4,9 +4,13 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
+import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.artifacts.data.CoursePointsData
 import visdom.adapters.general.model.artifacts.data.FileData
+import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
@@ -17,10 +21,14 @@ import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
+import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
+import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PipelineUserSchema
+import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -84,6 +92,9 @@ with IdValue {
 object ArtifactResult {
     type FileArtifactResult = ArtifactResult[FileData]
     type PipelineReportArtifactResult = ArtifactResult[PipelineReportData]
+
+    type CoursePointsArtifactResult = ArtifactResult[CoursePointsData]
+    type ModulePointsArtifactResult = ArtifactResult[ModulePointsData]
 
     type CommitAuthorResult = ArtifactResult[CommitAuthorData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
@@ -150,5 +161,24 @@ object ArtifactResult {
     ): PipelineReportArtifactResult = {
         val reportArtifact: PipelineReportArtifact = new PipelineReportArtifact(pipelineReportSchema, projectName)
         fromArtifact(reportArtifact, reportArtifact.data)
+    }
+
+    def fromCoursePointsSchema(
+        coursePointsSchema: PointsSchema,
+        courseSchema: CourseSchema
+    ): CoursePointsArtifactResult = {
+        val coursePointsArtifact: CoursePointsArtifact = new CoursePointsArtifact(coursePointsSchema, courseSchema)
+        fromArtifact(coursePointsArtifact, coursePointsArtifact.data)
+    }
+
+    def fromModulePointsSchema(
+        modulePointsSchema: PointsModuleSchema,
+        moduleSchema: ModuleSchema,
+        userId: Int,
+        updateTime: String
+    ): ModulePointsArtifactResult = {
+        val modulePointsArtifact: ModulePointsArtifact =
+            new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, updateTime)
+        fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
     }
 }
