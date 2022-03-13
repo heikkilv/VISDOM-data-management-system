@@ -49,8 +49,6 @@ extends Metadata {
             CourseMetadata.CourseMetadataType
         )
     )
-
-    // TODO: add links to aplus user, module points artifact
 }
 
 object ModuleMetadata {

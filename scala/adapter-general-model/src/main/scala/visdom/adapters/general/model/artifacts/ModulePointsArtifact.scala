@@ -48,7 +48,7 @@ extends Artifact {
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)
 
-    // add related module metadata as related constructs
+    // add related module metadata, course points artifact, and exercise points artifacts as related constructs
     addRelatedConstructs(
         Seq(
             ItemLink(
@@ -56,13 +56,20 @@ extends Artifact {
                 ModuleMetadata.ModuleMetadataType
             ),
             ItemLink(
-                ModuleMetadata.getId(origin.id, moduleSchema.course_id),
+                CoursePointsArtifact.getId(origin.id, moduleSchema.course_id, data.user_id),
                 CoursePointsArtifact.CoursePointsArtifactType
-            ),
+            )
+        ) ++
+        modulePointsSchema.exercises.map(
+            exercisePointsSchema =>
+                ItemLink(
+                    ExercisePointsArtifact.getId(origin.id, exercisePointsSchema.id, data.user_id),
+                    ExercisePointsArtifact.ExercisePointsArtifactType
+                )
         )
     )
 
-    // TODO: add links to exercise points, aplus user
+    // TODO: add links to aplus user
 }
 
 object ModulePointsArtifact {

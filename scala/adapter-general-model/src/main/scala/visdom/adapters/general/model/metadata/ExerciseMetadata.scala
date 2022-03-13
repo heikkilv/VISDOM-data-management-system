@@ -4,12 +4,14 @@ import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.base.Metadata
 import visdom.adapters.general.model.metadata.data.ExerciseData
 import visdom.adapters.general.model.origins.AplusOrigin
+import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.utils.GeneralUtils
 
 
 class ExerciseMetadata(
-    exerciseSchema: ExerciseSchema
+    exerciseSchema: ExerciseSchema,
+    exerciseAdditionalSchema: ExerciseAdditionalSchema
 )
 extends Metadata {
     def getType: String = CourseMetadata.CourseMetadataType
@@ -30,7 +32,7 @@ extends Metadata {
     }
     val description: String = exerciseSchema.display_name.raw
 
-    val data: ExerciseData = ExerciseData.fromExerciseSchema(exerciseSchema)
+    val data: ExerciseData = ExerciseData.fromExerciseSchema(exerciseSchema, exerciseAdditionalSchema)
 
     val id: String = ExerciseMetadata.getId(origin.id, data.exercise_id)
 
@@ -47,8 +49,6 @@ extends Metadata {
             )
         )
     )
-
-    // TODO: add links to aplus user, exercise points artifact, submission events
 }
 
 object ExerciseMetadata {
@@ -58,7 +58,10 @@ object ExerciseMetadata {
         GeneralUtils.getUuid(originId, ExerciseMetadataType, exerciseId.toString())
     }
 
-    def fromExerciseSchema(exerciseSchema: ExerciseSchema): ExerciseMetadata = {
-        new ExerciseMetadata(exerciseSchema)
+    def fromExerciseSchema(
+        exerciseSchema: ExerciseSchema,
+        additionalSchema: ExerciseAdditionalSchema
+    ): ExerciseMetadata = {
+        new ExerciseMetadata(exerciseSchema, additionalSchema)
     }
 }

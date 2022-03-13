@@ -5,10 +5,12 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
+import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.artifacts.data.CoursePointsData
+import visdom.adapters.general.model.artifacts.data.ExercisePointsData
 import visdom.adapters.general.model.artifacts.data.FileData
 import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
@@ -22,13 +24,16 @@ import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
 import visdom.adapters.general.schemas.CourseSchema
+import visdom.adapters.general.schemas.ExerciseAdditionalSchema
+import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PipelineUserSchema
-import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.PointsExerciseSchema
 import visdom.adapters.general.schemas.PointsModuleSchema
+import visdom.adapters.general.schemas.PointsSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -95,6 +100,7 @@ object ArtifactResult {
 
     type CoursePointsArtifactResult = ArtifactResult[CoursePointsData]
     type ModulePointsArtifactResult = ArtifactResult[ModulePointsData]
+    type ExercisePointsArtifactResult = ArtifactResult[ExercisePointsData]
 
     type CommitAuthorResult = ArtifactResult[CommitAuthorData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
@@ -179,6 +185,25 @@ object ArtifactResult {
     ): ModulePointsArtifactResult = {
         val modulePointsArtifact: ModulePointsArtifact =
             new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, updateTime)
+        fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
+    }
+
+    def fromExercisePointsSchema(
+        exercisePointsSchema: PointsExerciseSchema,
+        exerciseSchema: ExerciseSchema,
+        additionalSchema: ExerciseAdditionalSchema,
+        moduleId: Int,
+        userId: Int,
+        updateTime: String
+    ): ExercisePointsArtifactResult = {
+        val modulePointsArtifact: ExercisePointsArtifact = new ExercisePointsArtifact(
+            exercisePointsSchema,
+            exerciseSchema,
+            additionalSchema,
+            moduleId,
+            userId,
+            updateTime
+        )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
     }
 }

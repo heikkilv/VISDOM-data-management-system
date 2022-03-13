@@ -14,6 +14,7 @@ import visdom.adapters.general.model.metadata.data.CourseData
 import visdom.adapters.general.model.metadata.data.ExerciseData
 import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.schemas.CourseSchema
+import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.ModuleAdditionalSchema
@@ -108,8 +109,8 @@ object MetadataResult {
         fromMetadata(moduleMetadata, moduleMetadata.data)
     }
 
-    def fromExerciseSchema(exerciseSchema: ExerciseSchema): ExerciseMetadataResult = {
-        val exerciseMetadata: ExerciseMetadata = new ExerciseMetadata(exerciseSchema)
+    def fromExerciseSchema(exerciseSchema: ExerciseSchema, additionalSchema: ExerciseAdditionalSchema): ExerciseMetadataResult = {
+        val exerciseMetadata: ExerciseMetadata = new ExerciseMetadata(exerciseSchema, additionalSchema)
         fromMetadata(exerciseMetadata, exerciseMetadata.data)
     }
 }

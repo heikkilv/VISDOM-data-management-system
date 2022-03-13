@@ -44,8 +44,6 @@ extends Metadata {
             )
         )
     )
-
-    // TODO: add links to aplus user, course points artifact
 }
 
 object CourseMetadata {
