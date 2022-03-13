@@ -16,6 +16,7 @@ final case class ExerciseSchema(
     url: String,
     html_url: String,
     display_name: ModuleNameSchema,
+    course: IntIdSchema,
     max_points: Int,
     max_submissions: Int,
     is_submittable: Boolean,
@@ -32,6 +33,7 @@ object ExerciseSchema extends BaseSchemaTrait2[ExerciseSchema] {
         FieldDataModel(SnakeCaseConstants.Url, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.HtmlUrl, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.DisplayName, false, ModuleNameSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.Course, false, IntIdSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.MaxPoints, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.MaxSubmissions, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.IsSubmittable, false, toBooleanOption),
@@ -42,7 +44,7 @@ object ExerciseSchema extends BaseSchemaTrait2[ExerciseSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[ExerciseSchema] = {
-        TupleUtils.toTuple[Int, String, String, ModuleNameSchema, Int, Int, Boolean, String,
+        TupleUtils.toTuple[Int, String, String, ModuleNameSchema, IntIdSchema, Int, Int, Boolean, String,
                            ExerciseMetadataSchema, Option[ExerciseLinksSchema]](values) match {
             case Some(inputValues) => Some(
                 (ExerciseSchema.apply _).tupled(inputValues)

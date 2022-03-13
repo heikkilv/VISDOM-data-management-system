@@ -35,7 +35,17 @@ extends Metadata {
 
     val id: String = CourseMetadata.getId(origin.id, data.course_id)
 
-    // TODO: add links to module metadata, aplus user, course points artifact
+    // add links to the related module metadata
+    addRelatedConstructs(
+        data.modules.map(
+            moduleId => ItemLink(
+                ModuleMetadata.getId(origin.id, moduleId),
+                ModuleMetadata.ModuleMetadataType
+            )
+        )
+    )
+
+    // TODO: add links to aplus user, course points artifact
 }
 
 object CourseMetadata {

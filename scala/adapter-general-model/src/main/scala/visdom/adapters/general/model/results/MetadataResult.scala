@@ -8,8 +8,14 @@ import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.base.Metadata
 import visdom.adapters.general.model.metadata.CourseMetadata
+import visdom.adapters.general.model.metadata.ExerciseMetadata
+import visdom.adapters.general.model.metadata.ModuleMetadata
 import visdom.adapters.general.model.metadata.data.CourseData
+import visdom.adapters.general.model.metadata.data.ExerciseData
+import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.schemas.CourseSchema
+import visdom.adapters.general.schemas.ExerciseSchema
+import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -68,6 +74,8 @@ with IdValue {
 
 object MetadataResult {
     type CourseMetadataResult = MetadataResult[CourseData]
+    type ModuleMetadataResult = MetadataResult[ModuleData]
+    type ExerciseMetadataResult = MetadataResult[ExerciseData]
 
     def fromMetadata[MetadataData <: Data](
         metadata: Metadata,
@@ -89,5 +97,15 @@ object MetadataResult {
     def fromCourseSchema(courseSchema: CourseSchema): CourseMetadataResult = {
         val courseMetadata: CourseMetadata = new CourseMetadata(courseSchema)
         fromMetadata(courseMetadata, courseMetadata.data)
+    }
+
+    def fromModuleSchema(moduleSchema: ModuleSchema): ModuleMetadataResult = {
+        val moduleMetadata: ModuleMetadata = new ModuleMetadata(moduleSchema)
+        fromMetadata(moduleMetadata, moduleMetadata.data)
+    }
+
+    def fromExerciseSchema(exerciseSchema: ExerciseSchema): ExerciseMetadataResult = {
+        val exerciseMetadata: ExerciseMetadata = new ExerciseMetadata(exerciseSchema)
+        fromMetadata(exerciseMetadata, exerciseMetadata.data)
     }
 }

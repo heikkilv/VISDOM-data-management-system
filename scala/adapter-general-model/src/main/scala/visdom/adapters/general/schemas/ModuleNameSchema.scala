@@ -10,7 +10,7 @@ import visdom.utils.WartRemoverConstants
 
 
 final case class ModuleNameSchema(
-    number: Option[Int],
+    number: Option[String],
     fi: Option[String],
     en: Option[String],
     raw: String
@@ -28,7 +28,7 @@ object ModuleNameSchema extends BaseSchemaTrait2[ModuleNameSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[ModuleNameSchema] = {
-        TupleUtils.toTuple[Option[Int], Option[String], Option[String], String](values) match {
+        TupleUtils.toTuple[Option[String], Option[String], Option[String], String](values) match {
             case Some(inputValues) => Some(
                 (ModuleNameSchema.apply _).tupled(inputValues)
             )

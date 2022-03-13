@@ -80,18 +80,10 @@ object CourseData {
             starting_time = courseSchema.starting_time,
             ending_time = courseSchema.ending_time,
             visible_to_students = courseSchema.visible_to_students,
-            late_submission_coefficient = courseSchema.metadata.other match {
-                case Some(other: CourseMetadataOtherSchema) => other.late_submission_coefficient
-                case None => None
-            },
-            git_branch = courseSchema.metadata.other match {
-                case Some(other: CourseMetadataOtherSchema) => other.git_branch
-                case None => None
-            },
-            modules = courseSchema._links match {
-                case Some(links: CourseLinksSchema) => links.modules.getOrElse(Seq.empty)
-                case None => Seq.empty
-            }
+            late_submission_coefficient =
+                courseSchema.metadata.other.map(other => other.late_submission_coefficient).flatten,
+            git_branch = courseSchema.metadata.other.map(other => other.git_branch).flatten,
+            modules = courseSchema._links.map(links => links.modules).flatten.getOrElse(Seq.empty)
         )
     }
 }

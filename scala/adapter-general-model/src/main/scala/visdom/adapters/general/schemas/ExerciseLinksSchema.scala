@@ -13,7 +13,7 @@ import visdom.utils.WartRemoverConstants
 final case class ExerciseLinksSchema(
     courses: Option[Int],
     modules: Option[Int],
-    submission: Option[Seq[Int]]
+    submissions: Option[Seq[Int]]
 )
 extends BaseSchema
 

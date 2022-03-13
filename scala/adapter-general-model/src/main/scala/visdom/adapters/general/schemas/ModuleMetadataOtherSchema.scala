@@ -11,7 +11,7 @@ import visdom.utils.WartRemoverConstants
 
 final case class ModuleMetadataOtherSchema(
     start_date: String,
-    end_data: String,
+    end_date: String,
     late_submission_date: Option[String]
 )
 extends BaseSchema
