@@ -135,6 +135,14 @@ object JsonUtils {
             JsonUtils.removeAttribute(document, attributeName)
         }
 
+        def removeAttributes(attributeNames: Seq[String]): BsonDocument = {
+            attributeNames.headOption match {
+                case Some(attributeName: String) =>
+                    document.removeAttribute(attributeName).removeAttributes(attributeNames.drop(1))
+                case None => document
+            }
+        }
+
         def transformAttribute(
             key: String,
             transformFunction: (String, BsonValue) => (String, BsonValue)
@@ -243,6 +251,20 @@ object JsonUtils {
                 // add dot to the end of each sequence to indicate all subattributes
                 targetAttributes.map(keySequence => keySequence ++ Seq(CommonConstants.Dot)),
                 JsonUtils.keyTransform(key => prefix + key)
+            )
+        }
+
+        def filterAttributes(retainedAttributes: Seq[String]): BsonDocument = {
+            BsonDocument(
+                retainedAttributes
+                    .map(
+                        attribute =>
+                            document
+                                .getOption(attribute)
+                                .map(value => (attribute, value))
+                    )
+                    .flatten
+                    .toMap
             )
         }
     }

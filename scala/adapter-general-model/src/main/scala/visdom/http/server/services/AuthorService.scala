@@ -77,6 +77,41 @@ with AdapterService
                 schema = new Schema(
                     implementation = classOf[String]
                 )
+            ),
+            new Parameter(
+                name = GeneralAdapterConstants.Query,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = GeneralAdapterDescriptions.DescriptionQuery,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    example = GeneralAdapterExamples.ExampleQuery
+                )
+            ),
+            new Parameter(
+                name = GeneralAdapterConstants.Data,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = GeneralAdapterDescriptions.DescriptionData,
+                schema = new Schema(
+                    implementation = classOf[String]
+                )
+            ),
+            new Parameter(
+                name = GeneralAdapterConstants.Links,
+                in = ParameterIn.QUERY,
+                required = false,
+                description = GeneralAdapterDescriptions.DescriptionLinks,
+                schema = new Schema(
+                    implementation = classOf[String],
+                    defaultValue = GeneralAdapterConstants.DefaultLinks,
+                    allowableValues = Array(
+                        GeneralAdapterConstants.All,
+                        GeneralAdapterConstants.Events,
+                        GeneralAdapterConstants.Constructs,
+                        GeneralAdapterConstants.None
+                    )
+                )
             )
         ),
         responses = Array(
@@ -117,13 +152,19 @@ with AdapterService
         parameters(
             GeneralAdapterConstants.Page.optional,
             GeneralAdapterConstants.PageSize.optional,
-            GeneralAdapterConstants.Type.withDefault(CommonConstants.EmptyString)
+            GeneralAdapterConstants.Type.withDefault(CommonConstants.EmptyString),
+            GeneralAdapterConstants.Query.optional,
+            GeneralAdapterConstants.Data.optional,
+            GeneralAdapterConstants.Links.withDefault(GeneralAdapterConstants.DefaultLinks)
         )
     ) {
         (
             page,
             pageSize,
-            objectType
+            objectType,
+            query,
+            dataAttributes,
+            includedLInks
         ) => get {
             getRoute(
                 actorRef,
@@ -133,7 +174,10 @@ with AdapterService
                         pageSize = pageSize
                     ),
                     targetType = ObjectTypes.TargetTypeAuthor,
-                    objectType = objectType
+                    objectType = objectType,
+                    query = query,
+                    dataAttributes = dataAttributes,
+                    includedLinks = includedLInks
                 )
             )
         }

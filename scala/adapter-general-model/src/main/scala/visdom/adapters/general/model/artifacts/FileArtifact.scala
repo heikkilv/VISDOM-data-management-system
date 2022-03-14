@@ -12,7 +12,8 @@ import visdom.utils.GeneralUtils
 
 
 class FileArtifact(
-    fileSchema: FileSchema
+    fileSchema: FileSchema,
+    relatedFilePaths: Seq[String]
 )
 extends Artifact {
     def getType: String = FileArtifact.FileArtifactType
@@ -39,14 +40,18 @@ extends Artifact {
     GeneralUtils.getUpperFolder(description) match {
         case parentFolder: String if parentFolder != CommonConstants.EmptyString => addRelatedConstructs(
             Seq(
-                ItemLink(
-                    id = FileArtifact.getId(origin.id, parentFolder),
-                    `type` = FileArtifact.FileArtifactType
-                )
+                ItemLink(FileArtifact.getId(origin.id, parentFolder), getType)
             )
         )
         case _ =>
     }
+
+    // add related files as related constructs
+    addRelatedConstructs(
+        relatedFilePaths.map(
+            filePath => ItemLink(FileArtifact.getId(origin.id, filePath), getType)
+        )
+    )
 
     // add linked commits as related events
     addRelatedEvents(
@@ -66,7 +71,7 @@ object FileArtifact {
         GeneralUtils.getUuid(originId, FileArtifactType, filePath)
     }
 
-    def fromFileSchema(fileSchema: FileSchema): FileArtifact = {
-        new FileArtifact(fileSchema)
+    def fromFileSchema(fileSchema: FileSchema, relatedFilePaths: Seq[String]): FileArtifact = {
+        new FileArtifact(fileSchema, relatedFilePaths)
     }
 }

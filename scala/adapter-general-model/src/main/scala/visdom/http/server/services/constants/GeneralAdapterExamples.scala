@@ -52,4 +52,6 @@ object GeneralAdapterExamples {
     final val UpdateExample = """{
         "message": "The cache has been updated."
     }"""
+
+    final val ExampleQuery = "message==test commit"
 }

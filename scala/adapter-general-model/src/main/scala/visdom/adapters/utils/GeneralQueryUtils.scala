@@ -87,14 +87,33 @@ object GeneralQueryUtils {
         GeneralQueryUtils.updateCacheMetadata(objectType)
     }
 
-    private def cleanCacheResult(result: BsonDocument): BsonDocument = {
-        result
+    private def cleanCacheResult(
+        result: BsonDocument,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
+    ): BsonDocument = {
+        val initialResult: BsonDocument = result
             .removeAttribute(SnakeCaseConstants._Id)
             .removeAttribute(SnakeCaseConstants.CategoryIndex)
             .removeAttribute(SnakeCaseConstants.TypeIndex)
+            .removeAttributes(extraAttributes)
+
+        dataAttributes match {
+            case Some(attributes: Seq[String]) => initialResult.getDocumentOption(SnakeCaseConstants.Data) match {
+                case Some(dataDocument: BsonDocument) =>
+                    initialResult.append(SnakeCaseConstants.Data, dataDocument.filterAttributes(attributes))
+                case None => initialResult
+            }
+            case None => initialResult
+        }
     }
 
-    private def cleanCacheResults(results: Seq[BsonDocument], indexAttribute: String): Seq[JsValue] = {
+    private def cleanCacheResults(
+        results: Seq[BsonDocument],
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
+        indexAttribute: String
+    ): Seq[JsValue] = {
         results
             .sortBy(
                 document => document.getIntOption(indexAttribute) match {
@@ -102,7 +121,7 @@ object GeneralQueryUtils {
                     case None => 0
                 }
             )
-            .map(document => JsonUtils.toJsonValue(cleanCacheResult(document)))
+            .map(document => JsonUtils.toJsonValue(cleanCacheResult(document, dataAttributes, extraAttributes)))
     }
 
     private def toResult(resultData: Seq[JsValue], totalCount: Int, pageOptions: BaseQueryWithPageOptions): Result = {
@@ -122,6 +141,8 @@ object GeneralQueryUtils {
     private def getCacheResults(
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         indexAttribute: String
     ): Result = {
         val cacheCollections: Seq[MongoCollection[Document]] =
@@ -141,6 +162,8 @@ object GeneralQueryUtils {
                 )
                     .map(document => document.toBsonDocument)
             ).flatten,
+            dataAttributes,
+            extraAttributes,
             indexAttribute
         )
 
@@ -154,6 +177,8 @@ object GeneralQueryUtils {
     private def getCacheResults(
         objectTypes: Seq[String],
         pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
         indexAttribute: String,
         filter: Bson
     ): Result = {
@@ -166,6 +191,8 @@ object GeneralQueryUtils {
                     .getDocuments(collection, List(filter))
                     .map(document => document.toBsonDocument)
             ).flatten,
+            dataAttributes,
+            extraAttributes,
             indexAttribute
         )
 
@@ -177,20 +204,56 @@ object GeneralQueryUtils {
         toResult(resultData, resultDataFull.size, pageOptions)
     }
 
-    def getCacheResults(objectType: String, pageOptions: BaseQueryWithPageOptions): Result = {
-        getCacheResults(Seq(objectType), pageOptions, SnakeCaseConstants.TypeIndex)
+    def getCacheResults(
+        objectType: String,
+        pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
+    ): Result = {
+        getCacheResults(Seq(objectType), pageOptions, dataAttributes, extraAttributes, SnakeCaseConstants.TypeIndex)
     }
 
-    def getCacheResults(objectTypes: Seq[String], pageOptions: BaseQueryWithPageOptions): Result = {
-        getCacheResults(objectTypes, pageOptions, SnakeCaseConstants.CategoryIndex)
+    def getCacheResults(
+        objectTypes: Seq[String],
+        pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String]
+    ): Result = {
+        getCacheResults(objectTypes, pageOptions, dataAttributes, extraAttributes, SnakeCaseConstants.CategoryIndex)
     }
 
-    def getCacheResults(objectType: String, pageOptions: BaseQueryWithPageOptions, filter: Bson): Result = {
-        getCacheResults(Seq(objectType), pageOptions, SnakeCaseConstants.TypeIndex, filter)
+    def getCacheResults(
+        objectType: String,
+        pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
+        filter: Bson
+    ): Result = {
+        getCacheResults(
+            Seq(objectType),
+            pageOptions,
+            dataAttributes,
+            extraAttributes,
+            SnakeCaseConstants.TypeIndex,
+            filter
+        )
     }
 
-    def getCacheResults(objectTypes: Seq[String], pageOptions: BaseQueryWithPageOptions, filter: Bson): Result = {
-        getCacheResults(objectTypes, pageOptions, SnakeCaseConstants.CategoryIndex, filter)
+    def getCacheResults(
+        objectTypes: Seq[String],
+        pageOptions: BaseQueryWithPageOptions,
+        dataAttributes: Option[Seq[String]],
+        extraAttributes: Seq[String],
+        filter: Bson
+    ): Result = {
+        getCacheResults(
+            objectTypes,
+            pageOptions,
+            dataAttributes,
+            extraAttributes,
+            SnakeCaseConstants.CategoryIndex,
+            filter
+        )
     }
 
     def getCacheResult(singleOptions: SingleQueryOptions): Option[SingleResult] = {
@@ -201,7 +264,7 @@ object GeneralQueryUtils {
             )
         )
         .headOption
-        .map(document => JsonUtils.toJsonValue(cleanCacheResult(document.toBsonDocument)) match {
+        .map(document => JsonUtils.toJsonValue(cleanCacheResult(document.toBsonDocument, None, Seq.empty)) match {
             case jsObject: JsObject => Some(SingleResult(jsObject))
             case _ => None
         })

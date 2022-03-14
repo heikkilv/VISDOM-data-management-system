@@ -139,8 +139,8 @@ object ArtifactResult {
         fromArtifact(gitlabAuthor, gitlabAuthor.data)
     }
 
-    def fromFileSchema(fileSchema: FileSchema): FileArtifactResult = {
-        val fileArtifact: FileArtifact = new FileArtifact(fileSchema)
+    def fromFileSchema(fileSchema: FileSchema, relatedFilePaths: Seq[String]): FileArtifactResult = {
+        val fileArtifact: FileArtifact = new FileArtifact(fileSchema, relatedFilePaths)
         fromArtifact(fileArtifact, fileArtifact.data)
     }
 

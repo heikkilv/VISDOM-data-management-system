@@ -1,5 +1,7 @@
 package visdom.adapters.general.usecases
 
+import org.mongodb.scala.model.Filters
+import visdom.adapters.options.AttributeFilter
 import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.options.CacheQueryOptions
 import visdom.adapters.options.MultiQueryOptions
@@ -14,6 +16,13 @@ import visdom.adapters.utils.ModelUtils
 
 class MultiQuery(queryOptions: MultiQueryOptions)
 extends BaseCacheQuery(queryOptions) {
+    private val dataAttributes: Option[Seq[String]] = queryOptions.dataAttributes
+    private val extraAttributes: Seq[String] =
+        queryOptions.includedLinks.linkAttributes
+            .filter({case (_, isIncluded) => !isIncluded})
+            .map({case (attributeName, _) => attributeName})
+            .toSeq
+
     def cacheCheck(): Boolean = {
         ModelUtils.isTargetCacheUpdated(queryOptions.targetType)
     }
@@ -23,13 +32,33 @@ extends BaseCacheQuery(queryOptions) {
     }
 
     def getResults(): Option[BaseResultValue] = {
-        queryOptions.objectType match {
-            case Some(objectType: String) => Some(GeneralQueryUtils.getCacheResults(objectType, queryOptions))
+        val consideredObjects: Seq[String] = queryOptions.objectType match {
+            case Some(objectType: String) => Seq(objectType)
             case None => ObjectTypes.objectTypes.get(queryOptions.targetType) match {
-                case Some(objectTypes: Set[String]) =>
-                    Some(GeneralQueryUtils.getCacheResults(objectTypes.toSeq, queryOptions))
-                case None => None
+                case Some(objectTypes: Set[String]) => objectTypes.toSeq
+                case None => Seq.empty
             }
+        }
+
+        consideredObjects.nonEmpty match {
+            case true => Some(
+                queryOptions.query match {
+                    case Some(filters: Seq[AttributeFilter]) => GeneralQueryUtils.getCacheResults(
+                        objectTypes = consideredObjects,
+                        pageOptions = queryOptions,
+                        dataAttributes = dataAttributes,
+                        extraAttributes = extraAttributes,
+                        filter = Filters.and(filters.map(filter => filter.getFilter(consideredObjects)):_*)
+                    )
+                    case None => GeneralQueryUtils.getCacheResults(
+                        objectTypes = consideredObjects,
+                        pageOptions = queryOptions,
+                        dataAttributes = dataAttributes,
+                        extraAttributes = extraAttributes
+                    )
+                }
+            )
+            case false => None
         }
     }
 }
