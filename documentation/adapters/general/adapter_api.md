@@ -113,7 +113,7 @@ Successful query returns a JSON response with a status code 200. The format of t
 
 where `count` is the number of results in the response, `page` and `page_size` are the used pagination options, `next_page` and `previous_page` are the page numbers for the next and previous set of results (with a value null if there are no more results in that particular direction), and `total_count` is the total number results matching the query parameters.
 
-See the following section for examples of the actual objects given in the results.
+See the following section for examples of the actual objects given in the results. The ordering of the result objects is done using the id attribute.
 
 ### Example responses for single query
 
@@ -523,4 +523,21 @@ Example output:
 
 ## API usage examples
 
-TODO
+- Fetch the first 1000 events (with full data on all objects):
+    - `events?page=1&pageSize=1000`
+- Fetch origins 4-6 (with full data on all objects):
+    - `origins?page=2&pageSize=3`
+- Fetch the first 50 file artifacts (with full data on all objects):
+    - `artifacts?page=1&pageSize=50&type=file`
+- Fetch the first 20 committers (with no data attributes and only event links included):
+    - `authors?page=1&pageSize=20&type=committer&links=events`
+- Fetch the first 100 commits (with only commit ids and no links included):
+    - `events?type=commit&data=commit_id&links=none`
+- Fetch the first 100 commits made in 2022 or later (with full data on all objects):
+    - `events?type=commit&data=commit_id&filter=time>=2022-01-01T00:00:00`
+- Fetch the first 100 commits were made before 2022 and have exactly 123 additions (with full data on all objects):
+    - `events?type=commit&data=commit_id&filter=time<2022-01-01T00:00:00;data.stats.additions==123`
+- Fetch a single pipeline object with id 4abc0f01-c508-5751-e123-48ab507a21b7:
+    - `single?type=pipeline&uuid=4abc0f01-c508-5751-e123-48ab507a21b7`
+- Fetch a single gitlab user object with id cb933e6d-17ac-50ed-ee20-d467c5b8aea8:
+    - `single?type=gitlab_user&uuid=cb933e6d-17ac-50ed-ee20-d467c5b8aea8`
