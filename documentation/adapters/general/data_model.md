@@ -22,7 +22,7 @@ The raw GitLab data that can be collected using the fetcher is shown in the diag
 
 ![Diagram for raw GitLab data and their links](raw-gitlab-data.png)
 
-The links shown in the diagram are either directly available from the raw data or added in by the fetcher. However, some of the links are only given in the raw for one direction. This is indicated in the diagram using arrows.
+The links shown in the diagram are either directly available from the raw data or added in by the fetcher. However, some of the links are only given in the raw data for one direction. This is indicated in the diagram using arrows. Those links without arrows are given as two-way links in the raw data.
 
 Support for all A+ data that can be fetched from A+ system using the [A+ fetcher](../../fetchers/aplus/README.md) is in progress.
 
