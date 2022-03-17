@@ -18,9 +18,8 @@
         - [Example committer author](#example-committer-author)
         - [Example gitlab user author](#example-gitlab-user-author)
     - [Example info endpoint response](#example-info-endpoint-response)
-- [API usage examples](#api-usage-examples)
 
-For getting data from the adapter there are several endpoints that can output multiple objects with a single query. Each type of object has its own endpoint, `origins`, `events`, `artifacts`, `authors`, and `metadata`. The `single` endpoint is for getting a single object based on its id and type. See [API usage examples](#api-usage-examples) for example queries and corresponding results.
+For getting data from the adapter there are several endpoints that can output multiple objects with a single query. Each type of object has its own endpoint, `origins`, `events`, `artifacts`, `authors`, and `metadata`. The `single` endpoint is for getting a single object based on its id and type. See separate page [API usage examples](query_examples.md) for example queries and corresponding responses.
 
 The update query can be made to force the adapter to update its object cache in order to make other queries faster. If the adapter's cache is not up-to-date when making a multi or single query, the cache will automatically be updated before the response is returned. Since, it can take a significant amount of time for the cache updating process to finish, the update query can be used to force the cache calculations after the raw data has been updated and before any other queries are made to the adapter. A description of the cache system used in the adapter can be found at [Adapter cache system](adapter_cache.md).
 
@@ -55,6 +54,8 @@ Returns the origin objects corresponding to the query parameters.
 | `links`    | optional |     | Indicates what type object links are included in the results. Empty value indicates that all links are included. Allowed values: all, events, constructs, none |
 
 The links parameter is ignored for the `/origins` endpoint.
+
+NOTE: the name of the parameter `query` might be changed to `filter` in the implementation
 
 ### Query parameters for single type query
 
@@ -520,24 +521,3 @@ Example output:
     "version": "0.1"
 }
 ```
-
-## API usage examples
-
-- Fetch the first 1000 events (with full data on all objects):
-    - `events?page=1&pageSize=1000`
-- Fetch origins 4-6 (with full data on all objects):
-    - `origins?page=2&pageSize=3`
-- Fetch the first 50 file artifacts (with full data on all objects):
-    - `artifacts?page=1&pageSize=50&type=file`
-- Fetch the first 20 committers (with no data attributes and only event links included):
-    - `authors?page=1&pageSize=20&type=committer&links=events`
-- Fetch the first 100 commits (with only commit ids and no links included):
-    - `events?type=commit&data=commit_id&links=none`
-- Fetch the first 100 commits made in 2022 or later (with full data on all objects):
-    - `events?type=commit&data=commit_id&filter=time>=2022-01-01T00:00:00`
-- Fetch the first 100 commits were made before 2022 and have exactly 123 additions (with full data on all objects):
-    - `events?type=commit&data=commit_id&filter=time<2022-01-01T00:00:00;data.stats.additions==123`
-- Fetch a single pipeline object with id 4abc0f01-c508-5751-e123-48ab507a21b7:
-    - `single?type=pipeline&uuid=4abc0f01-c508-5751-e123-48ab507a21b7`
-- Fetch a single gitlab user object with id cb933e6d-17ac-50ed-ee20-d467c5b8aea8:
-    - `single?type=gitlab_user&uuid=cb933e6d-17ac-50ed-ee20-d467c5b8aea8`
