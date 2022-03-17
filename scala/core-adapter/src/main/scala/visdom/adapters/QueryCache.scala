@@ -35,20 +35,20 @@ object QueryCache {
         def getUpdateTimeInternal(nextDatabases: Seq[String], lastUpdateTime: Option[Instant]): Option[Instant] = {
             nextDatabases.headOption match {
                 case Some(database: String) => {
-                    MongoConnection.getLastUpdateTime(database) match {
-                        case Some(newUpdateTime: Instant) =>
-                            getUpdateTimeInternal(
-                                nextDatabases.drop(1),
-                                Some(
-                                    lastUpdateTime match {
-                                        case Some(oldUpdateTime: Instant) =>
-                                            TimeUtils.getLaterInstant(newUpdateTime, oldUpdateTime)
-                                        case None => newUpdateTime
-                                    }
-                                )
+                    getUpdateTimeInternal(
+                        nextDatabases.drop(1),
+                        MongoConnection.getLastUpdateTime(database) match {
+                            case Some(newUpdateTime: Instant) => Some(
+                                lastUpdateTime match {
+                                    case Some(oldUpdateTime: Instant) =>
+                                        TimeUtils.getLaterInstant(newUpdateTime, oldUpdateTime)
+                                    case None => newUpdateTime
+                                }
                             )
-                        case None => None
-                    }
+                            case None => lastUpdateTime
+                        }
+                    )
+
                 }
                 case None => lastUpdateTime
             }
