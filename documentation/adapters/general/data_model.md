@@ -12,7 +12,7 @@ The main objects of the data model are events, constructs and origins. A constru
 
 A general diagram describing the used data model can be seen below:
 
-![Diagram of general software data model](general-data-model.png)
+![Diagram of general software data model](images/general-data-model.png)
 
 ## Supported raw data
 
@@ -20,7 +20,7 @@ The adapter supports all GitLab data that can be fetched from GitLab using the [
 
 The raw GitLab data that can be collected using the fetcher is shown in the diagram below:
 
-![Diagram for raw GitLab data and their links](raw-gitlab-data.png)
+![Diagram for raw GitLab data and their links](images/raw-gitlab-data.png)
 
 The links shown in the diagram are either directly available from the raw data or added in by the fetcher. However, some of the links are only given in the raw data for one direction. This is indicated in the diagram using arrows. Those links without arrows are given as two-way links in the raw data.
 
@@ -30,11 +30,11 @@ Support for all A+ data that can be fetched from A+ system using the [A+ fetcher
 
 The objects that the general adapter produces from the raw GitLab data using the general data model are shown in the diagram below:
 
-![The relationships between the general model and objects based on raw GitLab data](model-implementation-gitlab.png)
+![The relationships between the general model and objects based on raw GitLab data](images/model-implementation-gitlab.png)
 
 The links between the different objects are shown in the following diagram:
 
-![Objects created from raw GitLab data using the general data model](gitlab-data-model.png)
+![Objects created from raw GitLab data using the general data model](images/gitlab-data-model.png)
 
 All created events and constructs are a linked to a GitLab origin object. Each GitLab origin corresponds to a project (or repository) in GitLab. The authors (Committer and GitLab User) are linked to a GitLab origin with empty context (i.e. project name).
 

@@ -20,9 +20,9 @@
     - [Example info endpoint response](#example-info-endpoint-response)
 - [API usage examples](#api-usage-examples)
 
-For getting data from the adapter there are several endpoints that can output multiple objects with a single query. Each type of object has its own endpoint, `origins`, `events`, `artifacts`, `authors`, and `metadata`. The `single` endpoint is for getting a single object based on its id and type.
+For getting data from the adapter there are several endpoints that can output multiple objects with a single query. Each type of object has its own endpoint, `origins`, `events`, `artifacts`, `authors`, and `metadata`. The `single` endpoint is for getting a single object based on its id and type. See [API usage examples](#api-usage-examples) for example queries and corresponding results.
 
-The update query can be made to force the adapter to update its object cache in order to make other queries faster. If the adapter's cache is not up-to-date when making a multi or single query, the cache will automatically be updated before the response is returned. Since, it can take a significant amount of time for the cache updating process to finish, the update query can be used to force the cache calculations after the raw data has been updated and before any other queries are made to the adapter.
+The update query can be made to force the adapter to update its object cache in order to make other queries faster. If the adapter's cache is not up-to-date when making a multi or single query, the cache will automatically be updated before the response is returned. Since, it can take a significant amount of time for the cache updating process to finish, the update query can be used to force the cache calculations after the raw data has been updated and before any other queries are made to the adapter. A description of the cache system used in the adapter can be found at [Adapter cache system](adapter_cache.md).
 
 | Endpoint     | Type   | Description |
 | ------------ | ------ | ----------- |
