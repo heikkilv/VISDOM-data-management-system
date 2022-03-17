@@ -7,10 +7,14 @@ import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
+import visdom.adapters.general.model.base.Metadata
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.metadata.CourseMetadata
+import visdom.adapters.general.model.metadata.ExerciseMetadata
+import visdom.adapters.general.model.metadata.ModuleMetadata
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.utils.CommonConstants
 import visdom.utils.SnakeCaseConstants
@@ -23,6 +27,7 @@ object ObjectTypes {
     val TargetTypeEvent: String = Event.EventType
     val TargetTypeAuthor: String = Author.AuthorType
     val TargetTypeArtifact: String = Artifact.ArtifactType
+    val TargetTypeMetadata: String = Metadata.MetadataType
 
     val OriginTypes: Set[String] = Set(
         GitlabOrigin.GitlabOriginType
@@ -40,22 +45,24 @@ object ObjectTypes {
         FileArtifact.FileArtifactType,
         PipelineReportArtifact.PipelineReportArtifactType
     )
+    val MetadataTypes: Set[String] = Set(
+        CourseMetadata.CourseMetadataType,
+        ModuleMetadata.ModuleMetadataType,
+        ExerciseMetadata.ExerciseMetadataType
+    )
 
     val objectTypes: Map[String, Set[String]] = Map(
         TargetTypeOrigin -> OriginTypes,
         TargetTypeEvent -> EventTypes,
         TargetTypeAuthor -> AuthorTypes,
-        TargetTypeArtifact -> ArtifactTypes
+        TargetTypeArtifact -> ArtifactTypes,
+        TargetTypeMetadata -> MetadataTypes
     )
 
     def getTargetType(objectType: String): Option[String] = {
-        objectType match {
-            case targetType: String if OriginTypes.contains(targetType) => Some(TargetTypeOrigin)
-            case targetType: String if EventTypes.contains(targetType) => Some(TargetTypeEvent)
-            case targetType: String if AuthorTypes.contains(targetType) => Some(TargetTypeAuthor)
-            case targetType: String if ArtifactTypes.contains(targetType) => Some(TargetTypeArtifact)
-            case _ => None
-        }
+        objectTypes
+            .find({case (_, types) => types.contains(objectType)})
+            .map({case (targetType, _) => targetType})
     }
 
     final val BooleanType: String = "boolean"

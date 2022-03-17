@@ -18,7 +18,7 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     import sparkSession.implicits.newProductEncoder
 
     def getCommitSchemas(): Dataset[CommitSchema] = {
-        modelUtils.loadMongoData[CommitSchema](MongoConstants.CollectionCommits)
+        modelUtils.loadMongoDataGitlab[CommitSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitSchema.fromRow(row))
     }
 
@@ -84,5 +84,4 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     )
             )
     }
-
 }

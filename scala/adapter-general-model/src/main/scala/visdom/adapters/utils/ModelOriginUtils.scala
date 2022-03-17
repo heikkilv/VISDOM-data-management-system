@@ -21,13 +21,13 @@ class ModelOriginUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
-        modelUtils.loadMongoData[GitlabProjectSchema](MongoConstants.CollectionProjects)
+        modelUtils.loadMongoDataGitlab[GitlabProjectSchema](MongoConstants.CollectionProjects)
             .flatMap(row => GitlabProjectSchema.fromRow(row))
             .map(projectSchema => GitlabProjectSimpleSchema.fromProjectSchema(projectSchema))
     }
 
     def getGitlabProjectInformation(collectionName: String): Dataset[GitlabProjectSimpleSchema] = {
-        modelUtils.loadMongoData[GitlabProjectInformationSchema](collectionName)
+        modelUtils.loadMongoDataGitlab[GitlabProjectInformationSchema](collectionName)
             .na.drop()
             .distinct()
             .flatMap(row => GitlabProjectInformationSchema.fromRow(row))

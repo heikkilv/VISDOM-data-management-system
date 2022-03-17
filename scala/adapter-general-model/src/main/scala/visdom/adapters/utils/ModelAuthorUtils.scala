@@ -73,7 +73,7 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     def getCommitAuthors(): Dataset[CommitAuthorResult] = {
         val committerUsers: Map[String, Seq[String]] = getCommitterUsers()
 
-        modelUtils.loadMongoData[CommitAuthorSchema](MongoConstants.CollectionCommits)
+        modelUtils.loadMongoDataGitlab[CommitAuthorSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitAuthorSchema.fromRow(row))
             .groupByKey(authorSchema => (authorSchema.host_name, authorSchema.committer_email))
             .mapValues(

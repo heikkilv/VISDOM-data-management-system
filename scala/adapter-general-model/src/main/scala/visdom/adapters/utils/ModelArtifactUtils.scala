@@ -19,7 +19,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
 
     def getFiles(): Dataset[FileArtifactResult] = {
         val allFiles: Dataset[FileSchema] =
-            modelUtils.loadMongoData[FileSchema](MongoConstants.CollectionFiles)
+            modelUtils.loadMongoDataGitlab[FileSchema](MongoConstants.CollectionFiles)
                 .flatMap(row => FileSchema.fromRow(row))
 
         val fileParentMap: Map[(String, String, String), Seq[String]] =
@@ -55,7 +55,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
         val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
 
-        modelUtils.loadMongoData[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
+        modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
             .flatMap(row => PipelineReportSchema.fromRow(row))
             // include only the reports that have a known project name
             .filter(report => projectNames.keySet.contains(report.pipeline_id))

@@ -18,16 +18,21 @@ import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
+import visdom.adapters.general.model.base.Metadata
 import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.metadata.CourseMetadata
+import visdom.adapters.general.model.metadata.ExerciseMetadata
+import visdom.adapters.general.model.metadata.ModuleMetadata
 import visdom.adapters.general.model.origins.GitlabOrigin
-import visdom.adapters.options.ObjectTypes
 import visdom.adapters.general.schemas.CommitSimpleSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
+import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.options.ObjectTypes
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
@@ -45,6 +50,7 @@ class ModelUtils(sparkSession: SparkSession) {
     private val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
     private val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
     private val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
+    private val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
 
     def getProjectNameMap(): Map[Int, String] = {
         getPipelineProjectNames() ++
@@ -59,7 +65,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def getCommitParentMap(): Map[String, Seq[String]] = {
-        loadMongoData[CommitSimpleSchema](MongoConstants.CollectionCommits)
+        loadMongoDataGitlab[CommitSimpleSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitSimpleSchema.fromRow(row))
             .map(commitSchema => (commitSchema.id, commitSchema.parent_ids))
             .persist(StorageLevel.MEMORY_ONLY)
@@ -68,7 +74,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def getCommitCommitterMap(): Map[String, String] = {
-        loadMongoData[CommitSimpleSchema](MongoConstants.CollectionCommits)
+        loadMongoDataGitlab[CommitSimpleSchema](MongoConstants.CollectionCommits)
             .flatMap(row => CommitSimpleSchema.fromRow(row))
             .map(
                 commitSchema => (
@@ -85,7 +91,7 @@ class ModelUtils(sparkSession: SparkSession) {
         val projectNameMap: Map[Int, String] = getProjectNameMap()
         val commitParentMap: Map[String,Seq[String]] = getCommitParentMap()
 
-        loadMongoData[GitlabEventSchema](MongoConstants.CollectionEvents)
+        loadMongoDataGitlab[GitlabEventSchema](MongoConstants.CollectionEvents)
             .flatMap(row => GitlabEventSchema.fromRow(row))
             .map(
                 schema => (
@@ -118,13 +124,12 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def getPipelineSchemas(): Dataset[PipelineSchema] = {
-        loadMongoData[PipelineSchema](MongoConstants.CollectionPipelines)
+        loadMongoDataGitlab[PipelineSchema](MongoConstants.CollectionPipelines)
             .flatMap(row => PipelineSchema.fromRow(row))
-            .persist(StorageLevel.MEMORY_ONLY)
     }
 
     def getPipelineJobSchemas(): Dataset[PipelineJobSchema] = {
-        loadMongoData[PipelineJobSchema](MongoConstants.CollectionJobs)
+        loadMongoDataGitlab[PipelineJobSchema](MongoConstants.CollectionJobs)
             .flatMap(row => PipelineJobSchema.fromRow(row))
             .persist(StorageLevel.MEMORY_ONLY)
     }
@@ -135,6 +140,12 @@ class ModelUtils(sparkSession: SparkSession) {
             .persist(StorageLevel.MEMORY_ONLY)
             .collect()
             .toMap
+    }
+
+    def getPointsSchemas(): Dataset[PointsSchema] = {
+        loadMongoDataAplus[PointsSchema](MongoConstants.CollectionPoints)
+            .flatMap(row => PointsSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
     }
 
     def updateOrigins(): Unit = {
@@ -166,6 +177,15 @@ class ModelUtils(sparkSession: SparkSession) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
             updateArtifactIndexes()
+        }
+    }
+
+    def updateMetadata(): Unit = {
+        if (!ModelUtils.isMetadataCacheUpdated()) {
+            storeObjects(metadataUtils.getCourseMetadata(), CourseMetadata.CourseMetadataType)
+            storeObjects(metadataUtils.getModuleMetadata(), ModuleMetadata.ModuleMetadataType)
+            storeObjects(metadataUtils.getExerciseMetadata(), ExerciseMetadata.ExerciseMetadataType)
+            updateMetadataIndexes()
         }
     }
 
@@ -246,25 +266,39 @@ class ModelUtils(sparkSession: SparkSession) {
         updateIndexes(ObjectTypes.ArtifactTypes.toSeq)
     }
 
+    def updateMetadataIndexes(): Unit = {
+        updateIndexes(ObjectTypes.MetadataTypes.toSeq)
+    }
+
     def updateTargetCache(targetType: String): Unit = {
         targetType match {
             case Event.EventType => updateEvents()
             case Origin.OriginType => updateOrigins()
             case Artifact.ArtifactType => updateArtifacts()
             case Author.AuthorType => updateAuthors()
+            case Metadata.MetadataType => updateMetadata()
             case ObjectTypes.TargetTypeAll =>
                 ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
     }
 
-    def getReadConfig(collectionName: String): ReadConfig = {
-        ModelUtils.getReadConfig(sparkSession, collectionName)
+    def getReadConfigGitlab(collectionName: String): ReadConfig = {
+        ModelUtils.getReadConfigGitlab(sparkSession, collectionName)
     }
 
-    def loadMongoData[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
+    def getReadConfigAplus(collectionName: String): ReadConfig = {
+        ModelUtils.getReadConfigAplus(sparkSession, collectionName)
+    }
+
+    def loadMongoDataGitlab[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
         MongoSpark
-            .load[DataSchema](sparkSession, getReadConfig(collectionName))
+            .load[DataSchema](sparkSession, getReadConfigGitlab(collectionName))
+    }
+
+    def loadMongoDataAplus[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
+        MongoSpark
+            .load[DataSchema](sparkSession, getReadConfigAplus(collectionName))
     }
 
     private def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
@@ -289,6 +323,10 @@ object ModelUtils {
         isTargetCacheUpdated(Artifact.ArtifactType)
     }
 
+    def isMetadataCacheUpdated(): Boolean = {
+        isTargetCacheUpdated(Metadata.MetadataType)
+    }
+
     def isTargetCacheUpdated(targetType: String): Boolean = {
         (
             targetType match {
@@ -296,6 +334,7 @@ object ModelUtils {
                 case Origin.OriginType => Some(ObjectTypes.OriginTypes)
                 case Artifact.ArtifactType => Some(ObjectTypes.ArtifactTypes)
                 case Author.AuthorType => Some(ObjectTypes.AuthorTypes)
+                case Metadata.MetadataType => Some(ObjectTypes.MetadataTypes)
                 case _ => None
             }
         ) match {
@@ -305,7 +344,7 @@ object ModelUtils {
         }
     }
 
-    def getReadConfig(sparkSession: SparkSession, collectionName: String): ReadConfig = {
+    def getReadConfigGitlab(sparkSession: SparkSession, collectionName: String): ReadConfig = {
         ConfigUtils.getReadConfig(
             sparkSession,
             AdapterValues.gitlabDatabaseName,
@@ -313,4 +352,11 @@ object ModelUtils {
         )
     }
 
+    def getReadConfigAplus(sparkSession: SparkSession, collectionName: String): ReadConfig = {
+        ConfigUtils.getReadConfig(
+            sparkSession,
+            AdapterValues.aPlusDatabaseName,
+            collectionName
+        )
+    }
 }
