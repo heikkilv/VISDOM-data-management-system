@@ -10,8 +10,8 @@ import visdom.http.server.ServerConstants
 
 trait AdapterApp extends App
 {
-    org.apache.log4j.BasicConfigurator.configure()
-    org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.INFO)
+    // org.apache.log4j.BasicConfigurator.configure()
+    // org.apache.log4j.Logger.getRootLogger().setLevel(org.apache.log4j.Level.INFO)
 
     val adapterValues: AdapterValues
     val adapterRoutes: AdapterRoutes
