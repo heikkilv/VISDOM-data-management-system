@@ -14,14 +14,18 @@ import visdom.adapters.general.model.artifacts.data.ExercisePointsData
 import visdom.adapters.general.model.artifacts.data.FileData
 import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
+import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
+import visdom.adapters.general.model.authors.data.AplusAuthorData
 import visdom.adapters.general.model.authors.data.CommitAuthorData
 import visdom.adapters.general.model.authors.data.GitlabAuthorData
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.base.LinkTrait
+import visdom.adapters.general.schemas.AplusUserSchema
 import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
 import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.ExerciseAdditionalSchema
@@ -104,6 +108,7 @@ object ArtifactResult {
 
     type CommitAuthorResult = ArtifactResult[CommitAuthorData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
+    type AplusAuthorResult = ArtifactResult[AplusAuthorData]
 
     def fromArtifact[ArtifactData <: Data](
         artifact: Artifact,
@@ -154,6 +159,15 @@ object ArtifactResult {
             relatedPipelineJobEventIds = pipelineJobEventIds
         )
         fromArtifact(gitlabAuthor, gitlabAuthor.data)
+    }
+
+    def fromUserData(
+        aplusUserSchema: AplusUserSchema,
+        relatedConstructs: Seq[LinkTrait],
+        relatedEvents: Seq[LinkTrait]
+    ): AplusAuthorResult = {
+        val aplusAuthor: AplusAuthor = new AplusAuthor(aplusUserSchema, relatedConstructs, relatedEvents)
+        fromArtifact(aplusAuthor, aplusAuthor.data)
     }
 
     def fromFileSchema(fileSchema: FileSchema, relatedFilePaths: Seq[String]): FileArtifactResult = {
