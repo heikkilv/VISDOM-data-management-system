@@ -31,7 +31,7 @@ object AplusUserSchema extends BaseSchemaTrait2[AplusUserSchema] {
         FieldDataModel(SnakeCaseConstants.Email, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.FullName, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.IsExternal, false, toBooleanOption),
-        FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
