@@ -1,7 +1,6 @@
 package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
-import java.time.ZoneId
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
@@ -46,7 +45,7 @@ extends Event {
     val data: PipelineJobData = PipelineJobData.fromPipelineJobSchema(pipelineJobSchema)
 
     val message: String = pipelineJobSchema.status
-    val time: ZonedDateTime = PipelineEvent.toZonedDateTime(
+    val time: ZonedDateTime = TimeUtils.toZonedDateTimeWithDefault(
         pipelineJobSchema.started_at match {
             case Some(startedAt: String) => startedAt
             case None => pipelineJobSchema.created_at
@@ -69,19 +68,6 @@ extends Event {
 
 object PipelineJobEvent {
     final val PipelineJobEventType: String = "pipeline_job"
-
-    final val DefaultYear: Int = 1970
-    final val DefaultMonth: Int = 1
-    final val DefaultDay: Int = 1
-    final val DefaultTime: ZonedDateTime =
-        ZonedDateTime.of(DefaultYear, DefaultMonth, DefaultDay, 0, 0, 0, 0, ZoneId.of(CommonConstants.UTC))
-
-    def toZonedDateTime(dateTimeString: String): ZonedDateTime = {
-        TimeUtils.toZonedDateTime(dateTimeString) match {
-            case Some(dateTimeValue: ZonedDateTime) => dateTimeValue
-            case None => DefaultTime
-        }
-    }
 
     def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEvent = {
         new PipelineJobEvent(pipelineJobSchema, projectName)

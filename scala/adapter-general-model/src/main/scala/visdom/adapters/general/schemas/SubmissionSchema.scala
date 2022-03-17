@@ -16,6 +16,7 @@ final case class SubmissionSchema(
     id: Int,
     url: String,
     html_url: String,
+    exercise: IntIdSchema,
     submission_time: String,
     submitters: Seq[SubmissionUserSchema],
     submission_data: SubmissionDataSchema,
@@ -37,6 +38,7 @@ object SubmissionSchema extends BaseSchemaTrait2[SubmissionSchema] {
         FieldDataModel(SnakeCaseConstants.Id, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.Url, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.HtmlUrl, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.Exercise, false, IntIdSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.SubmissionTime, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.Submitters, false, (value: Any) => toSeqOption(value, SubmissionUserSchema.fromAny)),
         FieldDataModel(SnakeCaseConstants.SubmissionData, false, SubmissionDataSchema.fromAny),
@@ -53,7 +55,7 @@ object SubmissionSchema extends BaseSchemaTrait2[SubmissionSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[SubmissionSchema] = {
-        TupleUtils.toTuple[Int, String, String, String, Seq[SubmissionUserSchema], SubmissionDataSchema,
+        TupleUtils.toTuple[Int, String, String, IntIdSchema, String, Seq[SubmissionUserSchema], SubmissionDataSchema,
                            String, Int, Option[Double], String, Option[SubmissionUserSchema], String,
                            Option[String], String, Option[SubmissionLinksSchema]](values) match {
             case Some(inputValues) => Some(

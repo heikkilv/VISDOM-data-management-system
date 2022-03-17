@@ -7,15 +7,19 @@ import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.base.LinkTrait
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.events.data.CommitData
 import visdom.adapters.general.model.events.data.PipelineData
 import visdom.adapters.general.model.events.data.PipelineJobData
+import visdom.adapters.general.model.events.data.SubmissionData
 import visdom.adapters.general.schemas.CommitSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
+import visdom.adapters.general.schemas.SubmissionSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -83,6 +87,7 @@ object EventResult {
     type CommitEventResult = EventResult[CommitData]
     type PipelineEventResult = EventResult[PipelineData]
     type PipelineJobEventResult = EventResult[PipelineJobData]
+    type SubmissionEventResult = EventResult[SubmissionData]
 
     def fromEvent[EventData <: Data](event: Event, eventData: EventData): EventResult[EventData] = {
         EventResult(
@@ -117,5 +122,14 @@ object EventResult {
     def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEventResult = {
         val pipelineJobEvent: PipelineJobEvent = new PipelineJobEvent(pipelineJobSchema, projectName)
         fromEvent(pipelineJobEvent, pipelineJobEvent.data)
+    }
+
+    def fromSubmissionSchema(
+        submissionSchema: SubmissionSchema,
+        relatedConstructs: Seq[LinkTrait],
+        relatedEvents: Seq[LinkTrait]
+    ): SubmissionEventResult = {
+        val submissionEVent: SubmissionEvent = new SubmissionEvent(submissionSchema, relatedConstructs, relatedEvents)
+        fromEvent(submissionEVent, submissionEVent.data)
     }
 }

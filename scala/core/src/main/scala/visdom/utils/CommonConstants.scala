@@ -38,4 +38,5 @@ object CommonConstants {
     final val UTC: String = "UTC"
 
     final val MinusOne: Int = -1
+    final val Billion: Double = 1e9
 }
