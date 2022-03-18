@@ -13,6 +13,7 @@ import scala.reflect.runtime.universe.TypeTag
 import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
+import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.events.CommitEvent
@@ -180,6 +181,7 @@ class ModelUtils(sparkSession: SparkSession) {
         if (!ModelUtils.isArtifactCacheUpdated()) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
+            storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
             updateArtifactIndexes()
         }
     }

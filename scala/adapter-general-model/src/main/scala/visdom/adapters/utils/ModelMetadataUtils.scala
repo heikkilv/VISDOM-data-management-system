@@ -103,8 +103,7 @@ class ModelMetadataUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getCourseMetadata(): Dataset[CourseMetadataResult] = {
-        modelUtils.loadMongoDataAplus[CourseSchema](MongoConstants.CollectionCourses)
-            .flatMap(row => CourseSchema.fromRow(row))
+        modelUtils.getCourseSchemas()
             .map(schema => MetadataResult.fromCourseSchema(schema))
     }
 

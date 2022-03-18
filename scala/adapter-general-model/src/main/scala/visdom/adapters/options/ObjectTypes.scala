@@ -1,5 +1,6 @@
 package visdom.adapters.options
 
+import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.authors.CommitAuthor
@@ -45,7 +46,8 @@ object ObjectTypes {
     )
     val ArtifactTypes: Set[String] = Set(
         FileArtifact.FileArtifactType,
-        PipelineReportArtifact.PipelineReportArtifactType
+        PipelineReportArtifact.PipelineReportArtifactType,
+        CoursePointsArtifact.CoursePointsArtifactType
     )
     val MetadataTypes: Set[String] = Set(
         CourseMetadata.CourseMetadataType,

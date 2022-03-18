@@ -7,4 +7,5 @@ object PointsState {
     final val Active: String = "active"
     final val Passed: String = "passed"
     final val Finished: String = "finished"
+    final val Unknown: String = "unknown"
 }

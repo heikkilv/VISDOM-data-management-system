@@ -3,8 +3,10 @@ package visdom.adapters.utils
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import visdom.adapters.general.model.results.ArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.CoursePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
+import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.database.mongodb.MongoConstants
@@ -66,5 +68,16 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         projectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
                     )
             )
+    }
+
+    def getCoursePoints(): Dataset[CoursePointsArtifactResult] = {
+        val courseMetadata: Map[Int, CourseSchema] =
+            modelUtils.getCourseSchemas()
+                .map(course => (course.id, course))
+                .collect()
+                .toMap
+
+        modelUtils.getPointsSchemas()
+            .map(points => ArtifactResult.fromCoursePointsSchema(points, courseMetadata.get(points.course_id)))
     }
 }

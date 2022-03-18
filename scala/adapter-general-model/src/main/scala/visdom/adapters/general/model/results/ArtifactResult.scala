@@ -185,7 +185,7 @@ object ArtifactResult {
 
     def fromCoursePointsSchema(
         coursePointsSchema: PointsSchema,
-        courseSchema: CourseSchema
+        courseSchema: Option[CourseSchema]
     ): CoursePointsArtifactResult = {
         val coursePointsArtifact: CoursePointsArtifact = new CoursePointsArtifact(coursePointsSchema, courseSchema)
         fromArtifact(coursePointsArtifact, coursePointsArtifact.data)
