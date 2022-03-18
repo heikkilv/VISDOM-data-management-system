@@ -14,7 +14,7 @@ class ExerciseMetadata(
     exerciseAdditionalSchema: ExerciseAdditionalSchema
 )
 extends Metadata {
-    def getType: String = CourseMetadata.CourseMetadataType
+    def getType: String = ExerciseMetadata.ExerciseMetadataType
 
     val origin: ItemLink =
         new AplusOrigin(

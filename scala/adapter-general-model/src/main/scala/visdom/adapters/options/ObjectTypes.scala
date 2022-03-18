@@ -110,6 +110,29 @@ object ObjectTypes {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SkippedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType
         ),
+        CourseMetadata.CourseMetadataType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.LateSubmissionCoefficient) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.VisibleToStudents) -> BooleanType
+        ),
+        ModuleMetadata.ModuleMetadataType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleNumber) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.MaxPoints) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PointsToPass) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.IsOpen) -> BooleanType
+        ),
+        ExerciseMetadata.ExerciseMetadataType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.MaxPoints) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.MaxSubmissions) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PointsToPass) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.IsSubmittable) -> BooleanType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.GitIsFolder) -> BooleanType
+        ),
         CommitAuthor.CommitAuthorType -> Map.empty,
         GitlabAuthor.GitlabAuthorType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType

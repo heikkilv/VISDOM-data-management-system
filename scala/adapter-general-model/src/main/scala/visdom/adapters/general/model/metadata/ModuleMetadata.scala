@@ -14,7 +14,7 @@ class ModuleMetadata(
     moduleAdditionalSchema: ModuleAdditionalSchema
 )
 extends Metadata {
-    def getType: String = CourseMetadata.CourseMetadataType
+    def getType: String = ModuleMetadata.ModuleMetadataType
 
     val origin: ItemLink =
         new AplusOrigin(
