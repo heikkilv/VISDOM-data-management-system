@@ -34,8 +34,8 @@ object ModuleSchema extends BaseSchemaTrait2[ModuleSchema] {
         FieldDataModel(SnakeCaseConstants.DisplayName, false, ModuleNameSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.CourseId, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Metadata, false, CourseMetadataSchema.fromAny),
-        FieldDataModel(SnakeCaseConstants.Links, true, CourseLinksSchema.fromAny)
+        FieldDataModel(SnakeCaseConstants.Metadata, false, ModuleMetadataSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.Links, true, ModuleLinksSchema.fromAny)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

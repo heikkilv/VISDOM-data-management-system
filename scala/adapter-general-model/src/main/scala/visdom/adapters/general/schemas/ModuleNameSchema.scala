@@ -23,7 +23,7 @@ object ModuleNameSchema extends BaseSchemaTrait2[ModuleNameSchema] {
         FieldDataModel(SnakeCaseConstants.Number, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.Fi, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.En, true, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Raw, true, toStringOption)
+        FieldDataModel(SnakeCaseConstants.Raw, false, toStringOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
