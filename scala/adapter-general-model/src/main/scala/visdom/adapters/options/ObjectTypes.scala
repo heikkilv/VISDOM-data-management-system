@@ -1,7 +1,9 @@
 package visdom.adapters.options
 
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
+import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
@@ -47,7 +49,9 @@ object ObjectTypes {
     val ArtifactTypes: Set[String] = Set(
         FileArtifact.FileArtifactType,
         PipelineReportArtifact.PipelineReportArtifactType,
-        CoursePointsArtifact.CoursePointsArtifactType
+        CoursePointsArtifact.CoursePointsArtifactType,
+        ModulePointsArtifact.ModulePointsArtifactType,
+        ExercisePointsArtifact.ExercisePointsArtifactType
     )
     val MetadataTypes: Set[String] = Set(
         CourseMetadata.CourseMetadataType,
@@ -114,6 +118,27 @@ object ObjectTypes {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.FailedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SkippedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType
+        ),
+        CoursePointsArtifact.CoursePointsArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Points) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType
+        ),
+        ModulePointsArtifact.ModulePointsArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Points) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType
+        ),
+        ExercisePointsArtifact.ExercisePointsArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Points) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Official) -> BooleanType
         ),
         CourseMetadata.CourseMetadataType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,

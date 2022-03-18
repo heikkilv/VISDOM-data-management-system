@@ -2,6 +2,7 @@ package visdom.adapters.general.model.artifacts
 
 import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.states.PointsState
+import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.metadata.ModuleMetadata
@@ -48,9 +49,11 @@ extends Artifact {
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)
 
-    // add related module metadata, course points artifact, and exercise points artifacts as related constructs
+    // add the user and related module metadata, course points artifact,
+    // and exercise points artifacts as related constructs
     addRelatedConstructs(
         Seq(
+            ItemLink(AplusAuthor.getId(origin.id, data.user_id), AplusAuthor.AplusAuthorType),
             ItemLink(
                 ModuleMetadata.getId(origin.id, data.module_id),
                 ModuleMetadata.ModuleMetadataType
@@ -68,8 +71,6 @@ extends Artifact {
                 )
         )
     )
-
-    // TODO: add links to aplus user
 }
 
 object ModulePointsArtifact {

@@ -14,7 +14,9 @@ import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
+import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
@@ -26,7 +28,11 @@ import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.CommitSimpleSchema
 import visdom.adapters.general.schemas.CourseSchema
+import visdom.adapters.general.schemas.ExerciseSchema
+import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
+import visdom.adapters.general.schemas.ModuleMetadataOtherSchema
+import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PointsSchema
@@ -40,6 +46,7 @@ import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
 
 
+// scalastyle:off number.of.methods
 class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
@@ -152,6 +159,72 @@ class ModelUtils(sparkSession: SparkSession) {
             .persist(StorageLevel.MEMORY_ONLY)
     }
 
+    def getModuleSchemas(): Dataset[ModuleSchema] = {
+        loadMongoDataAplus[ModuleSchema](MongoConstants.CollectionModules)
+            .flatMap(row => ModuleSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
+
+    def getModuleDatesMap(): Map[Int, (Option[String], Option[String])] = {
+        getModuleSchemas()
+            .map(
+                schema => (
+                    schema.id,
+                    schema.metadata.other match {
+                        case Some(otherSchema: ModuleMetadataOtherSchema) => (
+                            Some(otherSchema.start_date),
+                            Some(otherSchema.end_date)
+                        )
+                        case None => (None, None)
+                    }
+                )
+            )
+            .collect()
+            .toMap
+    }
+
+    def getExerciseSchemas(): Dataset[ExerciseSchema] = {
+        loadMongoDataAplus[ExerciseSchema](MongoConstants.CollectionExercises)
+            .flatMap(row => ExerciseSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
+
+    def getExerciseAdditionalMap(): Map[Int, ExerciseAdditionalSchema] = {
+        val moduleDatesMap: Map[Int, (Option[String], Option[String])] = getModuleDatesMap()
+        val points: Dataset[PointsSchema] = getPointsSchemas()
+
+        points.isEmpty match {
+            case true => Map.empty
+            case false =>
+                points
+                    .head()
+                    .modules
+                    .map(
+                        module => module.exercises.map(
+                            exercise => (
+                                exercise.id,
+                                (
+                                    exercise.difficulty,
+                                    exercise.points_to_pass,
+                                    moduleDatesMap.getOrElse(module.id, (None, None))
+                                )
+                            )
+                        )
+                    )
+                    .flatten
+                    .map({case (exerciseId, (difficulty, pointsToPass, (startDate, endDate))) => (
+                        exerciseId,
+                        ExerciseAdditionalSchema(
+                            difficulty = Some(difficulty),
+                            points_to_pass = Some(pointsToPass),
+                            start_date = startDate,
+                            end_date = endDate
+                        )
+                    )})
+                    .toMap
+        }
+    }
+
     def updateOrigins(): Unit = {
         if (!ModelUtils.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
@@ -182,6 +255,8 @@ class ModelUtils(sparkSession: SparkSession) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
             storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
+            storeObjects(artifactUtils.getModulePoints(), ModulePointsArtifact.ModulePointsArtifactType)
+            storeObjects(artifactUtils.getExercisePoints(), ExercisePointsArtifact.ExercisePointsArtifactType)
             updateArtifactIndexes()
         }
     }
@@ -357,3 +432,4 @@ object ModelUtils {
         )
     }
 }
+// scalastyle:on number.of.methods

@@ -2,8 +2,10 @@ package visdom.adapters.general.model.artifacts
 
 import visdom.adapters.general.model.artifacts.data.ExercisePointsData
 import visdom.adapters.general.model.artifacts.states.PointsState
+import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.schemas.ExerciseSchema
@@ -49,9 +51,10 @@ extends Artifact {
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.exercise_id, data.user_id)
 
-    // add related exercise metadata and module points artifact as related constructs
+    // add the user and related exercise metadata and module points artifact as related constructs
     addRelatedConstructs(
         Seq(
+            ItemLink(AplusAuthor.getId(origin.id, data.user_id), AplusAuthor.AplusAuthorType),
             ItemLink(
                 ExerciseMetadata.getId(origin.id, data.exercise_id),
                 ExerciseMetadata.ExerciseMetadataType
@@ -63,7 +66,15 @@ extends Artifact {
         )
     )
 
-    // TODO: add links to submission events, aplus user
+    // add submissions as related events
+    addRelatedEvents(
+        data.submissions_with_points.map(
+            submission => ItemLink(
+                SubmissionEvent.getId(origin.id, submission.id),
+                SubmissionEvent.SubmissionEventType
+            )
+        )
+    )
 }
 
 object ExercisePointsArtifact {
