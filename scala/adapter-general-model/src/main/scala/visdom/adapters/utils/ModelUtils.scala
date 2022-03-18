@@ -15,17 +15,13 @@ import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
-import visdom.adapters.general.model.base.Artifact
-import visdom.adapters.general.model.base.Author
-import visdom.adapters.general.model.base.Event
-import visdom.adapters.general.model.base.Metadata
-import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.metadata.CourseMetadata
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.metadata.ModuleMetadata
+import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.CommitSimpleSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
@@ -151,6 +147,7 @@ class ModelUtils(sparkSession: SparkSession) {
     def updateOrigins(): Unit = {
         if (!ModelUtils.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
+            storeObjects(originUtils.getAplusOrigins(), AplusOrigin.AplusOriginType)
             updateOriginsIndexes()
         }
     }
@@ -272,11 +269,11 @@ class ModelUtils(sparkSession: SparkSession) {
 
     def updateTargetCache(targetType: String): Unit = {
         targetType match {
-            case Event.EventType => updateEvents()
-            case Origin.OriginType => updateOrigins()
-            case Artifact.ArtifactType => updateArtifacts()
-            case Author.AuthorType => updateAuthors()
-            case Metadata.MetadataType => updateMetadata()
+            case ObjectTypes.TargetTypeEvent => updateEvents()
+            case ObjectTypes.TargetTypeOrigin => updateOrigins()
+            case ObjectTypes.TargetTypeArtifact => updateArtifacts()
+            case ObjectTypes.TargetTypeAuthor => updateAuthors()
+            case ObjectTypes.TargetTypeMetadata => updateMetadata()
             case ObjectTypes.TargetTypeAll =>
                 ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
@@ -308,36 +305,27 @@ class ModelUtils(sparkSession: SparkSession) {
 
 object ModelUtils {
     def isOriginCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(Origin.OriginType)
+        isTargetCacheUpdated(ObjectTypes.TargetTypeOrigin)
     }
 
     def isEventCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(Event.EventType)
+        isTargetCacheUpdated(ObjectTypes.TargetTypeEvent)
     }
 
     def isAuthorCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(Author.AuthorType)
+        isTargetCacheUpdated(ObjectTypes.TargetTypeAuthor)
     }
 
     def isArtifactCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(Artifact.ArtifactType)
+        isTargetCacheUpdated(ObjectTypes.TargetTypeArtifact)
     }
 
     def isMetadataCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(Metadata.MetadataType)
+        isTargetCacheUpdated(ObjectTypes.TargetTypeMetadata)
     }
 
     def isTargetCacheUpdated(targetType: String): Boolean = {
-        (
-            targetType match {
-                case Event.EventType => Some(ObjectTypes.EventTypes)
-                case Origin.OriginType => Some(ObjectTypes.OriginTypes)
-                case Artifact.ArtifactType => Some(ObjectTypes.ArtifactTypes)
-                case Author.AuthorType => Some(ObjectTypes.AuthorTypes)
-                case Metadata.MetadataType => Some(ObjectTypes.MetadataTypes)
-                case _ => None
-            }
-        ) match {
+        ObjectTypes.objectTypes.get(targetType) match {
             case Some(objectTypes: Set[String]) =>
                 objectTypes.forall(objectType => GeneralQueryUtils.isCacheUpdated(objectType))
             case None => false

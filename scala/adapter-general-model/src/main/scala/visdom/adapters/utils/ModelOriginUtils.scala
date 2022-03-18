@@ -3,7 +3,9 @@ package visdom.adapters.utils
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import visdom.adapters.general.model.results.OriginResult
+import visdom.adapters.general.model.results.OriginResult.AplusOriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
+import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
@@ -74,5 +76,11 @@ class ModelOriginUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
 
         projects
             .filter(origin => origin.data.project_id.isDefined || !projectWithIds.contains(origin.id))
+    }
+
+    def getAplusOrigins(): Dataset[AplusOriginResult] = {
+        modelUtils.loadMongoDataAplus[CourseSchema](MongoConstants.CollectionCourses)
+            .flatMap(row => CourseSchema.fromRow(row))
+            .map(course => OriginResult.fromAplusCourse(course.host_name, course.id, Some(course.code)))
     }
 }

@@ -15,6 +15,7 @@ import visdom.adapters.general.model.events.PipelineJobEvent
 import visdom.adapters.general.model.metadata.CourseMetadata
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.metadata.ModuleMetadata
+import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.utils.CommonConstants
 import visdom.utils.SnakeCaseConstants
@@ -30,7 +31,8 @@ object ObjectTypes {
     val TargetTypeMetadata: String = Metadata.MetadataType
 
     val OriginTypes: Set[String] = Set(
-        GitlabOrigin.GitlabOriginType
+        GitlabOrigin.GitlabOriginType,
+        AplusOrigin.AplusOriginType
     )
     val EventTypes: Set[String] = Set(
         CommitEvent.CommitEventType,
@@ -80,6 +82,7 @@ object ObjectTypes {
         GitlabOrigin.GitlabOriginType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ProjectId) -> IntType
         ),
+        AplusOrigin.AplusOriginType -> Map.empty,
         CommitEvent.CommitEventType -> Map(
             SnakeCaseConstants.Duration -> DoubleType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Stats, SnakeCaseConstants.Additions) -> IntType,
