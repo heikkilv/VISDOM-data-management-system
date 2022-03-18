@@ -24,6 +24,7 @@ import visdom.adapters.general.model.metadata.ModuleMetadata
 import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.CommitSimpleSchema
+import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.GitlabEventSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
@@ -141,6 +142,12 @@ class ModelUtils(sparkSession: SparkSession) {
     def getPointsSchemas(): Dataset[PointsSchema] = {
         loadMongoDataAplus[PointsSchema](MongoConstants.CollectionPoints)
             .flatMap(row => PointsSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
+
+    def getCourseSchemas(): Dataset[CourseSchema] = {
+        loadMongoDataAplus[CourseSchema](MongoConstants.CollectionCourses)
+            .flatMap(row => CourseSchema.fromRow(row))
             .persist(StorageLevel.MEMORY_ONLY)
     }
 

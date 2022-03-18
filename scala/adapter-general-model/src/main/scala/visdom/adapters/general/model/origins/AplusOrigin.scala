@@ -10,7 +10,10 @@ class AplusOrigin(hostName: String, courseId: Int, code: Option[String])
 extends Origin {
     def getType: String = AplusOrigin.AplusOriginType
     val source: String = hostName
-    val context: String = courseId.toString()
+    val context: String = courseId match {
+        case CommonConstants.MinusOne => CommonConstants.EmptyString
+        case _ => courseId.toString()
+    }
 
     override val id: String = AplusOrigin.getId(hostName, courseId)
 

@@ -77,6 +77,11 @@ object OriginResult {
         fromOrigin(gitlabOrigin, gitlabOrigin.data)
     }
 
+    def fromAplusHost(hostName: String): AplusOriginResult = {
+        val aplusOrigin: AplusOrigin = AplusOrigin.getAplusOriginFromHost(hostName)
+        fromOrigin(aplusOrigin, aplusOrigin.data)
+    }
+
     def fromAplusCourse(hostName: String, courseId: Int, code: Option[String]): AplusOriginResult = {
         val aplusOrigin: AplusOrigin = new AplusOrigin(
             hostName = hostName,

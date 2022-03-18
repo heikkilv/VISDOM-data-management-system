@@ -79,8 +79,16 @@ class ModelOriginUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getAplusOrigins(): Dataset[AplusOriginResult] = {
-        modelUtils.loadMongoDataAplus[CourseSchema](MongoConstants.CollectionCourses)
-            .flatMap(row => CourseSchema.fromRow(row))
+        val courseSchemas: Dataset[CourseSchema] = modelUtils.getCourseSchemas()
+
+        val hostOrigins: Dataset[AplusOriginResult] =
+            courseSchemas
+                .map(course => course.host_name)
+                .distinct()
+                .map(hostName => OriginResult.fromAplusHost(hostName))
+
+        courseSchemas
             .map(course => OriginResult.fromAplusCourse(course.host_name, course.id, Some(course.code)))
+            .union(hostOrigins)
     }
 }

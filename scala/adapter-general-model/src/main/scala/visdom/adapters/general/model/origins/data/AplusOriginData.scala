@@ -9,15 +9,15 @@ import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
 
 
-final case class  AplusOriginData(
-    code: Option[String]
+final case class AplusOriginData(
+    course_code: Option[String]
 )
 extends Data {
     def toBsonValue(): BsonValue = {
-        BsonDocument(Map(SnakeCaseConstants.Code -> JsonUtils.toBsonValue(code)))
+        BsonDocument(Map(SnakeCaseConstants.Code -> JsonUtils.toBsonValue(course_code)))
     }
 
     def toJsValue(): JsValue = {
-        JsObject(Map(SnakeCaseConstants.Code -> JsonUtils.toJsonValue(code)))
+        JsObject(Map(SnakeCaseConstants.Code -> JsonUtils.toJsonValue(course_code)))
     }
 }
