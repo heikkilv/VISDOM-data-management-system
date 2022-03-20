@@ -19,11 +19,11 @@ final case class SubmissionSchema(
     exercise: IntIdSchema,
     submission_time: String,
     submitters: Seq[SubmissionUserSchema],
-    submission_data: SubmissionDataSchema,
+    submission_data: Option[SubmissionDataSchema],
     status: String,
     grade: Int,
     late_penalty_applied: Option[Double],
-    grading_time: String,
+    grading_time: Option[String],
     grader: Option[SubmissionUserSchema],
     feedback: String,
     assistant_feedback: Option[String],
@@ -41,11 +41,11 @@ object SubmissionSchema extends BaseSchemaTrait2[SubmissionSchema] {
         FieldDataModel(SnakeCaseConstants.Exercise, false, IntIdSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.SubmissionTime, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.Submitters, false, (value: Any) => toSeqOption(value, SubmissionUserSchema.fromAny)),
-        FieldDataModel(SnakeCaseConstants.SubmissionData, false, SubmissionDataSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.SubmissionData, true, SubmissionDataSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.Status, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.Grade, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.LatePenaltyApplied, true, toDoubleOption),
-        FieldDataModel(SnakeCaseConstants.GradingTime, false, toStringOption),
+        FieldDataModel(SnakeCaseConstants.GradingTime, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.Grader, true, SubmissionUserSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.Feedback, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.AssistantFeedback, true, toStringOption),
@@ -55,9 +55,10 @@ object SubmissionSchema extends BaseSchemaTrait2[SubmissionSchema] {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[SubmissionSchema] = {
-        TupleUtils.toTuple[Int, String, String, IntIdSchema, String, Seq[SubmissionUserSchema], SubmissionDataSchema,
-                           String, Int, Option[Double], String, Option[SubmissionUserSchema], String,
-                           Option[String], String, Option[SubmissionLinksSchema]](values) match {
+        TupleUtils.toTuple[Int, String, String, IntIdSchema, String, Seq[SubmissionUserSchema],
+                           Option[SubmissionDataSchema], String, Int, Option[Double], Option[String],
+                           Option[SubmissionUserSchema], String, Option[String], String,
+                           Option[SubmissionLinksSchema]](values) match {
             case Some(inputValues) => Some(
                 (SubmissionSchema.apply _).tupled(inputValues)
             )

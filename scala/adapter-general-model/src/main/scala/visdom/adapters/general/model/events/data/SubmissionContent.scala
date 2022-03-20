@@ -45,6 +45,10 @@ extends BaseResultValue {
 }
 
 object SubmissionContent {
+    def getEmpty(): SubmissionContent = {
+        SubmissionContent(None, None, None, None, None, None, None, None, None, None, None)
+    }
+
     def fromSubmissionData(data: SubmissionDataSchema): SubmissionContent = {
         SubmissionContent(
             git = data.git.map(gitData => SubmissionGitContent.fromSubmissionGitData(gitData)),

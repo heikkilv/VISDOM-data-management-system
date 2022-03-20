@@ -28,8 +28,7 @@ final case class ExerciseData(
     git_path: Option[String],
     git_is_folder: Option[Boolean],
     course_id: Int,
-    module_id: Int,
-    submissions: Seq[Int]
+    module_id: Int
 )
 extends Data {
     def toBsonValue(): BsonValue = {
@@ -49,8 +48,7 @@ extends Data {
                 SnakeCaseConstants.GitPath -> JsonUtils.toBsonValue(git_path),
                 SnakeCaseConstants.GitIsFolder -> JsonUtils.toBsonValue(git_is_folder),
                 SnakeCaseConstants.CourseId -> JsonUtils.toBsonValue(course_id),
-                SnakeCaseConstants.ModuleId -> JsonUtils.toBsonValue(module_id),
-                SnakeCaseConstants.Submissions -> JsonUtils.toBsonValue(submissions)
+                SnakeCaseConstants.ModuleId -> JsonUtils.toBsonValue(module_id)
             )
         )
     }
@@ -73,8 +71,7 @@ extends Data {
                 SnakeCaseConstants.GitPath -> JsonUtils.toJsonValue(git_path),
                 SnakeCaseConstants.GitIsFolder -> JsonUtils.toJsonValue(git_is_folder),
                 SnakeCaseConstants.CourseId -> JsonUtils.toJsonValue(course_id),
-                SnakeCaseConstants.ModuleId -> JsonUtils.toJsonValue(module_id),
-                SnakeCaseConstants.Submissions -> JsonUtils.toJsonValue(submissions)
+                SnakeCaseConstants.ModuleId -> JsonUtils.toJsonValue(module_id)
             )
         )
     }
@@ -100,8 +97,7 @@ object ExerciseData {
             git_path = exerciseSchema.metadata.other.map(other => other.path),
             git_is_folder = exerciseSchema.metadata.other.map(other => other.is_folder),
             course_id = exerciseSchema.course.id,
-            module_id = exerciseSchema._links.map(links => links.modules).flatten.getOrElse(0),
-            submissions = exerciseSchema._links.map(links => links.submissions).flatten.getOrElse(Seq.empty)
+            module_id = exerciseSchema._links.map(links => links.modules).flatten.getOrElse(0)
         )
     }
 }

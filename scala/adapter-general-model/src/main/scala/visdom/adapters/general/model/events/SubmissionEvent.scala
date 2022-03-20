@@ -1,6 +1,7 @@
 package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
+import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
@@ -37,7 +38,7 @@ extends Event {
     // use the first submitter in the submitter list as the author
     val author: ItemLink = ItemLink(
         AplusAuthor.getId(
-            origin.id,
+            AplusOrigin.getId(submissionSchema.host_name),
             submissionSchema.submitters.headOption match {
                 case Some(user: SubmissionUserSchema) => user.id
                 case None => 0
@@ -48,7 +49,11 @@ extends Event {
 
     val data: SubmissionData = SubmissionData.fromSubmissionSchema(submissionSchema)
     val time: ZonedDateTime = TimeUtils.toZonedDateTimeWithDefault(submissionSchema.submission_time)
-    val duration: Double = TimeUtils.getDifference(data.grading_time, time)
+    val duration: Double = data.grading_time match {
+        case Some(gradingTime: String) =>
+            TimeUtils.getDifference(TimeUtils.toZonedDateTimeWithDefault(gradingTime), time)
+        case None => 0.0
+    }
 
     val message: String = s"Submission ${submissionSchema.id} for exercise ${submissionSchema.exercise.id}"
 
@@ -64,7 +69,20 @@ extends Event {
                     case None => Seq.empty
                 }
             )
-        ).map(userId => ItemLink(AplusAuthor.getId(origin.id, userId), AplusAuthor.AplusAuthorType))
+        ).map(userId => ItemLink(
+            AplusAuthor.getId(AplusOrigin.getId(submissionSchema.host_name), userId),
+            AplusAuthor.AplusAuthorType
+        ))
+    )
+
+    // add links to the exercise points artifacts
+    addRelatedConstructs(
+        data.submitters.map(
+            userId => ItemLink(
+                ExercisePointsArtifact.getId(origin.id, data.exercise_id, userId),
+                ExercisePointsArtifact.ExercisePointsArtifactType
+            )
+        )
     )
 
     addRelatedConstructs(relatedConstructs)

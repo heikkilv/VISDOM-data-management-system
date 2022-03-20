@@ -16,6 +16,7 @@ import visdom.adapters.general.model.base.Origin
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.metadata.CourseMetadata
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.metadata.ModuleMetadata
@@ -41,7 +42,8 @@ object ObjectTypes {
     val EventTypes: Set[String] = Set(
         CommitEvent.CommitEventType,
         PipelineEvent.PipelineEventType,
-        PipelineJobEvent.PipelineJobEventType
+        PipelineJobEvent.PipelineJobEventType,
+        SubmissionEvent.SubmissionEventType
     )
     val AuthorTypes: Set[String] = Set(
         CommitAuthor.CommitAuthorType,
@@ -112,6 +114,14 @@ object ObjectTypes {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Tag) -> BooleanType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.QueuedDuration) -> DoubleType
         ),
+        SubmissionEvent.SubmissionEventType -> Map(
+            SnakeCaseConstants.Duration -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Grade) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.LatePenaltyApplied) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Grader) -> IntType
+        ),
         FileArtifact.FileArtifactType -> Map.empty,
         PipelineReportArtifact.PipelineReportArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.TotalTime) -> DoubleType,
@@ -171,7 +181,7 @@ object ObjectTypes {
         ),
         AplusAuthor.AplusAuthorType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.IsExternal) -> BooleanType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.IsExternal) -> BooleanType
         )
     )
 

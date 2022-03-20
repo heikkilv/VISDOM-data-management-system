@@ -21,6 +21,7 @@ import visdom.adapters.general.schemas.AplusUserSchema
 import visdom.adapters.general.schemas.CommitAuthorProcessedSchema
 import visdom.adapters.general.schemas.CommitAuthorSchema
 import visdom.adapters.general.schemas.GitlabUserEventSchema
+import visdom.adapters.general.schemas.SubmissionUserSchema
 import visdom.database.mongodb.MongoConstants
 import visdom.utils.CommonConstants
 
@@ -224,7 +225,7 @@ class ModelAuthorUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     ),
                     hostName,
                     graderOption match {
-                        case Some(grader) => submitters :+ grader
+                        case Some(grader: SubmissionUserSchema) => submitters :+ grader
                         case None => submitters
                     }
                 )

@@ -27,7 +27,7 @@ extends BaseSchema
 object SubmissionDataSchema extends BaseSchemaTrait2[SubmissionDataSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def fields: Seq[FieldDataModel] = Seq(
-        FieldDataModel(SnakeCaseConstants.Git, false, SubmissionGitDataSchema.fromAny),
+        FieldDataModel(SnakeCaseConstants.Git, true, SubmissionGitDataSchema.fromAny),
         FieldDataModel(SnakeCaseConstants.Field0, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.Field1, true, toStringOption),
         FieldDataModel(SnakeCaseConstants.Field2, true, toStringOption),

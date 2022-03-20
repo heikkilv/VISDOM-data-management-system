@@ -22,6 +22,7 @@ import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
+import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.metadata.CourseMetadata
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.metadata.ModuleMetadata
@@ -262,6 +263,17 @@ class ModelUtils(sparkSession: SparkSession) {
             .persist(StorageLevel.MEMORY_ONLY)
     }
 
+    def getExerciseGitMap(): Map[Int, String] = {
+        getExerciseSchemas()
+            .flatMap(
+                exercise => exercise.metadata.other.map(
+                    other => (exercise.id, other.path)
+                )
+            )
+            .collect()
+            .toMap
+    }
+
     def updateOrigins(): Unit = {
         if (!ModelUtils.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
@@ -275,6 +287,7 @@ class ModelUtils(sparkSession: SparkSession) {
             storeObjects(eventUtils.getCommits(), CommitEvent.CommitEventType)
             storeObjects(eventUtils.getPipelines(), PipelineEvent.PipelineEventType)
             storeObjects(eventUtils.getPipelineJobs(), PipelineJobEvent.PipelineJobEventType)
+            storeObjects(eventUtils.getSubmissions(), SubmissionEvent.SubmissionEventType)
             updateEventIndexes()
         }
     }
