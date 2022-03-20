@@ -49,7 +49,7 @@ extends Artifact {
 
     val data: ExercisePointsData = ExercisePointsData.fromPointsSchema(exercisePointsSchema, userId)
 
-    val id: String = ModulePointsArtifact.getId(origin.id, data.exercise_id, data.user_id)
+    val id: String = ExercisePointsArtifact.getId(origin.id, data.exercise_id, data.user_id)
 
     // add the user and related exercise metadata and module points artifact as related constructs
     addRelatedConstructs(

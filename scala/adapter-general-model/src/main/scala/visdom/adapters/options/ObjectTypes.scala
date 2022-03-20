@@ -5,6 +5,7 @@ import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Artifact
@@ -44,7 +45,8 @@ object ObjectTypes {
     )
     val AuthorTypes: Set[String] = Set(
         CommitAuthor.CommitAuthorType,
-        GitlabAuthor.GitlabAuthorType
+        GitlabAuthor.GitlabAuthorType,
+        AplusAuthor.AplusAuthorType
     )
     val ArtifactTypes: Set[String] = Set(
         FileArtifact.FileArtifactType,
@@ -166,6 +168,10 @@ object ObjectTypes {
         CommitAuthor.CommitAuthorType -> Map.empty,
         GitlabAuthor.GitlabAuthorType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType
+        ),
+        AplusAuthor.AplusAuthorType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.IsExternal) -> BooleanType,
         )
     )
 

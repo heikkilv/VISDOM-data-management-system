@@ -11,6 +11,7 @@ import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
 import scala.reflect.runtime.universe.TypeTag
 import visdom.adapters.general.AdapterValues
+import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
@@ -36,6 +37,7 @@ import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.SubmissionSchema
 import visdom.adapters.options.ObjectTypes
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -147,6 +149,35 @@ class ModelUtils(sparkSession: SparkSession) {
             .toMap
     }
 
+    def getCourseIdMap(): Map[Int, Map[Int, Seq[Int]]] = {
+        val moduleExercisesMap = getModuleSchemas()
+            .map(
+                module => (
+                    module.id,
+                    module._links.map(links => links.exercises.getOrElse(Seq.empty)).getOrElse(Seq.empty)
+                )
+            )
+            .collect()
+            .toMap
+
+        getCourseSchemas()
+            .map(
+                course => (
+                    course.id,
+                    course._links.map(links => links.modules.getOrElse(Seq.empty)).getOrElse(Seq.empty)
+                )
+            )
+            .map({
+                case (courseId, moduleIds) => (
+                    courseId,
+                    moduleIds.map(moduleId => (moduleId, moduleExercisesMap.getOrElse(moduleId, Seq.empty)))
+                )
+            })
+            .collect()
+            .toMap
+            .map({case (courseId, modules) => (courseId, modules.toMap)})
+    }
+
     def getPointsSchemas(): Dataset[PointsSchema] = {
         loadMongoDataAplus[PointsSchema](MongoConstants.CollectionPoints)
             .flatMap(row => PointsSchema.fromRow(row))
@@ -225,6 +256,12 @@ class ModelUtils(sparkSession: SparkSession) {
         }
     }
 
+    def getSubmissionSchemas(): Dataset[SubmissionSchema] = {
+        loadMongoDataAplus[SubmissionSchema](MongoConstants.CollectionSubmissions)
+            .flatMap(row => SubmissionSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
+
     def updateOrigins(): Unit = {
         if (!ModelUtils.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
@@ -246,6 +283,7 @@ class ModelUtils(sparkSession: SparkSession) {
         if (!ModelUtils.isAuthorCacheUpdated()) {
             storeObjects(authorUtils.getCommitAuthors(), CommitAuthor.CommitAuthorType)
             storeObjects(authorUtils.getGitlabAuthors(), GitlabAuthor.GitlabAuthorType)
+            storeObjects(authorUtils.getAplusAuthors(), AplusAuthor.AplusAuthorType)
             updateAuthorIndexes()
         }
     }

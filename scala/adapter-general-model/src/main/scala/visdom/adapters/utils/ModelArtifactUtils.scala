@@ -119,7 +119,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 .map(exercise => (exercise.id, exercise))
                 .collect()
                 .toMap
-        val exerciseAdditionalMap: Map[Int,ExerciseAdditionalSchema] = modelUtils.getExerciseAdditionalMap()
+        val exerciseAdditionalMap: Map[Int, ExerciseAdditionalSchema] = modelUtils.getExerciseAdditionalMap()
 
         modelUtils.getPointsSchemas()
             .flatMap(
