@@ -8,6 +8,7 @@ import visdom.adapters.general.model.base.Event
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.base.LinkTrait
 import visdom.adapters.general.model.events.data.SubmissionData
+import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.schemas.SubmissionSchema
 import visdom.adapters.general.schemas.SubmissionLinksSchema
@@ -75,13 +76,17 @@ extends Event {
         ))
     )
 
-    // add links to the exercise points artifacts
+    // add links to the exercise points artifacts and exercise metadata
     addRelatedConstructs(
         data.submitters.map(
             userId => ItemLink(
                 ExercisePointsArtifact.getId(origin.id, data.exercise_id, userId),
                 ExercisePointsArtifact.ExercisePointsArtifactType
             )
+        ) :+
+        ItemLink(
+            ExerciseMetadata.getId(origin.id, data.exercise_id),
+            ExerciseMetadata.ExerciseMetadataType
         )
     )
 
