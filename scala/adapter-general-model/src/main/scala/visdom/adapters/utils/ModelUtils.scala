@@ -413,6 +413,9 @@ class ModelUtils(sparkSession: SparkSession) {
                 ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
+
+        // clear the memory cache after any update attempt for the Mongo cache
+        AdapterValues.cache.clearCache()
     }
 
     def getReadConfigGitlab(collectionName: String): ReadConfig = {
