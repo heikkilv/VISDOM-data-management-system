@@ -10,6 +10,7 @@ import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
 import scala.reflect.runtime.universe.TypeTag
+import visdom.adapters.DefaultAdapterValues
 import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
@@ -415,7 +416,7 @@ class ModelUtils(sparkSession: SparkSession) {
         }
 
         // clear the memory cache after any update attempt for the Mongo cache
-        AdapterValues.cache.clearCache()
+        DefaultAdapterValues.cache.clearCache()
     }
 
     def getReadConfigGitlab(collectionName: String): ReadConfig = {
