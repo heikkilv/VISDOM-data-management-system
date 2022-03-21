@@ -56,6 +56,8 @@ object ServerConstants {
     final val AuthorsPath = "authors"
     final val ArtifactsRootPath = "/artifacts"
     final val ArtifactsPath = "artifacts"
+    final val MetadataRootPath = "/metadata"
+    final val MetadataPath = "metadata"
 
     final val FalseString = "false"
     final val TrueString = "true"

@@ -43,3 +43,4 @@ The following data adapters have been implemented:
 
 - [GitLab data adapter](adapters/gitlab)
 - [Programming course data adapter](adapters/course)
+- [General data model adapter](adapters/general)

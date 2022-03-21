@@ -1,7 +1,6 @@
 package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
-import java.time.ZoneId
 import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
@@ -45,7 +44,7 @@ extends Event {
     val data: CommitData = CommitData.fromCommitSchema(commitSchema)
 
     val message: String = commitSchema.message
-    val time: ZonedDateTime = CommitEvent.toZonedDateTime(commitSchema.committed_date)
+    val time: ZonedDateTime = TimeUtils.toZonedDateTimeWithDefault(commitSchema.committed_date)
 
     val id: String = CommitEvent.getId(origin.id, data.commit_id)
 
@@ -84,19 +83,6 @@ extends Event {
 
 object CommitEvent {
     final val CommitEventType: String = "commit"
-
-    final val DefaultYear: Int = 1970
-    final val DefaultMonth: Int = 1
-    final val DefaultDay: Int = 1
-    final val DefaultTime: ZonedDateTime =
-        ZonedDateTime.of(DefaultYear, DefaultMonth, DefaultDay, 0, 0, 0, 0, ZoneId.of(CommonConstants.UTC))
-
-    def toZonedDateTime(dateTimeString: String): ZonedDateTime = {
-        TimeUtils.toZonedDateTime(dateTimeString) match {
-            case Some(dateTimeValue: ZonedDateTime) => dateTimeValue
-            case None => DefaultTime
-        }
-    }
 
     def fromCommitSchema(
         commitSchema: CommitSchema,

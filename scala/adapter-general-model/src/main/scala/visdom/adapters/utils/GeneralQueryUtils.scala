@@ -117,7 +117,7 @@ object GeneralQueryUtils {
         results
             .sortBy(
                 document => document.getIntOption(indexAttribute) match {
-                    case Some(categoryId: Int) => categoryId
+                    case Some(index: Int) => index
                     case None => 0
                 }
             )
@@ -219,7 +219,16 @@ object GeneralQueryUtils {
         dataAttributes: Option[Seq[String]],
         extraAttributes: Seq[String]
     ): Result = {
-        getCacheResults(objectTypes, pageOptions, dataAttributes, extraAttributes, SnakeCaseConstants.CategoryIndex)
+        getCacheResults(
+            objectTypes,
+            pageOptions,
+            dataAttributes,
+            extraAttributes,
+            objectTypes.size match {
+                case 1 => SnakeCaseConstants.TypeIndex
+                case _ => SnakeCaseConstants.CategoryIndex
+            }
+        )
     }
 
     def getCacheResults(
@@ -251,7 +260,10 @@ object GeneralQueryUtils {
             pageOptions,
             dataAttributes,
             extraAttributes,
-            SnakeCaseConstants.CategoryIndex,
+            objectTypes.size match {
+                case 1 => SnakeCaseConstants.TypeIndex
+                case _ => SnakeCaseConstants.CategoryIndex
+            },
             filter
         )
     }

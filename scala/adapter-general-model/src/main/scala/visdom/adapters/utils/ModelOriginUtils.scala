@@ -3,7 +3,9 @@ package visdom.adapters.utils
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import visdom.adapters.general.model.results.OriginResult
+import visdom.adapters.general.model.results.OriginResult.AplusOriginResult
 import visdom.adapters.general.model.results.OriginResult.GitlabOriginResult
+import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.GitlabProjectInformationSchema
 import visdom.adapters.general.schemas.GitlabProjectSchema
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
@@ -21,13 +23,13 @@ class ModelOriginUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getGitlabProjects(): Dataset[GitlabProjectSimpleSchema] = {
-        modelUtils.loadMongoData[GitlabProjectSchema](MongoConstants.CollectionProjects)
+        modelUtils.loadMongoDataGitlab[GitlabProjectSchema](MongoConstants.CollectionProjects)
             .flatMap(row => GitlabProjectSchema.fromRow(row))
             .map(projectSchema => GitlabProjectSimpleSchema.fromProjectSchema(projectSchema))
     }
 
     def getGitlabProjectInformation(collectionName: String): Dataset[GitlabProjectSimpleSchema] = {
-        modelUtils.loadMongoData[GitlabProjectInformationSchema](collectionName)
+        modelUtils.loadMongoDataGitlab[GitlabProjectInformationSchema](collectionName)
             .na.drop()
             .distinct()
             .flatMap(row => GitlabProjectInformationSchema.fromRow(row))
@@ -74,5 +76,19 @@ class ModelOriginUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
 
         projects
             .filter(origin => origin.data.project_id.isDefined || !projectWithIds.contains(origin.id))
+    }
+
+    def getAplusOrigins(): Dataset[AplusOriginResult] = {
+        val courseSchemas: Dataset[CourseSchema] = modelUtils.getCourseSchemas()
+
+        val hostOrigins: Dataset[AplusOriginResult] =
+            courseSchemas
+                .map(course => course.host_name)
+                .distinct()
+                .map(hostName => OriginResult.fromAplusHost(hostName))
+
+        courseSchemas
+            .map(course => OriginResult.fromAplusCourse(course.host_name, course.id, Some(course.code)))
+            .union(hostOrigins)
     }
 }
