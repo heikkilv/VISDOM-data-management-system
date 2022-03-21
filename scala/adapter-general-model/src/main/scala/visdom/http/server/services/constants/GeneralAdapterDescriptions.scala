@@ -18,6 +18,8 @@ object GeneralAdapterDescriptions {
     final val AuthorsEndpointSummary = "Returns the author objects."
     final val ArtifactsEndpointDescription = "Returns the artifact objects."
     final val ArtifactsEndpointSummary = "Returns the artifact objects."
+    final val MetadataEndpointDescription = "Returns the metadata objects."
+    final val MetadataEndpointSummary = "Returns the metadata objects."
 
     final val TestEndpointDescription = "Test endpoint for paging features."
     final val TestEndpointSummary = "Test endpoint for paging features."

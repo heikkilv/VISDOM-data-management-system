@@ -28,6 +28,10 @@ class QueryCache(databases: Seq[String]) {
     def addResult(queryCode: Int, options: BaseQueryOptions, data: BaseResultValue): Unit = {
         val _ = results += (((queryCode, options), QueryResult(data, Instant.now())))
     }
+
+    def clearCache(): Unit = {
+        results.clear()
+    }
 }
 
 object QueryCache {

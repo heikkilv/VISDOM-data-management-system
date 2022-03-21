@@ -6,7 +6,9 @@ import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.model.base.Origin
+import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
+import visdom.adapters.general.model.origins.data.AplusOriginData
 import visdom.adapters.general.model.origins.data.GitlabOriginData
 import visdom.adapters.general.schemas.GitlabProjectSimpleSchema
 import visdom.adapters.results.BaseResultValue
@@ -52,6 +54,7 @@ with IdValue {
 
 object OriginResult {
     type GitlabOriginResult = OriginResult[GitlabOriginData]
+    type AplusOriginResult = OriginResult[AplusOriginData]
 
     def fromOrigin[OriginData <: Data](origin: Origin, originData: OriginData): OriginResult[OriginData] = {
         OriginResult(
@@ -72,5 +75,19 @@ object OriginResult {
             project_id = gitlabProjectSchema.project_id
         )
         fromOrigin(gitlabOrigin, gitlabOrigin.data)
+    }
+
+    def fromAplusHost(hostName: String): AplusOriginResult = {
+        val aplusOrigin: AplusOrigin = AplusOrigin.getAplusOriginFromHost(hostName)
+        fromOrigin(aplusOrigin, aplusOrigin.data)
+    }
+
+    def fromAplusCourse(hostName: String, courseId: Int, code: Option[String]): AplusOriginResult = {
+        val aplusOrigin: AplusOrigin = new AplusOrigin(
+            hostName = hostName,
+            courseId = courseId,
+            code = code
+        )
+        fromOrigin(aplusOrigin, aplusOrigin.data)
     }
 }

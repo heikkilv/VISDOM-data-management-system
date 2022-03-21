@@ -11,6 +11,7 @@ import visdom.http.server.services.AdapterInfoService
 import visdom.http.server.services.ArtifactService
 import visdom.http.server.services.AuthorService
 import visdom.http.server.services.EventService
+import visdom.http.server.services.MetadataService
 import visdom.http.server.services.OriginService
 import visdom.http.server.services.SingleService
 import visdom.http.server.services.UpdateService
@@ -26,6 +27,7 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
         new EventService(system.actorOf(Props[MultiActor])).route,
         new AuthorService(system.actorOf(Props[MultiActor])).route,
         new ArtifactService(system.actorOf(Props[MultiActor])).route,
+        new MetadataService(system.actorOf(Props[MultiActor])).route,
         new UpdateService(system.actorOf(Props[UpdateActor])).route,
         SwaggerRoutes.getSwaggerRouter(
             new SwaggerAdapterDocService(
@@ -37,6 +39,7 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
                     classOf[EventService],
                     classOf[AuthorService],
                     classOf[ArtifactService],
+                    classOf[MetadataService],
                     classOf[UpdateService]
                 )
             )

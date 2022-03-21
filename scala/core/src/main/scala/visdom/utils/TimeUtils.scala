@@ -2,11 +2,18 @@ package visdom.utils
 
 import java.time.Instant
 import java.time.ZonedDateTime
+import java.time.ZoneId
 import java.time.format.DateTimeParseException
 import java.time.temporal.ChronoUnit
 
 
 object TimeUtils {
+    final val DefaultYear: Int = 1970
+    final val DefaultMonth: Int = 1
+    final val DefaultDay: Int = 1
+    final val DefaultTime: ZonedDateTime =
+        ZonedDateTime.of(DefaultYear, DefaultMonth, DefaultDay, 0, 0, 0, 0, ZoneId.of(CommonConstants.UTC))
+
     final val ZeroHourString: String = "T00:00Z"
 
     def toZonedDateTime(dateTimeString: String): Option[ZonedDateTime] = {
@@ -15,6 +22,13 @@ object TimeUtils {
         }
         catch {
             case error: DateTimeParseException => None
+        }
+    }
+
+    def toZonedDateTimeWithDefault(dateTimeString: String): ZonedDateTime = {
+        toZonedDateTime(dateTimeString) match {
+            case Some(dateTimeValue: ZonedDateTime) => dateTimeValue
+            case None => DefaultTime
         }
     }
 
@@ -79,5 +93,10 @@ object TimeUtils {
     def getCurrentTimeString(): String = {
         // Returns the current time as ISO 8601 formatted string in millisecond precision in UTC time zone.
         getMillisString(Instant.now())
+    }
+
+    def getDifference(timeA: ZonedDateTime, timeB: ZonedDateTime): Double = {
+         timeA.toEpochSecond() - timeB.toEpochSecond() +
+         timeA.getNano() / CommonConstants.Billion - timeB.getNano() / CommonConstants.Billion
     }
 }
