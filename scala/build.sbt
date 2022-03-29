@@ -10,6 +10,7 @@ val coreAdapterDirectory: String = "core-adapter"
 val gitlabAdapterDirectory: String = "gitlab-adapter"
 val adapterCourseDirectory: String = "adapter-course"
 val adapterGeneralModelDirectory: String = "adapter-general-model"
+val adapterDatasetDirectory: String = "adapter-dataset"
 
 lazy val core = project
     .in(file(coreDirectory))
@@ -42,5 +43,11 @@ lazy val adapterGeneralModel = project
     .in(file(adapterGeneralModelDirectory))
     .dependsOn(core)
     .dependsOn(coreAdapter)
+
+lazy val adapterDataset = project
+    .in(file(adapterDatasetDirectory))
+    .dependsOn(core)
+    .dependsOn(coreAdapter)
+    .dependsOn(adapterGeneralModel)
 
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
