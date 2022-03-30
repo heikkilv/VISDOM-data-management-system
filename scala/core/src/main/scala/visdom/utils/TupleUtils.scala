@@ -288,6 +288,36 @@ object TupleUtils {
         }
     }
 
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag, G : ClassTag,
+                H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag, M : ClassTag, N : ClassTag,
+                O : ClassTag, P : ClassTag, Q : ClassTag, R : ClassTag, S : ClassTag, T : ClassTag, U : ClassTag
+               ](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) => toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U](items.drop(1)) match {
+                case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                case None => None
+            }
+            case None => None
+        }
+    }
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsMaxParameters))
+    def toTuple[A : ClassTag, B : ClassTag, C : ClassTag, D : ClassTag, E : ClassTag, F : ClassTag,
+                G : ClassTag, H : ClassTag, I : ClassTag, J : ClassTag, K : ClassTag, L : ClassTag,
+                M : ClassTag, N : ClassTag, O : ClassTag, P : ClassTag, Q : ClassTag, R : ClassTag,
+                S : ClassTag, T : ClassTag, U : ClassTag, V : ClassTag
+               ](items: Seq[Any]): Option[(A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V)] = {
+        toTuple[A](items) match {
+            case Some(firstItem) =>
+                toTuple[B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V](items.drop(1)) match {
+                    case Some(otherItems) => Some(firstItem._1 +: otherItems)
+                    case None => None
+                }
+            case None => None
+        }
+    }
+
     def toOption[A, B](
         values: (Any, Any),
         transformations: ((Any) => Option[A], (Any) => Option[B])
