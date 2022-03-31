@@ -11,7 +11,6 @@ import visdom.utils.SnakeCaseConstants
 
 
 final case class ProjectData(
-    project_id: Option[String],
     project_key: Option[String],
     git_link: Option[String],
     jira_link: Option[String],
@@ -21,7 +20,6 @@ extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
-                SnakeCaseConstants.ProjectId -> JsonUtils.toBsonValue(project_id),
                 SnakeCaseConstants.ProjectKey -> JsonUtils.toBsonValue(project_key),
                 SnakeCaseConstants.GitLink -> JsonUtils.toBsonValue(git_link),
                 SnakeCaseConstants.JiraLink -> JsonUtils.toBsonValue(jira_link),
@@ -33,7 +31,6 @@ extends Data {
     def toJsValue(): JsValue = {
         JsObject(
             Map(
-                SnakeCaseConstants.ProjectId -> JsonUtils.toJsonValue(project_id),
                 SnakeCaseConstants.ProjectKey -> JsonUtils.toJsonValue(project_key),
                 SnakeCaseConstants.GitLink -> JsonUtils.toJsonValue(git_link),
                 SnakeCaseConstants.JiraLink -> JsonUtils.toJsonValue(jira_link),
@@ -45,12 +42,11 @@ extends Data {
 
 object ProjectData {
     def getEmpty(): ProjectData = {
-        ProjectData(None, None, None, None, None)
+        ProjectData(None, None, None, None)
     }
 
     def fromProjectSchema(projectSchema: ProjectSchema): ProjectData = {
         ProjectData(
-            project_id = Some(projectSchema.project_id),
             project_key = Some(projectSchema.project_key),
             git_link = Some(projectSchema.git_link),
             jira_link = Some(projectSchema.jira_link),
