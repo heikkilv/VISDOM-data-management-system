@@ -25,7 +25,7 @@ extends Author {
     val origin: ItemLink = AplusOrigin.getAplusOriginFromHost(aplusUserSchema.host_name).link
     val data: AplusAuthorData = AplusAuthorData.fromAplusUserSchema(aplusUserSchema)
 
-    val id: String = AplusAuthor.getId(origin.id, aplusUserSchema.id)
+    val id: String = AplusAuthor.getId(origin.id, data.user_id)
 
     addRelatedConstructs(relatedConstructs)
     addRelatedEvents(relatedEvents)
