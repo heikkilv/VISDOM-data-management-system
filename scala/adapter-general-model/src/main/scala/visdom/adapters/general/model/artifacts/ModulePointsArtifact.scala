@@ -53,7 +53,10 @@ extends Artifact {
     // and exercise points artifacts as related constructs
     addRelatedConstructs(
         Seq(
-            ItemLink(AplusAuthor.getId(origin.id, data.user_id), AplusAuthor.AplusAuthorType),
+            ItemLink(
+                AplusAuthor.getId(AplusOrigin.getId(moduleSchema.host_name), data.user_id),
+                AplusAuthor.AplusAuthorType
+            ),
             ItemLink(
                 ModuleMetadata.getId(origin.id, data.module_id),
                 ModuleMetadata.ModuleMetadataType

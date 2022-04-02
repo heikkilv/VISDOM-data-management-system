@@ -54,7 +54,10 @@ extends Artifact {
     // add the user and related exercise metadata and module points artifact as related constructs
     addRelatedConstructs(
         Seq(
-            ItemLink(AplusAuthor.getId(origin.id, data.user_id), AplusAuthor.AplusAuthorType),
+            ItemLink(
+                AplusAuthor.getId(AplusOrigin.getId(exerciseSchema.host_name), data.user_id),
+                AplusAuthor.AplusAuthorType
+            ),
             ItemLink(
                 ExerciseMetadata.getId(origin.id, data.exercise_id),
                 ExerciseMetadata.ExerciseMetadataType
