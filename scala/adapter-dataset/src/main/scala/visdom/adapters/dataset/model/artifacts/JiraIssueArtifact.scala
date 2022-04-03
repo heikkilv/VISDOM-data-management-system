@@ -22,7 +22,6 @@ extends Artifact {
 
     val name: String = jiraIssueSchema.summary
     val description: String = jiraIssueSchema.description
-    // NOTE: all files use the same state for now
     val state: String = jiraIssueSchema.status
     val data: JiraIssueData = JiraIssueData.fromIssueSchema(jiraIssueSchema)
 
