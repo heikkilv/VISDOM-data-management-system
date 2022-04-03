@@ -15,15 +15,13 @@ object ProjectEventResult {
         commitSchema: CommitSchema,
         commitChangeSchemas: Seq[CommitChangeSchema],
         datasetName: String,
-        relatedConstructs: Seq[ItemLink],
-        relatedEvents: Seq[ItemLink]
+        relatedConstructs: Seq[ItemLink]
     ): ProjectCommitEventResult = {
         val commitEvent: ProjectCommitEvent = new ProjectCommitEvent(
             commitSchema,
             commitChangeSchemas,
             datasetName,
-            relatedConstructs,
-            relatedEvents
+            relatedConstructs
         )
         EventResult.fromEvent(commitEvent, commitEvent.data)
     }

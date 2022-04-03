@@ -16,8 +16,7 @@ class ProjectCommitEvent(
     commitSchema: CommitSchema,
     commitChangeSchemas: Seq[CommitChangeSchema],
     datasetName: String,
-    relatedConstructs: Seq[ItemLink],
-    relatedEvents: Seq[ItemLink]
+    relatedConstructs: Seq[ItemLink]
 )
 extends Event {
     def getType: String = ProjectCommitEvent.ProjectCommitEventType
@@ -64,7 +63,6 @@ extends Event {
     )
 
     addRelatedConstructs(relatedConstructs)
-    addRelatedEvents(relatedEvents)
 }
 
 object ProjectCommitEvent {
