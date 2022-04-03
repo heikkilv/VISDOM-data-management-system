@@ -48,11 +48,15 @@ object ProjectArtifactResult {
 
     def fromSonarMeasuresSchema(
         measuresSchema: SonarMeasuresSchema,
-        datasetName: String
+        datasetName: String,
+        relatedCommitEventIds: Seq[String]
     ): SonarMeasuresArtifactResult = {
         val measuresArtifact: SonarMeasuresArtifact = new SonarMeasuresArtifact(
             sonarMeasuresSchema = measuresSchema,
-            datasetName = datasetName
+            datasetName = datasetName,
+            relatedEvents = relatedCommitEventIds.map(
+                commitEventId => ItemLink(commitEventId, ProjectCommitEvent.ProjectCommitEventType)
+            )
         )
         ArtifactResult.fromArtifact(measuresArtifact, measuresArtifact.data)
     }

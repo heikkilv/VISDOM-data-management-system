@@ -10,7 +10,8 @@ import visdom.utils.GeneralUtils
 
 class SonarMeasuresArtifact(
     sonarMeasuresSchema: SonarMeasuresSchema,
-    datasetName: String
+    datasetName: String,
+    relatedEvents: Seq[ItemLink]
 )
 extends Artifact {
     def getType: String = SonarMeasuresArtifact.SonarMeasuresArtifactType
@@ -27,6 +28,8 @@ extends Artifact {
     val data: SonarMeasuresData = SonarMeasuresData.fromMeasuresSchema(sonarMeasuresSchema)
 
     val id: String = SonarMeasuresArtifact.getId(origin.id, sonarMeasuresSchema.analysis_key)
+
+    addRelatedEvents(relatedEvents)
 }
 
 object SonarMeasuresArtifact {
