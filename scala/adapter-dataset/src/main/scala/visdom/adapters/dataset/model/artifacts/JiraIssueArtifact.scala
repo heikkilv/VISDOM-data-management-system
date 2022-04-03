@@ -1,10 +1,12 @@
 package visdom.adapters.dataset.model.artifacts
 
 import visdom.adapters.dataset.model.artifacts.data.JiraIssueData
-import visdom.adapters.dataset.model.origins.ProjectOrigin
-import visdom.adapters.dataset.schemas.JiraIssueSchema
+import visdom.adapters.dataset.model.authors.UserAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.dataset.model.events.ProjectCommitEvent
+import visdom.adapters.dataset.model.origins.ProjectOrigin
+import visdom.adapters.dataset.schemas.JiraIssueSchema
 import visdom.utils.GeneralUtils
 
 
@@ -26,6 +28,37 @@ extends Artifact {
     val data: JiraIssueData = JiraIssueData.fromIssueSchema(jiraIssueSchema)
 
     val id: String = JiraIssueArtifact.getId(origin.id, jiraIssueSchema.key)
+
+    // add linked users as related constructs
+    addRelatedConstructs(
+        (
+            Seq(data.creator, data.reporter) ++
+            (
+                data.assignee match {
+                    case Some(assignee: String) => Seq(assignee)
+                    case None => Seq.empty
+                }
+            )
+        )
+        .distinct
+        .map(
+            username => ItemLink(
+                UserAuthor.getId(ProjectOrigin.getId(datasetName), username),
+                UserAuthor.UserAuthorType
+            )
+        )
+    )
+
+    // add linked commit as related event
+    data.commit_id match {
+        case Some(commitId: String) => addRelatedEvent(
+            ItemLink(
+                ProjectCommitEvent.getId(origin.id, commitId),
+                ProjectCommitEvent.ProjectCommitEventType
+            )
+        )
+        case None =>
+    }
 }
 
 object JiraIssueArtifact {
