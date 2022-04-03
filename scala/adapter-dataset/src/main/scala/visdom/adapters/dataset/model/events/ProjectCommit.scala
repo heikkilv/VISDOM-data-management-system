@@ -15,7 +15,9 @@ import visdom.utils.TimeUtils
 class ProjectCommitEvent(
     commitSchema: CommitSchema,
     commitChangeSchemas: Seq[CommitChangeSchema],
-    datasetName: String
+    datasetName: String,
+    relatedConstructs: Seq[ItemLink],
+    relatedEvents: Seq[ItemLink]
 )
 extends Event {
     def getType: String = ProjectCommitEvent.ProjectCommitEventType
@@ -27,7 +29,7 @@ extends Event {
     )
 
     val author: ItemLink = ItemLink(
-        UserAuthor.getId(datasetName, commitSchema.committer),
+        UserAuthor.getId(ProjectOrigin.getId(datasetName), commitSchema.committer),
         UserAuthor.UserAuthorType
     )
 
@@ -38,10 +40,18 @@ extends Event {
 
     val id: String = ProjectCommitEvent.getId(origin.id, data.commit_id)
 
-    // author and linked files as related constructs
-    addRelatedConstructs(
-        Seq(author)
-    )
+    // author as related construct
+    addRelatedConstruct(author)
+
+    // if commit author is not the same as committer, add author as related construct
+    if (data.committer_name != data.author_name) {
+        addRelatedConstruct(
+            ItemLink(
+                UserAuthor.getId(ProjectOrigin.getId(datasetName), data.author_name),
+                UserAuthor.UserAuthorType
+            )
+        )
+    }
 
     // add parent commits as related events
     addRelatedEvents(
@@ -52,6 +62,9 @@ extends Event {
             )
         )
     )
+
+    addRelatedConstructs(relatedConstructs)
+    addRelatedEvents(relatedEvents)
 }
 
 object ProjectCommitEvent {

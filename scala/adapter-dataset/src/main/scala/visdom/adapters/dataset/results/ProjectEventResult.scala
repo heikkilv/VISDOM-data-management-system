@@ -1,10 +1,11 @@
 package visdom.adapters.dataset.results
 
+import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.dataset.model.events.ProjectCommitEvent
 import visdom.adapters.dataset.model.events.data.ProjectCommitData
+import visdom.adapters.general.model.results.EventResult
 import visdom.adapters.dataset.schemas.CommitChangeSchema
 import visdom.adapters.dataset.schemas.CommitSchema
-import visdom.adapters.general.model.results.EventResult
 
 
 object ProjectEventResult {
@@ -13,9 +14,17 @@ object ProjectEventResult {
     def fromCommitSchema(
         commitSchema: CommitSchema,
         commitChangeSchemas: Seq[CommitChangeSchema],
-        datasetName: String
+        datasetName: String,
+        relatedConstructs: Seq[ItemLink],
+        relatedEvents: Seq[ItemLink]
     ): ProjectCommitEventResult = {
-        val commitEvent: ProjectCommitEvent = new ProjectCommitEvent(commitSchema, commitChangeSchemas, datasetName)
+        val commitEvent: ProjectCommitEvent = new ProjectCommitEvent(
+            commitSchema,
+            commitChangeSchemas,
+            datasetName,
+            relatedConstructs,
+            relatedEvents
+        )
         EventResult.fromEvent(commitEvent, commitEvent.data)
     }
 }
