@@ -10,7 +10,9 @@ import visdom.utils.GeneralUtils
 
 class UserAuthor(
     username: String,
-    datasetName: String
+    datasetName: String,
+    relatedConstructs: Seq[ItemLink],
+    relatedEvents: Seq[ItemLink]
 )
 extends Author {
     override def getType: String = UserAuthor.UserAuthorType
@@ -22,6 +24,9 @@ extends Author {
     val data: UserData = UserData()
 
     val id: String = UserAuthor.getId(origin.id, name)
+
+    addRelatedConstructs(relatedConstructs)
+    addRelatedEvents(relatedEvents)
 }
 
 object UserAuthor {

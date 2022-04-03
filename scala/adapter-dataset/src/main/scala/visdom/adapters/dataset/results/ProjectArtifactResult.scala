@@ -6,9 +6,11 @@ import visdom.adapters.dataset.model.artifacts.data.JiraIssueData
 import visdom.adapters.dataset.model.artifacts.data.SonarMeasuresData
 import visdom.adapters.dataset.model.authors.UserAuthor
 import visdom.adapters.dataset.model.authors.data.UserData
-import visdom.adapters.general.model.results.ArtifactResult
+import visdom.adapters.dataset.model.events.ProjectCommitEvent
 import visdom.adapters.dataset.schemas.JiraIssueSchema
 import visdom.adapters.dataset.schemas.SonarMeasuresSchema
+import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.results.ArtifactResult
 
 
 object ProjectArtifactResult {
@@ -17,10 +19,21 @@ object ProjectArtifactResult {
     type JiraIssueArtifactResult = ArtifactResult[JiraIssueData]
     type SonarMeasuresArtifactResult = ArtifactResult[SonarMeasuresData]
 
-    def fromUsername(username: String, datasetName: String): UserAuthorResult = {
+    def fromUsername(
+        username: String,
+        datasetName: String,
+        relatedIssueIds: Seq[String],
+        relatedCommitEventIds: Seq[String]
+    ): UserAuthorResult = {
         val userAuthor: UserAuthor = new UserAuthor(
             username = username,
-            datasetName = datasetName
+            datasetName = datasetName,
+            relatedConstructs = relatedIssueIds.map(
+                issueId => ItemLink(issueId, JiraIssueArtifact.JiraIssueArtifactType)
+            ),
+            relatedEvents = relatedCommitEventIds.map(
+                commitEventId => ItemLink(commitEventId, ProjectCommitEvent.ProjectCommitEventType)
+            )
         )
         ArtifactResult.fromArtifact(userAuthor, userAuthor.data)
     }
