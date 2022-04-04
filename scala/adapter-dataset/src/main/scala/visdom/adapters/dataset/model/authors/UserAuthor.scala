@@ -21,7 +21,10 @@ extends Author {
     val description: String = Author.DefaultDescription
     val state: String = AuthorState.ActiveAuthorStateString  // NOTE: use active author state for everyone
     val origin: ItemLink = ProjectOrigin.getProjectOriginFromDataset(datasetName).link
-    val data: UserData = UserData()
+    val data: UserData = UserData(
+        commits = relatedEvents.size,
+        issues = relatedConstructs.size
+    )
 
     val id: String = UserAuthor.getId(origin.id, name)
 

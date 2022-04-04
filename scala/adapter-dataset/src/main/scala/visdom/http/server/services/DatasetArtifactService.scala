@@ -5,6 +5,6 @@ import scala.concurrent.ExecutionContext
 import visdom.http.server.services.base.ArtifactServiceBase
 
 
-class ArtifactService(actorRef: ActorRef)(implicit executionContext: ExecutionContext)
+class DatasetArtifactService(actorRef: ActorRef)(implicit executionContext: ExecutionContext)
 extends ArtifactServiceBase(actorRef)(executionContext)
-with MultiInputOptionsBase
+with MultiInputOptionsDataset

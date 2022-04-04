@@ -67,4 +67,11 @@ object JiraIssueArtifact {
     def getId(originId: String, issueKey: String): String = {
         GeneralUtils.getUuid(originId, JiraIssueArtifactType, issueKey)
     }
+
+    def getId(datasetName: String, projectId: String, issueKey: String): String = {
+        getId(
+            originId = ProjectOrigin.getId(datasetName, projectId),
+            issueKey = issueKey
+        )
+    }
 }

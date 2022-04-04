@@ -20,6 +20,7 @@ final case class ProjectCommitData(
     authored_date: String,
     stats: CommitStats,
     refs: Seq[String],
+    n_files: Int,
     files: Seq[String]
 )
 extends Data {
@@ -33,6 +34,7 @@ extends Data {
                 SnakeCaseConstants.AuthoredDate -> JsonUtils.toBsonValue(authored_date),
                 SnakeCaseConstants.Stats -> stats.toBsonValue(),
                 SnakeCaseConstants.Refs -> JsonUtils.toBsonValue(refs),
+                SnakeCaseConstants.NFiles -> JsonUtils.toBsonValue(n_files),
                 SnakeCaseConstants.Files -> JsonUtils.toBsonValue(files)
             )
         )
@@ -48,6 +50,7 @@ extends Data {
                 SnakeCaseConstants.AuthoredDate -> JsonUtils.toJsonValue(authored_date),
                 SnakeCaseConstants.Stats -> stats.toJsValue(),
                 SnakeCaseConstants.Refs -> JsonUtils.toJsonValue(refs),
+                SnakeCaseConstants.NFiles -> JsonUtils.toJsonValue(n_files),
                 SnakeCaseConstants.Files -> JsonUtils.toJsonValue(files)
             )
         )
@@ -74,6 +77,7 @@ object ProjectCommitData {
                     case None => CommitStats.getEmpty()
                 },
             refs = commitSchema.branches,
+            n_files = commitChangeSchemas.size,
             files = commitChangeSchemas.map(commitChange => commitChange.file)
         )
     }

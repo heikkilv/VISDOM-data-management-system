@@ -7,12 +7,14 @@ import visdom.http.server.actors.DatasetAdapterInfoActor
 import visdom.http.server.actors.DatasetMultiActor
 import visdom.http.server.actors.DatasetSingleActor
 import visdom.http.server.actors.DatasetUpdateActor
+import visdom.http.server.actors.MultiActor
+import visdom.http.server.options.DatasetMultiOptions
 import visdom.http.server.services.AdapterInfoService
-import visdom.http.server.services.ArtifactService
-import visdom.http.server.services.AuthorService
-import visdom.http.server.services.EventService
+import visdom.http.server.services.DatasetOriginService
+import visdom.http.server.services.DatasetEventService
+import visdom.http.server.services.DatasetAuthorService
+import visdom.http.server.services.DatasetArtifactService
 import visdom.http.server.services.MetadataService
-import visdom.http.server.services.OriginService
 import visdom.http.server.services.SingleService
 import visdom.http.server.services.UpdateService
 import visdom.http.server.swagger.SwaggerAdapterDocService
@@ -23,11 +25,11 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
     override val routes: Route = Directives.concat(
         new AdapterInfoService(system.actorOf(Props[DatasetAdapterInfoActor])).route,
         new SingleService(system.actorOf(Props[DatasetSingleActor])).route,
-        new OriginService(system.actorOf(Props[DatasetMultiActor])).route,
-        new EventService(system.actorOf(Props[DatasetMultiActor])).route,
-        new AuthorService(system.actorOf(Props[DatasetMultiActor])).route,
-        new ArtifactService(system.actorOf(Props[DatasetMultiActor])).route,
-        new MetadataService(system.actorOf(Props[DatasetMultiActor])).route,
+        new DatasetOriginService(system.actorOf(Props[DatasetMultiActor])).route,
+        new DatasetEventService(system.actorOf(Props[DatasetMultiActor])).route,
+        new DatasetAuthorService(system.actorOf(Props[DatasetMultiActor])).route,
+        new DatasetArtifactService(system.actorOf(Props[DatasetMultiActor])).route,
+        new MetadataService(system.actorOf(Props[MultiActor])).route,
         new UpdateService(system.actorOf(Props[DatasetUpdateActor])).route,
         SwaggerRoutes.getSwaggerRouter(
             new SwaggerAdapterDocService(
@@ -35,10 +37,10 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
                 Set(
                     classOf[AdapterInfoService],
                     classOf[SingleService],
-                    classOf[OriginService],
-                    classOf[EventService],
-                    classOf[AuthorService],
-                    classOf[ArtifactService],
+                    classOf[DatasetOriginService],
+                    classOf[DatasetEventService],
+                    classOf[DatasetAuthorService],
+                    classOf[DatasetArtifactService],
                     classOf[MetadataService],
                     classOf[UpdateService]
                 )

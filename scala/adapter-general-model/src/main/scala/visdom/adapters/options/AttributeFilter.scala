@@ -9,9 +9,12 @@ final case class AttributeFilter(
     filterType: AttributeFilterType,
     targetValue: String
 )
-extends AttributeFilterTrait
+extends AttributeFilterTrait {
+    val objectTypesObject: ObjectTypesTrait = ObjectTypes
+}
 
-object AttributeFilter {
+object AttributeFilter
+extends AttributeFilterObject[AttributeFilter] {
     def fromString(filterString: String): Option[AttributeFilter] = {
         AttributeFilterType.getFilterType(filterString) match {
             case Some(filterType: AttributeFilterType) => {

@@ -9,7 +9,7 @@ import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
 import visdom.http.HttpConstants
 import visdom.http.server.ResponseUtils
-import visdom.http.server.options.MultiOptions
+import visdom.http.server.options.BaseMultiInputOptions
 import visdom.http.server.response.BaseResponse
 import visdom.http.server.response.JsonResponse
 import visdom.utils.QueryUtils
@@ -22,7 +22,7 @@ class MultiActor extends Actor with ActorLogging {
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
-        case inputOptions: MultiOptions => {
+        case inputOptions: BaseMultiInputOptions => {
             log.info(s"Received multi query with options: ${inputOptions.toString()}")
 
             val response: BaseResponse = {

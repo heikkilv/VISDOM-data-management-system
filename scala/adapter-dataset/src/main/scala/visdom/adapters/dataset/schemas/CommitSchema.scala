@@ -31,7 +31,7 @@ object CommitSchema extends BaseSchemaTrait2[CommitSchema] {
         FieldDataModel(SnakeCaseConstants.ProjectId, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.CommitHash, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.CommitMessage, false, toStringOption),
-        FieldDataModel(SnakeCaseConstants.Committer, false, toStringSeqOption),
+        FieldDataModel(SnakeCaseConstants.Committer, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.CommitterDate, false, toStringOption),
         FieldDataModel(SnakeCaseConstants.Parents, false, toStringSeqOption),
         FieldDataModel(SnakeCaseConstants.Author, false, toStringOption),

@@ -8,8 +8,7 @@ trait AttributeFilterTrait {
     val attributeName: String
     val filterType: AttributeFilterType
     val targetValue: String
-
-    val objectTypesObject: ObjectTypesTrait = ObjectTypes
+    val objectTypesObject: ObjectTypesTrait
 
     def getFilter(objectTypes: Seq[String]): Bson = {
         // use the first given object type to determine the attribute types

@@ -5,6 +5,6 @@ import scala.concurrent.ExecutionContext
 import visdom.http.server.services.base.AuthorServiceBase
 
 
-class AuthorService(actorRef: ActorRef)(implicit executionContext: ExecutionContext)
+class DatasetAuthorService(actorRef: ActorRef)(implicit executionContext: ExecutionContext)
 extends AuthorServiceBase(actorRef)(executionContext)
-with MultiInputOptionsBase
+with MultiInputOptionsDataset

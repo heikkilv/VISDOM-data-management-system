@@ -67,7 +67,10 @@ object DatasetObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Ratings, SnakeCaseConstants.Reliability) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Ratings, SnakeCaseConstants.Security) -> IntType
         ),
-        UserAuthor.UserAuthorType -> Map.empty
+        UserAuthor.UserAuthorType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Commits) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Issues) -> IntType
+        )
     )
 
     val attributeTypes: Map[String, Map[String, String]] = ObjectTypes.attributeTypes ++ newAttributeTypes
