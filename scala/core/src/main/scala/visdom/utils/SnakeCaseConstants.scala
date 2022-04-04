@@ -37,7 +37,7 @@ object SnakeCaseConstants {
     val Blocks: String = "blocks"
     val BMode: String = "b_mode"
     val Branches: String = "branches"
-    val Bugs: String = "bug"
+    val Bugs: String = "bugs"
     val Category: String = "category"
     val CategoryG: String = "categoryG"
     val CategoryIndex: String = "category_index"

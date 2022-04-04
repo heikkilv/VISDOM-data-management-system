@@ -19,8 +19,7 @@ extends ModelAuthorUtils(sparkSession, modelUtils) {
     import sparkSession.implicits.newStringEncoder
 
     private def getCommitUsers(): Dataset[(String, Seq[String], Seq[String])] = {
-        modelUtils.loadMongoDataDataset[CommitSchema](MongoConstants.CollectionGitCommits)
-            .flatMap(row => CommitSchema.fromRow(row))
+        modelUtils.getCommitSchemas()
             .flatMap(
                 commit => Seq(
                     (commit.committer, commit.project_id, commit.commit_hash),

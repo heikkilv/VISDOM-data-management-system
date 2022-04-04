@@ -4,6 +4,7 @@ import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import scala.reflect.runtime.universe.TypeTag
 import visdom.adapters.dataset.AdapterValues
 import visdom.adapters.dataset.model.artifacts.JiraIssueArtifact
@@ -11,13 +12,17 @@ import visdom.adapters.dataset.model.artifacts.SonarMeasuresArtifact
 import visdom.adapters.dataset.model.authors.UserAuthor
 import visdom.adapters.dataset.model.events.ProjectCommitEvent
 import visdom.adapters.dataset.model.origins.ProjectOrigin
+import visdom.adapters.dataset.schemas.CommitSchema
 import visdom.adapters.options.DatasetObjectTypes
 import visdom.adapters.options.ObjectTypesTrait
+import visdom.database.mongodb.MongoConstants
 import visdom.spark.ConfigUtils
 
 
 class DatasetModelUtils(sparkSession: SparkSession)
 extends ModelUtils(sparkSession) {
+    import sparkSession.implicits.newProductEncoder
+
     override val objectTypes: ObjectTypesTrait = DatasetObjectTypes
     override val modelUtilsObject: ModelUtilsTrait = DatasetModelUtils
 
@@ -25,6 +30,12 @@ extends ModelUtils(sparkSession) {
     override protected val eventUtils: DatasetModelEventUtils = new DatasetModelEventUtils(sparkSession, this)
     override protected val artifactUtils: DatasetModelArtifactUtils = new DatasetModelArtifactUtils(sparkSession, this)
     override protected val authorUtils: DatasetModelAuthorUtils = new DatasetModelAuthorUtils(sparkSession, this)
+
+    def getCommitSchemas() = {
+        loadMongoDataDataset[CommitSchema](MongoConstants.CollectionGitCommits)
+            .flatMap(row => CommitSchema.fromRow(row))
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
 
     override def updateOrigins(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isOriginCacheUpdated()) {

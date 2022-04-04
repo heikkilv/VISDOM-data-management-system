@@ -37,6 +37,7 @@ object MongoConstants {
     val CollectionPipelines: String = "pipelines"
     val CollectionPoints: String = "points"
     val CollectionProjects: String = "projects"
+    val CollectionSonarMeasures: String = "sonar_measures"
     val CollectionSubmissions: String = "submissions"
     val CollectionTemp: String = "temp"
 
