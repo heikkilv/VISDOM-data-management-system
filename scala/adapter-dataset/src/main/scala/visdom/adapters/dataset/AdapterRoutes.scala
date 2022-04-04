@@ -3,10 +3,10 @@ package visdom.adapters.dataset
 import akka.actor.Props
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.server.Route
+import visdom.http.server.actors.DatasetAdapterInfoActor
 import visdom.http.server.actors.DatasetMultiActor
 import visdom.http.server.actors.DatasetSingleActor
 import visdom.http.server.actors.DatasetUpdateActor
-import visdom.http.server.actors.GeneralAdapterInfoActor
 import visdom.http.server.services.AdapterInfoService
 import visdom.http.server.services.ArtifactService
 import visdom.http.server.services.AuthorService
@@ -21,7 +21,7 @@ import visdom.http.server.swagger.SwaggerRoutes
 
 object AdapterRoutes extends visdom.adapters.AdapterRoutes {
     override val routes: Route = Directives.concat(
-        new AdapterInfoService(system.actorOf(Props[GeneralAdapterInfoActor])).route,
+        new AdapterInfoService(system.actorOf(Props[DatasetAdapterInfoActor])).route,
         new SingleService(system.actorOf(Props[DatasetSingleActor])).route,
         new OriginService(system.actorOf(Props[DatasetMultiActor])).route,
         new EventService(system.actorOf(Props[DatasetMultiActor])).route,
