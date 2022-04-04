@@ -3,6 +3,7 @@ package visdom.database.mongodb
 import java.time.Instant
 import java.util.concurrent.TimeoutException
 import org.bson.BsonValue
+import com.mongodb.bulk.BulkWriteResult
 import org.mongodb.scala.Document
 import org.mongodb.scala.MongoClient
 import org.mongodb.scala.MongoClientSettings
@@ -17,9 +18,13 @@ import org.mongodb.scala.bson.BsonObjectId
 import org.mongodb.scala.bson.conversions.Bson
 import org.mongodb.scala.connection.ClusterSettings
 import org.mongodb.scala.model.Filters
+import org.mongodb.scala.model.IndexModel
+import org.mongodb.scala.model.Indexes
 import org.mongodb.scala.model.ReplaceOptions
 import org.mongodb.scala.model.Sorts
+import org.mongodb.scala.model.UpdateOneModel
 import org.mongodb.scala.model.UpdateOptions
+import org.mongodb.scala.model.Updates
 import org.mongodb.scala.result.InsertManyResult
 import org.mongodb.scala.result.UpdateResult
 import scala.collection.JavaConverters.seqAsJavaListConverter
@@ -246,6 +251,64 @@ object MongoConnection {
                     case 0 => // println(s"document ${result.getUpsertedId()} inserted")
                     case _ => // println(s"${result.getModifiedCount()} document updated")
                 },
+            doOnError = (error: Throwable) =>
+                println(s"Database error: ${error.toString()}")
+        )
+    }
+
+    def updateManyDocuments(
+        collection: MongoCollection[Document],
+        updates: Seq[(Bson, Document)]
+    ): Unit = {
+        collection.bulkWrite(
+            updates.map({
+                case (filter, update) => UpdateOneModel(
+                    filter = filter,
+                    update = Updates.combine(update.map({case (key, value) => Updates.set(key, value)}).toSeq:_*)
+                )
+            })
+        ).subscribe(
+            doOnNext = (result: BulkWriteResult) =>
+                println(
+                    s"Updated ${result.getModifiedCount()}/${updates.size} " +
+                    s"documents in collection ${collection.namespace.getCollectionName()}"
+                ),
+            doOnError = (error: Throwable) =>
+                println(s"Database error: ${error.toString()}")
+        )
+    }
+
+    def updateDocument(
+        collection: MongoCollection[Document],
+        update: Document,
+        identifyFilter: Bson
+    ): Unit = {
+        collection.updateOne(
+            identifyFilter,
+            Updates.combine(update.map({case (key, value) => Updates.set(key, value)}).toSeq:_*)
+        ).subscribe(
+            doOnNext = (result: UpdateResult) =>
+                result.getMatchedCount() match {
+                    case 1 =>  // successful update
+                    case _ =>  // no updates done
+                },
+            doOnError = (error: Throwable) =>
+                println(s"Database error: ${error.toString()}")
+        )
+    }
+
+    def printCreateIndexesMessage(collectionName: String, indexName: String): Unit = {
+        // println(s"Created index ${indexName} for collection ${collectionName}")
+    }
+
+    def createIndexes(
+        collection: MongoCollection[Document],
+        indexAttributes: Seq[String]
+    ): Unit = {
+        collection.createIndexes(
+            indexAttributes.map(attribute => IndexModel(Indexes.ascending(attribute)))
+        ).subscribe(
+            doOnNext = (result: String) => printCreateIndexesMessage(collection.namespace.getCollectionName(), result),
             doOnError = (error: Throwable) =>
                 println(s"Database error: ${error.toString()}")
         )

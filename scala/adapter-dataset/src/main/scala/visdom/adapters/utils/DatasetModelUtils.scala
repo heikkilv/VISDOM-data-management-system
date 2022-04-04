@@ -26,36 +26,48 @@ extends ModelUtils(sparkSession) {
     override protected val artifactUtils: DatasetModelArtifactUtils = new DatasetModelArtifactUtils(sparkSession, this)
     override protected val authorUtils: DatasetModelAuthorUtils = new DatasetModelAuthorUtils(sparkSession, this)
 
-    override def updateOrigins(): Unit = {
+    override def updateOrigins(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isOriginCacheUpdated()) {
-            super.updateOrigins()
+            super.updateOrigins(false)
             storeObjects(originUtils.getProjectOrigins(), ProjectOrigin.ProjectOriginType)
-            updateOriginsIndexes()
+
+            if (updateIndexes) {
+                updateOriginsIndexes()
+            }
         }
     }
 
-    override def updateEvents(): Unit = {
+    override def updateEvents(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isEventCacheUpdated()) {
-            super.updateEvents()
+            super.updateEvents(false)
             storeObjects(eventUtils.getProjectCommits(), ProjectCommitEvent.ProjectCommitEventType)
-            updateEventIndexes()
+
+            if (updateIndexes) {
+                updateEventIndexes()
+            }
         }
     }
 
-    override def updateAuthors(): Unit = {
+    override def updateAuthors(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isAuthorCacheUpdated()) {
-            super.updateAuthors()
+            super.updateAuthors(false)
             storeObjects(authorUtils.getUserAuthors(), UserAuthor.UserAuthorType)
-            updateAuthorIndexes()
+
+            if (updateIndexes) {
+                updateAuthorIndexes()
+            }
         }
     }
 
-    override def updateArtifacts(): Unit = {
+    override def updateArtifacts(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isArtifactCacheUpdated()) {
-            super.updateArtifacts()
+            super.updateArtifacts(false)
             storeObjects(artifactUtils.getJiraIssues(), JiraIssueArtifact.JiraIssueArtifactType)
             storeObjects(artifactUtils.getSonarMeasures(), SonarMeasuresArtifact.SonarMeasuresArtifactType)
-            updateArtifactIndexes()
+
+            if (updateIndexes) {
+                updateArtifactIndexes()
+            }
         }
     }
 
