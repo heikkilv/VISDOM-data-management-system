@@ -24,6 +24,14 @@ object DatasetObjectTypes extends ObjectTypesTrait {
     )
     val MetadataTypes: Set[String] = ObjectTypes.MetadataTypes
 
+    val objectTypes: Map[String, Set[String]] = Map(
+        TargetTypeOrigin -> OriginTypes,
+        TargetTypeEvent -> EventTypes,
+        TargetTypeAuthor -> AuthorTypes,
+        TargetTypeArtifact -> ArtifactTypes,
+        TargetTypeMetadata -> MetadataTypes
+    )
+
     // The default attribute type is String => only non-string attributes should be listed here
     private val newAttributeTypes: Map[String, Map[String, String]] = Map(
         ProjectOrigin.ProjectOriginType -> Map.empty,

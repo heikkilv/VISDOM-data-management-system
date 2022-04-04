@@ -1,13 +1,19 @@
 package visdom.adapters.utils
 
+import com.mongodb.spark.MongoSpark
+import com.mongodb.spark.config.ReadConfig
+import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
-import visdom.adapters.options.DatasetObjectTypes
-import visdom.adapters.options.ObjectTypesTrait
+import scala.reflect.runtime.universe.TypeTag
+import visdom.adapters.dataset.AdapterValues
 import visdom.adapters.dataset.model.artifacts.JiraIssueArtifact
 import visdom.adapters.dataset.model.artifacts.SonarMeasuresArtifact
 import visdom.adapters.dataset.model.authors.UserAuthor
 import visdom.adapters.dataset.model.events.ProjectCommitEvent
 import visdom.adapters.dataset.model.origins.ProjectOrigin
+import visdom.adapters.options.DatasetObjectTypes
+import visdom.adapters.options.ObjectTypesTrait
+import visdom.spark.ConfigUtils
 
 
 class DatasetModelUtils(sparkSession: SparkSession)
@@ -52,6 +58,21 @@ extends ModelUtils(sparkSession) {
             updateArtifactIndexes()
         }
     }
+
+    def getReadConfigDataset(collectionName: String): ReadConfig = {
+        ConfigUtils.getReadConfig(
+            sparkSession,
+            AdapterValues.datasetDatabaseName,
+            collectionName
+        )
+    }
+
+    def loadMongoDataDataset[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
+        MongoSpark
+            .load[DataSchema](sparkSession, getReadConfigDataset(collectionName))
+    }
 }
 
-object DatasetModelUtils extends ModelUtilsTrait
+object DatasetModelUtils extends ModelUtilsTrait {
+    override val objectTypes: ObjectTypesTrait = DatasetObjectTypes
+}

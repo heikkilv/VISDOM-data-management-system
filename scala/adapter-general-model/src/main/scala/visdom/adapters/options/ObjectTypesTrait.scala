@@ -23,13 +23,7 @@ trait ObjectTypesTrait {
     val ArtifactTypes: Set[String]
     val MetadataTypes: Set[String]
 
-    val objectTypes: Map[String, Set[String]] = Map(
-        TargetTypeOrigin -> OriginTypes,
-        TargetTypeEvent -> EventTypes,
-        TargetTypeAuthor -> AuthorTypes,
-        TargetTypeArtifact -> ArtifactTypes,
-        TargetTypeMetadata -> MetadataTypes
-    )
+    val objectTypes: Map[String, Set[String]]
 
     def getTargetType(objectType: String): Option[String] = {
         objectTypes

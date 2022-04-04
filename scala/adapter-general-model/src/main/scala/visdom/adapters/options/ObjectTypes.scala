@@ -49,6 +49,14 @@ object ObjectTypes extends ObjectTypesTrait {
         ExerciseMetadata.ExerciseMetadataType
     )
 
+    val objectTypes: Map[String, Set[String]] = Map(
+        TargetTypeOrigin -> OriginTypes,
+        TargetTypeEvent -> EventTypes,
+        TargetTypeAuthor -> AuthorTypes,
+        TargetTypeArtifact -> ArtifactTypes,
+        TargetTypeMetadata -> MetadataTypes
+    )
+
     // The default attribute type is String => only non-string attributes should be listed here
     val attributeTypes: Map[String, Map[String, String]] = Map(
         GitlabOrigin.GitlabOriginType -> Map(
