@@ -20,6 +20,7 @@ class MultiQuery(queryOptions: MultiQueryOptions)
 extends BaseCacheQuery(queryOptions) {
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
+    val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
 
     private val dataAttributes: Option[Seq[String]] = queryOptions.dataAttributes
     private val extraAttributes: Seq[String] =
@@ -33,7 +34,7 @@ extends BaseCacheQuery(queryOptions) {
     }
 
     def updateCache(): (Class[_ <: BaseSparkQuery], BaseQueryOptions) = {
-        (classOf[CacheUpdater], CacheQueryOptions(queryOptions.targetType))
+        (cacheUpdaterClass, CacheQueryOptions(queryOptions.targetType))
     }
 
     def getResults(): Option[BaseResultValue] = {

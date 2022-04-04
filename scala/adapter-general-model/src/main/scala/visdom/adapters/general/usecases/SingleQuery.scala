@@ -18,6 +18,7 @@ class SingleQuery(queryOptions: SingleQueryOptions)
 extends BaseCacheQuery(queryOptions) {
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
+    val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
 
     def cacheCheck(): Boolean = {
         objectTypes.getTargetType(queryOptions.objectType) match {
@@ -28,7 +29,7 @@ extends BaseCacheQuery(queryOptions) {
 
     def updateCache(): (Class[_ <: BaseSparkQuery], CacheQueryOptions) = {
         (
-            classOf[CacheUpdater],
+            cacheUpdaterClass,
             CacheQueryOptions(
                 objectTypes.getTargetType(queryOptions.objectType).getOrElse(CommonConstants.EmptyString)
             )

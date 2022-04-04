@@ -58,11 +58,11 @@ class ModelUtils(sparkSession: SparkSession) {
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
 
-    private val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
-    private val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
-    private val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
-    private val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
-    private val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
+    protected val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
+    protected val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
+    protected val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
+    protected val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
+    protected val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
 
     def getProjectNameMap(): Map[Int, String] = {
         getPipelineProjectNames() ++
@@ -326,9 +326,9 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     private def getCacheDocuments(
-        objectTypes: Seq[String]
+        objectTypeStrings: Seq[String]
     ): Seq[(String, MongoCollection[Document], List[BsonDocument])] = {
-        objectTypes
+        objectTypeStrings
             .map(
                 objectType => (
                     objectType,
@@ -346,9 +346,9 @@ class ModelUtils(sparkSession: SparkSession) {
             })
     }
 
-    def updateIndexes(objectTypes: Seq[String]): Unit = {
+    def updateIndexes(objectTypeStrings: Seq[String]): Unit = {
         val cacheDocuments: Seq[(String, MongoCollection[Document], List[BsonDocument])] =
-            getCacheDocuments(objectTypes)
+            getCacheDocuments(objectTypeStrings)
 
         val indexMap: Map[String, Indexes] =
             cacheDocuments
@@ -440,7 +440,7 @@ class ModelUtils(sparkSession: SparkSession) {
             .load[DataSchema](sparkSession, getReadConfigAplus(collectionName))
     }
 
-    private def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
+    protected def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
         GeneralQueryUtils.storeObjects(sparkSession, dataset, collectionName)
     }
 }

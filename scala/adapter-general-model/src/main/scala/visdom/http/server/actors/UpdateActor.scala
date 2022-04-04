@@ -19,15 +19,17 @@ import visdom.utils.WartRemoverConstants
 
 
 class UpdateActor extends Actor with ActorLogging {
+    val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
+
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case QueryOptionsBaseObject => {
             log.info("Received update query")
 
             QueryUtils.runSparkQuery(
-                queryType = classOf[CacheUpdater],
+                queryType = cacheUpdaterClass,
                 queryOptions = CacheQueryOptions(ObjectTypes.TargetTypeAll),
-                timeoutSeconds = Duration(1, TimeUnit.HOURS).toSeconds
+                timeoutSeconds = Duration(2, TimeUnit.HOURS).toSeconds
             )
 
             val response: JsonResponse = JsonResponse(
