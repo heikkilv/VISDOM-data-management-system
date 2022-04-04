@@ -6,16 +6,21 @@ import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.options.CacheQueryOptions
 import visdom.adapters.options.MultiQueryOptions
 import visdom.adapters.options.ObjectTypes
+import visdom.adapters.options.ObjectTypesTrait
 import visdom.adapters.queries.BaseCacheQuery
 import visdom.adapters.queries.BaseSparkQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.utils.GeneralQueryUtils
 import visdom.adapters.utils.ModelUtils
+import visdom.adapters.utils.ModelUtilsTrait
 
 
 class MultiQuery(queryOptions: MultiQueryOptions)
 extends BaseCacheQuery(queryOptions) {
+    val objectTypes: ObjectTypesTrait = ObjectTypes
+    val modelUtilsObject: ModelUtilsTrait = ModelUtils
+
     private val dataAttributes: Option[Seq[String]] = queryOptions.dataAttributes
     private val extraAttributes: Seq[String] =
         queryOptions.includedLinks.linkAttributes
@@ -24,7 +29,7 @@ extends BaseCacheQuery(queryOptions) {
             .toSeq
 
     def cacheCheck(): Boolean = {
-        ModelUtils.isTargetCacheUpdated(queryOptions.targetType)
+        modelUtilsObject.isTargetCacheUpdated(queryOptions.targetType)
     }
 
     def updateCache(): (Class[_ <: BaseSparkQuery], BaseQueryOptions) = {
@@ -34,7 +39,7 @@ extends BaseCacheQuery(queryOptions) {
     def getResults(): Option[BaseResultValue] = {
         val consideredObjects: Seq[String] = queryOptions.objectType match {
             case Some(objectType: String) => Seq(objectType)
-            case None => ObjectTypes.objectTypes.get(queryOptions.targetType) match {
+            case None => objectTypes.objectTypes.get(queryOptions.targetType) match {
                 case Some(objectTypes: Set[String]) => objectTypes.toSeq
                 case None => Seq.empty
             }

@@ -40,13 +40,13 @@ import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PointsSchema
 import visdom.adapters.general.schemas.SubmissionSchema
+import visdom.adapters.options.ObjectTypesTrait
 import visdom.adapters.options.ObjectTypes
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.utils.CommonConstants
-import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
 
 
@@ -54,6 +54,9 @@ import visdom.utils.SnakeCaseConstants
 class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
+
+    val objectTypes: ObjectTypesTrait = ObjectTypes
+    val modelUtilsObject: ModelUtilsTrait = ModelUtils
 
     private val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
     private val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
@@ -276,7 +279,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateOrigins(): Unit = {
-        if (!ModelUtils.isOriginCacheUpdated()) {
+        if (!modelUtilsObject.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
             storeObjects(originUtils.getAplusOrigins(), AplusOrigin.AplusOriginType)
             updateOriginsIndexes()
@@ -284,7 +287,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateEvents(): Unit = {
-        if (!ModelUtils.isEventCacheUpdated()) {
+        if (!modelUtilsObject.isEventCacheUpdated()) {
             storeObjects(eventUtils.getCommits(), CommitEvent.CommitEventType)
             storeObjects(eventUtils.getPipelines(), PipelineEvent.PipelineEventType)
             storeObjects(eventUtils.getPipelineJobs(), PipelineJobEvent.PipelineJobEventType)
@@ -294,7 +297,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateAuthors(): Unit = {
-        if (!ModelUtils.isAuthorCacheUpdated()) {
+        if (!modelUtilsObject.isAuthorCacheUpdated()) {
             storeObjects(authorUtils.getCommitAuthors(), CommitAuthor.CommitAuthorType)
             storeObjects(authorUtils.getGitlabAuthors(), GitlabAuthor.GitlabAuthorType)
             storeObjects(authorUtils.getAplusAuthors(), AplusAuthor.AplusAuthorType)
@@ -303,7 +306,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateArtifacts(): Unit = {
-        if (!ModelUtils.isArtifactCacheUpdated()) {
+        if (!modelUtilsObject.isArtifactCacheUpdated()) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
             storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
@@ -314,7 +317,7 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateMetadata(): Unit = {
-        if (!ModelUtils.isMetadataCacheUpdated()) {
+        if (!modelUtilsObject.isMetadataCacheUpdated()) {
             storeObjects(metadataUtils.getCourseMetadata(), CourseMetadata.CourseMetadataType)
             storeObjects(metadataUtils.getModuleMetadata(), ModuleMetadata.ModuleMetadataType)
             storeObjects(metadataUtils.getExerciseMetadata(), ExerciseMetadata.ExerciseMetadataType)
@@ -384,34 +387,34 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def updateOriginsIndexes(): Unit = {
-        updateIndexes(ObjectTypes.OriginTypes.toSeq)
+        updateIndexes(objectTypes.OriginTypes.toSeq)
     }
 
     def updateEventIndexes(): Unit = {
-        updateIndexes(ObjectTypes.EventTypes.toSeq)
+        updateIndexes(objectTypes.EventTypes.toSeq)
     }
 
     def updateAuthorIndexes(): Unit = {
-        updateIndexes(ObjectTypes.AuthorTypes.toSeq)
+        updateIndexes(objectTypes.AuthorTypes.toSeq)
     }
 
     def updateArtifactIndexes(): Unit = {
-        updateIndexes(ObjectTypes.ArtifactTypes.toSeq)
+        updateIndexes(objectTypes.ArtifactTypes.toSeq)
     }
 
     def updateMetadataIndexes(): Unit = {
-        updateIndexes(ObjectTypes.MetadataTypes.toSeq)
+        updateIndexes(objectTypes.MetadataTypes.toSeq)
     }
 
     def updateTargetCache(targetType: String): Unit = {
         targetType match {
-            case ObjectTypes.TargetTypeEvent => updateEvents()
-            case ObjectTypes.TargetTypeOrigin => updateOrigins()
-            case ObjectTypes.TargetTypeArtifact => updateArtifacts()
-            case ObjectTypes.TargetTypeAuthor => updateAuthors()
-            case ObjectTypes.TargetTypeMetadata => updateMetadata()
-            case ObjectTypes.TargetTypeAll =>
-                ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
+            case objectTypes.TargetTypeEvent => updateEvents()
+            case objectTypes.TargetTypeOrigin => updateOrigins()
+            case objectTypes.TargetTypeArtifact => updateArtifacts()
+            case objectTypes.TargetTypeAuthor => updateAuthors()
+            case objectTypes.TargetTypeMetadata => updateMetadata()
+            case objectTypes.TargetTypeAll =>
+                objectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
 
@@ -420,11 +423,11 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def getReadConfigGitlab(collectionName: String): ReadConfig = {
-        ModelUtils.getReadConfigGitlab(sparkSession, collectionName)
+        modelUtilsObject.getReadConfigGitlab(sparkSession, collectionName)
     }
 
     def getReadConfigAplus(collectionName: String): ReadConfig = {
-        ModelUtils.getReadConfigAplus(sparkSession, collectionName)
+        modelUtilsObject.getReadConfigAplus(sparkSession, collectionName)
     }
 
     def loadMongoDataGitlab[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
@@ -442,49 +445,5 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 }
 
-object ModelUtils {
-    def isOriginCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeOrigin)
-    }
-
-    def isEventCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeEvent)
-    }
-
-    def isAuthorCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeAuthor)
-    }
-
-    def isArtifactCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeArtifact)
-    }
-
-    def isMetadataCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeMetadata)
-    }
-
-    def isTargetCacheUpdated(targetType: String): Boolean = {
-        ObjectTypes.objectTypes.get(targetType) match {
-            case Some(objectTypes: Set[String]) =>
-                objectTypes.forall(objectType => GeneralQueryUtils.isCacheUpdated(objectType))
-            case None => false
-        }
-    }
-
-    def getReadConfigGitlab(sparkSession: SparkSession, collectionName: String): ReadConfig = {
-        ConfigUtils.getReadConfig(
-            sparkSession,
-            AdapterValues.gitlabDatabaseName,
-            collectionName
-        )
-    }
-
-    def getReadConfigAplus(sparkSession: SparkSession, collectionName: String): ReadConfig = {
-        ConfigUtils.getReadConfig(
-            sparkSession,
-            AdapterValues.aPlusDatabaseName,
-            collectionName
-        )
-    }
-}
+object ModelUtils extends ModelUtilsTrait
 // scalastyle:on number.of.methods
