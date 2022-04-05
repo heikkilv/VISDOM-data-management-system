@@ -2,7 +2,6 @@ package visdom.adapters.dataset.model.events
 
 import java.time.ZonedDateTime
 import visdom.adapters.dataset.model.events.data.ProjectCommitData
-import visdom.adapters.dataset.schemas.CommitChangeSchema
 import visdom.adapters.dataset.schemas.CommitSchema
 import visdom.adapters.dataset.model.authors.UserAuthor
 import visdom.adapters.general.model.base.Event
@@ -14,7 +13,9 @@ import visdom.utils.TimeUtils
 
 class ProjectCommitEvent(
     commitSchema: CommitSchema,
-    commitChangeSchemas: Seq[CommitChangeSchema],
+    numberOfFiles: Int,
+    additions: Int,
+    deletions: Int,
     datasetName: String,
     relatedConstructs: Seq[ItemLink]
 )
@@ -32,7 +33,7 @@ extends Event {
         UserAuthor.UserAuthorType
     )
 
-    val data: ProjectCommitData = ProjectCommitData.fromCommitSchema(commitSchema, commitChangeSchemas)
+    val data: ProjectCommitData = ProjectCommitData.fromCommitSchema(commitSchema, numberOfFiles, additions, deletions)
 
     val message: String = commitSchema.commit_message
     val time: ZonedDateTime = TimeUtils.toZonedDateTimeWithDefault(commitSchema.committer_date)

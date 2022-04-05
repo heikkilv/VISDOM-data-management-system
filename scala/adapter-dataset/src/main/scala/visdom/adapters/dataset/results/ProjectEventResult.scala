@@ -13,13 +13,17 @@ object ProjectEventResult {
 
     def fromCommitSchema(
         commitSchema: CommitSchema,
-        commitChangeSchemas: Seq[CommitChangeSchema],
+        numberOfFiles: Int,
+        additions: Int,
+        deletions: Int,
         datasetName: String,
         relatedConstructs: Seq[ItemLink]
     ): ProjectCommitEventResult = {
         val commitEvent: ProjectCommitEvent = new ProjectCommitEvent(
             commitSchema,
-            commitChangeSchemas,
+            numberOfFiles,
+            additions,
+            deletions,
             datasetName,
             relatedConstructs
         )

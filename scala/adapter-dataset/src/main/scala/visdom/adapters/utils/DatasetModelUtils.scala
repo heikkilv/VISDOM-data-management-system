@@ -4,7 +4,6 @@ import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.SparkSession
-import org.apache.spark.storage.StorageLevel
 import scala.reflect.runtime.universe.TypeTag
 import visdom.adapters.dataset.AdapterValues
 import visdom.adapters.dataset.model.artifacts.JiraIssueArtifact
@@ -34,7 +33,6 @@ extends ModelUtils(sparkSession) {
     def getCommitSchemas() = {
         loadMongoDataDataset[CommitSchema](MongoConstants.CollectionGitCommits)
             .flatMap(row => CommitSchema.fromRow(row))
-            .persist(StorageLevel.MEMORY_ONLY)
     }
 
     override def updateOrigins(updateIndexes: Boolean): Unit = {
@@ -51,7 +49,8 @@ extends ModelUtils(sparkSession) {
     override def updateEvents(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isEventCacheUpdated()) {
             super.updateEvents(false)
-            storeObjects(eventUtils.getProjectCommits(), ProjectCommitEvent.ProjectCommitEventType)
+            // Note, to avoid "Out of memory" errors, storing is done one project at a time
+            eventUtils.storeProjectCommits()
 
             if (updateIndexes) {
                 updateEventIndexes()

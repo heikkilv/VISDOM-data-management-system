@@ -38,4 +38,11 @@ object SonarMeasuresArtifact {
     def getId(originId: String, analysisKey: String): String = {
         GeneralUtils.getUuid(originId, SonarMeasuresArtifactType, analysisKey)
     }
+
+    def getId(datasetName: String, projectId: String, analysisKey: String): String = {
+        getId(
+            originId = ProjectOrigin.getId(datasetName, projectId),
+            analysisKey = analysisKey
+        )
+    }
 }

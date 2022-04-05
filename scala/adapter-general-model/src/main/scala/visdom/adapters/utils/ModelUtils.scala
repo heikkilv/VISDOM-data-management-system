@@ -39,6 +39,7 @@ import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.StringIdSchema
 import visdom.adapters.general.schemas.SubmissionSchema
 import visdom.adapters.options.ObjectTypesTrait
 import visdom.adapters.options.ObjectTypes
@@ -47,6 +48,7 @@ import visdom.database.mongodb.MongoConstants
 import visdom.json.JsonUtils
 import visdom.json.JsonUtils.EnrichedBsonDocument
 import visdom.utils.CommonConstants
+import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
 
 
@@ -54,6 +56,7 @@ import visdom.utils.SnakeCaseConstants
 class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
+    import sparkSession.implicits.newStringEncoder
 
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
@@ -346,6 +349,7 @@ class ModelUtils(sparkSession: SparkSession) {
                 collection = MongoConnection.getCollection(AdapterValues.cacheDatabaseName, collectionName),
                 indexAttributes = Seq(
                     SnakeCaseConstants.Id,
+                    SnakeCaseConstants.Type,
                     SnakeCaseConstants.CategoryIndex,
                     SnakeCaseConstants.TypeIndex
                 )
@@ -353,37 +357,37 @@ class ModelUtils(sparkSession: SparkSession) {
         )
     }
 
-    private def getCacheDocumentIds(
-        objectTypeStrings: Seq[String]
-    ): Seq[(String, MongoCollection[Document], List[String])] = {
+    private def getCacheDocumentIds(objectTypeStrings: Seq[String]): Seq[(String, List[String])] = {
         objectTypeStrings
             .map(
                 objectType => (
                     objectType,
-                    MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType)
+                    MongoSpark.load[StringIdSchema](
+                        sparkSession,
+                        ConfigUtils.getReadConfig(
+                            sparkSession,
+                            AdapterValues.cacheDatabaseName,
+                            objectType
+                        )
+                    )
+                        .flatMap(row => StringIdSchema.fromRow(row))
+                        .map(id => id.id)
+                        .collect()
+                        .toList
                 )
             )
-            .map({
-                case (objectType, collection) => (
-                    objectType,
-                    collection,
-                    MongoConnection
-                        .getDocuments(collection, List.empty)
-                        .flatMap(document => document.toBsonDocument.getStringOption(SnakeCaseConstants.Id))
-                )
-            })
     }
 
     def updateIndexes(objectTypeStrings: Seq[String]): Unit = {
         createIndexes(objectTypeStrings)
 
-        val cacheDocumentIds: Seq[(String, MongoCollection[Document], List[String])] =
+        val cacheDocumentIds: Seq[(String, List[String])] =
             getCacheDocumentIds(objectTypeStrings)
 
         val indexMap: Map[String, Indexes] =
             cacheDocumentIds
                 .map({
-                    case (objectType, _, documentList) =>
+                    case (objectType, documentList) =>
                         documentList
                             .sorted
                             .zipWithIndex
@@ -401,10 +405,10 @@ class ModelUtils(sparkSession: SparkSession) {
                 .toMap
 
         cacheDocumentIds.flatMap({
-            case (_, collection, idList) => idList.flatMap(
+            case (objectType, idList) => idList.flatMap(
                 id => indexMap.get(id).map(
                     indexes => (
-                        collection,
+                        objectType,
                         MongoConnection.getEqualFilter(SnakeCaseConstants.Id, JsonUtils.toBsonValue(id)),
                         Document(
                             SnakeCaseConstants.CategoryIndex -> JsonUtils.toBsonValue(indexes.categoryIndex),
@@ -414,10 +418,13 @@ class ModelUtils(sparkSession: SparkSession) {
                 )
             )
         })
-        .groupBy({case (collection, _, _) => collection})
+        .groupBy({case (objectType, _, _) => objectType})
         .mapValues(updateSequence => updateSequence.map({case (_, filter, update) => (filter, update)}))
         .foreach({
-            case (collection, updateSequence) => MongoConnection.updateManyDocuments(collection, updateSequence)
+            case (objectType, updateSequence) => MongoConnection.updateManyDocuments(
+                MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType),
+                updateSequence
+            )
         })
     }
 
@@ -475,7 +482,7 @@ class ModelUtils(sparkSession: SparkSession) {
             .load[DataSchema](sparkSession, getReadConfigAplus(collectionName))
     }
 
-    protected def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
+    def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
         GeneralQueryUtils.storeObjects(sparkSession, dataset, collectionName)
     }
 }
