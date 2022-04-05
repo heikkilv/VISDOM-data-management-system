@@ -39,7 +39,9 @@ import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineJobSchema
 import visdom.adapters.general.schemas.PipelineSchema
 import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.StringIdSchema
 import visdom.adapters.general.schemas.SubmissionSchema
+import visdom.adapters.options.ObjectTypesTrait
 import visdom.adapters.options.ObjectTypes
 import visdom.database.mongodb.MongoConnection
 import visdom.database.mongodb.MongoConstants
@@ -54,12 +56,16 @@ import visdom.utils.SnakeCaseConstants
 class ModelUtils(sparkSession: SparkSession) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
+    import sparkSession.implicits.newStringEncoder
 
-    private val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
-    private val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
-    private val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
-    private val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
-    private val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
+    val objectTypes: ObjectTypesTrait = ObjectTypes
+    val modelUtilsObject: ModelUtilsTrait = ModelUtils
+
+    protected val originUtils: ModelOriginUtils = new ModelOriginUtils(sparkSession, this)
+    protected val eventUtils: ModelEventUtils = new ModelEventUtils(sparkSession, this)
+    protected val artifactUtils: ModelArtifactUtils = new ModelArtifactUtils(sparkSession, this)
+    protected val authorUtils: ModelAuthorUtils = new ModelAuthorUtils(sparkSession, this)
+    protected val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
 
     def getProjectNameMap(): Map[Int, String] = {
         getPipelineProjectNames() ++
@@ -275,84 +281,116 @@ class ModelUtils(sparkSession: SparkSession) {
             .toMap
     }
 
-    def updateOrigins(): Unit = {
-        if (!ModelUtils.isOriginCacheUpdated()) {
+    def updateOrigins(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
             storeObjects(originUtils.getAplusOrigins(), AplusOrigin.AplusOriginType)
-            updateOriginsIndexes()
+
+            if (updateIndexes) {
+                updateOriginsIndexes()
+            }
         }
     }
 
-    def updateEvents(): Unit = {
-        if (!ModelUtils.isEventCacheUpdated()) {
+    def updateEvents(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isEventCacheUpdated()) {
             storeObjects(eventUtils.getCommits(), CommitEvent.CommitEventType)
             storeObjects(eventUtils.getPipelines(), PipelineEvent.PipelineEventType)
             storeObjects(eventUtils.getPipelineJobs(), PipelineJobEvent.PipelineJobEventType)
             storeObjects(eventUtils.getSubmissions(), SubmissionEvent.SubmissionEventType)
-            updateEventIndexes()
+
+            if (updateIndexes) {
+                updateEventIndexes()
+            }
         }
     }
 
-    def updateAuthors(): Unit = {
-        if (!ModelUtils.isAuthorCacheUpdated()) {
+    def updateAuthors(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isAuthorCacheUpdated()) {
             storeObjects(authorUtils.getCommitAuthors(), CommitAuthor.CommitAuthorType)
             storeObjects(authorUtils.getGitlabAuthors(), GitlabAuthor.GitlabAuthorType)
             storeObjects(authorUtils.getAplusAuthors(), AplusAuthor.AplusAuthorType)
-            updateAuthorIndexes()
+
+            if (updateIndexes) {
+                updateAuthorIndexes()
+            }
         }
     }
 
-    def updateArtifacts(): Unit = {
-        if (!ModelUtils.isArtifactCacheUpdated()) {
+    def updateArtifacts(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isArtifactCacheUpdated()) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
             storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
             storeObjects(artifactUtils.getModulePoints(), ModulePointsArtifact.ModulePointsArtifactType)
             storeObjects(artifactUtils.getExercisePoints(), ExercisePointsArtifact.ExercisePointsArtifactType)
-            updateArtifactIndexes()
+
+            if (updateIndexes) {
+                updateArtifactIndexes()
+            }
         }
     }
 
-    def updateMetadata(): Unit = {
-        if (!ModelUtils.isMetadataCacheUpdated()) {
+    def updateMetadata(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isMetadataCacheUpdated()) {
             storeObjects(metadataUtils.getCourseMetadata(), CourseMetadata.CourseMetadataType)
             storeObjects(metadataUtils.getModuleMetadata(), ModuleMetadata.ModuleMetadataType)
             storeObjects(metadataUtils.getExerciseMetadata(), ExerciseMetadata.ExerciseMetadataType)
-            updateMetadataIndexes()
+
+            if (updateIndexes) {
+                updateMetadataIndexes()
+            }
         }
     }
 
-    private def getCacheDocuments(
-        objectTypes: Seq[String]
-    ): Seq[(String, MongoCollection[Document], List[BsonDocument])] = {
-        objectTypes
+    def createIndexes(collectionNames: Seq[String]): Unit = {
+        collectionNames.foreach(
+            collectionName => MongoConnection.createIndexes(
+                collection = MongoConnection.getCollection(AdapterValues.cacheDatabaseName, collectionName),
+                indexAttributes = Seq(
+                    SnakeCaseConstants.Id,
+                    SnakeCaseConstants.Type,
+                    SnakeCaseConstants.CategoryIndex,
+                    SnakeCaseConstants.TypeIndex,
+                    Seq(SnakeCaseConstants.Origin, SnakeCaseConstants.Id).mkString(CommonConstants.Dot),
+                    Seq(SnakeCaseConstants.Data, SnakeCaseConstants.ProjectId).mkString(CommonConstants.Dot)
+                )
+            )
+        )
+    }
+
+    private def getCacheDocumentIds(objectTypeStrings: Seq[String]): Seq[(String, List[String])] = {
+        objectTypeStrings
             .map(
                 objectType => (
                     objectType,
-                    MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType)
+                    MongoSpark.load[StringIdSchema](
+                        sparkSession,
+                        ConfigUtils.getReadConfig(
+                            sparkSession,
+                            AdapterValues.cacheDatabaseName,
+                            objectType
+                        )
+                    )
+                        .flatMap(row => StringIdSchema.fromRow(row))
+                        .map(id => id.id)
+                        .collect()
+                        .toList
                 )
             )
-            .map({
-                case (objectType, collection) => (
-                    objectType,
-                    collection,
-                    MongoConnection
-                        .getDocuments(collection, List.empty)
-                        .map(document => document.toBsonDocument)
-                )
-            })
     }
 
-    def updateIndexes(objectTypes: Seq[String]): Unit = {
-        val cacheDocuments: Seq[(String, MongoCollection[Document], List[BsonDocument])] =
-            getCacheDocuments(objectTypes)
+    def updateIndexes(objectTypeStrings: Seq[String]): Unit = {
+        createIndexes(objectTypeStrings)
+
+        val cacheDocumentIds: Seq[(String, List[String])] =
+            getCacheDocumentIds(objectTypeStrings)
 
         val indexMap: Map[String, Indexes] =
-            cacheDocuments
+            cacheDocumentIds
                 .map({
-                    case (objectType, _, documentList) =>
+                    case (objectType, documentList) =>
                         documentList
-                            .flatMap(document => document.getStringOption(SnakeCaseConstants.Id))
                             .sorted
                             .zipWithIndex
                             .map({case (id, index) => (id, index, objectType)})
@@ -360,58 +398,67 @@ class ModelUtils(sparkSession: SparkSession) {
                 .flatten
                 .sortBy({case (id, _, _) => id})
                 .zipWithIndex
-                .map({case ((id, typeIndex, typeString), categoryIndex) => (id, Indexes(categoryIndex + 1, typeIndex + 1))})
+                .map({
+                    case ((id, typeIndex, typeString), categoryIndex) => (
+                        id,
+                        Indexes(categoryIndex + 1, typeIndex + 1)
+                    )
+                })
                 .toMap
 
-        val documentUpdates: Seq[Unit] = cacheDocuments.map({
-            case (_, collection, documentList) =>
-                documentList.map(
-                    document => document.getStringOption(SnakeCaseConstants.Id) match {
-                        case Some(id: String) => indexMap.get(id) match {
-                            case Some(indexes: Indexes) =>
-                                document
-                                    .append(SnakeCaseConstants.CategoryIndex, JsonUtils.toBsonValue(indexes.categoryIndex))
-                                    .append(SnakeCaseConstants.TypeIndex, JsonUtils.toBsonValue(indexes.typeIndex))
-                            case None => document
-                        }
-                        case None => document
-                    }
+        cacheDocumentIds.flatMap({
+            case (objectType, idList) => idList.flatMap(
+                id => indexMap.get(id).map(
+                    indexes => (
+                        objectType,
+                        MongoConnection.getEqualFilter(SnakeCaseConstants.Id, JsonUtils.toBsonValue(id)),
+                        Document(
+                            SnakeCaseConstants.CategoryIndex -> JsonUtils.toBsonValue(indexes.categoryIndex),
+                            SnakeCaseConstants.TypeIndex -> JsonUtils.toBsonValue(indexes.typeIndex)
+                        )
+                    )
                 )
-                .foreach(
-                    document => MongoConnection.storeDocument(collection, document, Array(SnakeCaseConstants.Id))
-                )
+            )
+        })
+        .groupBy({case (objectType, _, _) => objectType})
+        .mapValues(updateSequence => updateSequence.map({case (_, filter, update) => (filter, update)}))
+        .foreach({
+            case (objectType, updateSequence) => MongoConnection.updateManyDocuments(
+                MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType),
+                updateSequence
+            )
         })
     }
 
     def updateOriginsIndexes(): Unit = {
-        updateIndexes(ObjectTypes.OriginTypes.toSeq)
+        updateIndexes(objectTypes.OriginTypes.toSeq)
     }
 
     def updateEventIndexes(): Unit = {
-        updateIndexes(ObjectTypes.EventTypes.toSeq)
+        updateIndexes(objectTypes.EventTypes.toSeq)
     }
 
     def updateAuthorIndexes(): Unit = {
-        updateIndexes(ObjectTypes.AuthorTypes.toSeq)
+        updateIndexes(objectTypes.AuthorTypes.toSeq)
     }
 
     def updateArtifactIndexes(): Unit = {
-        updateIndexes(ObjectTypes.ArtifactTypes.toSeq)
+        updateIndexes(objectTypes.ArtifactTypes.toSeq)
     }
 
     def updateMetadataIndexes(): Unit = {
-        updateIndexes(ObjectTypes.MetadataTypes.toSeq)
+        updateIndexes(objectTypes.MetadataTypes.toSeq)
     }
 
     def updateTargetCache(targetType: String): Unit = {
         targetType match {
-            case ObjectTypes.TargetTypeEvent => updateEvents()
-            case ObjectTypes.TargetTypeOrigin => updateOrigins()
-            case ObjectTypes.TargetTypeArtifact => updateArtifacts()
-            case ObjectTypes.TargetTypeAuthor => updateAuthors()
-            case ObjectTypes.TargetTypeMetadata => updateMetadata()
-            case ObjectTypes.TargetTypeAll =>
-                ObjectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
+            case objectTypes.TargetTypeEvent => updateEvents(true)
+            case objectTypes.TargetTypeOrigin => updateOrigins(true)
+            case objectTypes.TargetTypeArtifact => updateArtifacts(true)
+            case objectTypes.TargetTypeAuthor => updateAuthors(true)
+            case objectTypes.TargetTypeMetadata => updateMetadata(true)
+            case objectTypes.TargetTypeAll =>
+                objectTypes.objectTypes.keySet.foreach(target => updateTargetCache(target))
             case _ =>
         }
 
@@ -420,11 +467,11 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def getReadConfigGitlab(collectionName: String): ReadConfig = {
-        ModelUtils.getReadConfigGitlab(sparkSession, collectionName)
+        modelUtilsObject.getReadConfigGitlab(sparkSession, collectionName)
     }
 
     def getReadConfigAplus(collectionName: String): ReadConfig = {
-        ModelUtils.getReadConfigAplus(sparkSession, collectionName)
+        modelUtilsObject.getReadConfigAplus(sparkSession, collectionName)
     }
 
     def loadMongoDataGitlab[DataSchema <: Product: TypeTag](collectionName: String): DataFrame = {
@@ -437,54 +484,10 @@ class ModelUtils(sparkSession: SparkSession) {
             .load[DataSchema](sparkSession, getReadConfigAplus(collectionName))
     }
 
-    private def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
+    def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
         GeneralQueryUtils.storeObjects(sparkSession, dataset, collectionName)
     }
 }
 
-object ModelUtils {
-    def isOriginCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeOrigin)
-    }
-
-    def isEventCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeEvent)
-    }
-
-    def isAuthorCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeAuthor)
-    }
-
-    def isArtifactCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeArtifact)
-    }
-
-    def isMetadataCacheUpdated(): Boolean = {
-        isTargetCacheUpdated(ObjectTypes.TargetTypeMetadata)
-    }
-
-    def isTargetCacheUpdated(targetType: String): Boolean = {
-        ObjectTypes.objectTypes.get(targetType) match {
-            case Some(objectTypes: Set[String]) =>
-                objectTypes.forall(objectType => GeneralQueryUtils.isCacheUpdated(objectType))
-            case None => false
-        }
-    }
-
-    def getReadConfigGitlab(sparkSession: SparkSession, collectionName: String): ReadConfig = {
-        ConfigUtils.getReadConfig(
-            sparkSession,
-            AdapterValues.gitlabDatabaseName,
-            collectionName
-        )
-    }
-
-    def getReadConfigAplus(sparkSession: SparkSession, collectionName: String): ReadConfig = {
-        ConfigUtils.getReadConfig(
-            sparkSession,
-            AdapterValues.aPlusDatabaseName,
-            collectionName
-        )
-    }
-}
+object ModelUtils extends ModelUtilsTrait
 // scalastyle:on number.of.methods

@@ -8,48 +8,13 @@ final case class AttributeFilter(
     attributeName: String,
     filterType: AttributeFilterType,
     targetValue: String
-) {
-    def getFilter(objectTypes: Seq[String]): Bson = {
-        // use the first given object type to determine the attribute types
-        objectTypes.headOption match {
-            case Some(objectType: String) => ObjectTypes.getAttributeType(objectType, attributeName) match {
-                case ObjectTypes.StringType => getFilterString()
-                case ObjectTypes.IntType => getFilterInt()
-                case ObjectTypes.DoubleType => getFilterDouble()
-                case ObjectTypes.BooleanType => getFilterBoolean()
-                case _ => getFilterString()
-            }
-            case None => getFilterString()
-        }
-    }
-
-    def getFilterString(): Bson = {
-        filterType.getFilter(attributeName, targetValue)
-    }
-
-    def getFilterInt(): Bson = {
-        GeneralUtils.toInt(targetValue) match {
-            case Some(target: Int) => filterType.getFilter(attributeName, target)
-            case None => AttributeFilterType.emptyFilter
-        }
-    }
-
-    def getFilterDouble(): Bson = {
-        GeneralUtils.toDouble(targetValue) match {
-            case Some(target: Double) => filterType.getFilter(attributeName, target)
-            case None => AttributeFilterType.emptyFilter
-        }
-    }
-
-    def getFilterBoolean(): Bson = {
-        GeneralUtils.toBooleanOption(targetValue) match {
-            case Some(target: Boolean) => filterType.getFilter(attributeName, target)
-            case None => AttributeFilterType.emptyFilter
-        }
-    }
+)
+extends AttributeFilterTrait {
+    val objectTypesObject: ObjectTypesTrait = ObjectTypes
 }
 
-object AttributeFilter {
+object AttributeFilter
+extends AttributeFilterObject[AttributeFilter] {
     def fromString(filterString: String): Option[AttributeFilter] = {
         AttributeFilterType.getFilterType(filterString) match {
             case Some(filterType: AttributeFilterType) => {

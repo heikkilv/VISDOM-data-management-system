@@ -38,6 +38,10 @@ extends BaseResultValue {
 }
 
 object CommitStats {
+    def getEmpty(): CommitStats = {
+        CommitStats(0, 0, 0)
+    }
+
     def fromCommitStatsSchema(commitStatsSchema: CommitStatsSchema): CommitStats = {
         CommitStats(
             additions = commitStatsSchema.additions,

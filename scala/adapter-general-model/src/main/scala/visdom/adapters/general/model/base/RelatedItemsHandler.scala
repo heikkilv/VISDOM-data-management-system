@@ -18,8 +18,16 @@ extends RelatedItemsTrait {
             .map({case (constructType, constructId) => ItemLink(constructId, constructType)})
     }
 
+    def addRelatedEvent(newEvent: LinkTrait): Unit = {
+        addRelatedEvents(Seq(newEvent))
+    }
+
     def addRelatedEvents(newEvents: Seq[LinkTrait]): Unit = {
         addRelatedItems(events, newEvents)
+    }
+
+    def addRelatedConstruct(newConstruct: LinkTrait): Unit = {
+        addRelatedConstructs(Seq(newConstruct))
     }
 
     def addRelatedConstructs(newConstructs: Seq[LinkTrait]): Unit = {
