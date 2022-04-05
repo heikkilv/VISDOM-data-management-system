@@ -3,6 +3,7 @@ package visdom.adapters.utils
 import com.mongodb.spark.MongoSpark
 import com.mongodb.spark.config.ReadConfig
 import org.apache.spark.sql.DataFrame
+import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe.TypeTag
 import visdom.adapters.dataset.AdapterValues
@@ -30,7 +31,7 @@ extends ModelUtils(sparkSession) {
     override protected val artifactUtils: DatasetModelArtifactUtils = new DatasetModelArtifactUtils(sparkSession, this)
     override protected val authorUtils: DatasetModelAuthorUtils = new DatasetModelAuthorUtils(sparkSession, this)
 
-    def getCommitSchemas() = {
+    def getCommitSchemas(): Dataset[CommitSchema] = {
         loadMongoDataDataset[CommitSchema](MongoConstants.CollectionGitCommits)
             .flatMap(row => CommitSchema.fromRow(row))
     }

@@ -298,6 +298,7 @@ object MongoConnection {
     }
 
     def printCreateIndexesMessage(collectionName: String, indexName: String): Unit = {
+        val _ = (collectionName, indexName)
         // println(s"Created index ${indexName} for collection ${collectionName}")
     }
 

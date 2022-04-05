@@ -351,7 +351,9 @@ class ModelUtils(sparkSession: SparkSession) {
                     SnakeCaseConstants.Id,
                     SnakeCaseConstants.Type,
                     SnakeCaseConstants.CategoryIndex,
-                    SnakeCaseConstants.TypeIndex
+                    SnakeCaseConstants.TypeIndex,
+                    Seq(SnakeCaseConstants.Origin, SnakeCaseConstants.Id).mkString(CommonConstants.Dot),
+                    Seq(SnakeCaseConstants.Data, SnakeCaseConstants.ProjectId).mkString(CommonConstants.Dot)
                 )
             )
         )
