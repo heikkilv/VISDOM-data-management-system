@@ -7,14 +7,13 @@ import visdom.http.server.actors.DatasetAdapterInfoActor
 import visdom.http.server.actors.DatasetMultiActor
 import visdom.http.server.actors.DatasetSingleActor
 import visdom.http.server.actors.DatasetUpdateActor
-import visdom.http.server.actors.MultiActor
 import visdom.http.server.options.DatasetMultiOptions
 import visdom.http.server.services.AdapterInfoService
-import visdom.http.server.services.DatasetOriginService
-import visdom.http.server.services.DatasetEventService
 import visdom.http.server.services.DatasetAuthorService
 import visdom.http.server.services.DatasetArtifactService
-import visdom.http.server.services.MetadataService
+import visdom.http.server.services.DatasetEventService
+import visdom.http.server.services.DatasetMetadataService
+import visdom.http.server.services.DatasetOriginService
 import visdom.http.server.services.SingleService
 import visdom.http.server.services.UpdateService
 import visdom.http.server.swagger.SwaggerAdapterDocService
@@ -29,7 +28,7 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
         new DatasetEventService(system.actorOf(Props[DatasetMultiActor])).route,
         new DatasetAuthorService(system.actorOf(Props[DatasetMultiActor])).route,
         new DatasetArtifactService(system.actorOf(Props[DatasetMultiActor])).route,
-        new MetadataService(system.actorOf(Props[MultiActor])).route,
+        new DatasetMetadataService(system.actorOf(Props[DatasetMultiActor])).route,
         new UpdateService(system.actorOf(Props[DatasetUpdateActor])).route,
         SwaggerRoutes.getSwaggerRouter(
             new SwaggerAdapterDocService(
@@ -41,7 +40,7 @@ object AdapterRoutes extends visdom.adapters.AdapterRoutes {
                     classOf[DatasetEventService],
                     classOf[DatasetAuthorService],
                     classOf[DatasetArtifactService],
-                    classOf[MetadataService],
+                    classOf[DatasetMetadataService],
                     classOf[UpdateService]
                 )
             )
