@@ -1,5 +1,6 @@
 package visdom.adapters.options
 
+import visdom.adapters.dataset.AdapterValues
 import visdom.adapters.dataset.model.artifacts.JiraIssueArtifact
 import visdom.adapters.dataset.model.artifacts.SonarMeasuresArtifact
 import visdom.adapters.dataset.model.authors.UserAuthor
@@ -9,20 +10,47 @@ import visdom.utils.SnakeCaseConstants
 
 
 object DatasetObjectTypes extends ObjectTypesTrait {
-    val OriginTypes: Set[String] = ObjectTypes.OriginTypes ++ Set(
+    val OriginTypes: Set[String] = Set(
         ProjectOrigin.ProjectOriginType
+    ) ++ (
+        AdapterValues.onlyDataset match {
+            case true => Set.empty
+            case false => ObjectTypes.OriginTypes
+        }
     )
-    val EventTypes: Set[String] = ObjectTypes.EventTypes ++ Set(
+
+    val EventTypes: Set[String] = Set(
         ProjectCommitEvent.ProjectCommitEventType
+    ) ++ (
+        AdapterValues.onlyDataset match {
+            case true => Set.empty
+            case false => ObjectTypes.EventTypes
+        }
     )
-    val AuthorTypes: Set[String] = ObjectTypes.AuthorTypes ++ Set(
+
+    val AuthorTypes: Set[String] = Set(
         UserAuthor.UserAuthorType
+    ) ++ (
+        AdapterValues.onlyDataset match {
+            case true => Set.empty
+            case false => ObjectTypes.AuthorTypes
+        }
     )
-    val ArtifactTypes: Set[String] = ObjectTypes.ArtifactTypes ++ Set(
+
+    val ArtifactTypes: Set[String] =  Set(
         JiraIssueArtifact.JiraIssueArtifactType,
         SonarMeasuresArtifact.SonarMeasuresArtifactType
+    ) ++ (
+        AdapterValues.onlyDataset match {
+            case true => Set.empty
+            case false => ObjectTypes.ArtifactTypes
+        }
     )
-    val MetadataTypes: Set[String] = ObjectTypes.MetadataTypes
+
+    val MetadataTypes: Set[String] = AdapterValues.onlyDataset match {
+        case true => Set.empty
+        case false => ObjectTypes.MetadataTypes
+    }
 
     val objectTypes: Map[String, Set[String]] = Map(
         TargetTypeOrigin -> OriginTypes,
@@ -39,7 +67,7 @@ object DatasetObjectTypes extends ObjectTypesTrait {
             SnakeCaseConstants.Duration -> DoubleType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Stats, SnakeCaseConstants.Additions) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Stats, SnakeCaseConstants.Deletions) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Stats, SnakeCaseConstants.Total) -> IntType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Stats, SnakeCaseConstants.Files) -> IntType
         ),
         JiraIssueArtifact.JiraIssueArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.TimeOriginalEstimate) -> DoubleType,
@@ -73,5 +101,10 @@ object DatasetObjectTypes extends ObjectTypesTrait {
         )
     )
 
-    val attributeTypes: Map[String, Map[String, String]] = ObjectTypes.attributeTypes ++ newAttributeTypes
+    val attributeTypes: Map[String, Map[String, String]] = newAttributeTypes ++ (
+        AdapterValues.onlyDataset match {
+            case true => Map.empty
+            case false => ObjectTypes.attributeTypes
+        }
+    )
 }

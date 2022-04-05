@@ -37,7 +37,10 @@ extends ModelUtils(sparkSession) {
 
     override def updateOrigins(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isOriginCacheUpdated()) {
-            super.updateOrigins(false)
+            if (!AdapterValues.onlyDataset) {
+                super.updateOrigins(false)
+            }
+
             storeObjects(originUtils.getProjectOrigins(), ProjectOrigin.ProjectOriginType)
 
             if (updateIndexes) {
@@ -48,7 +51,10 @@ extends ModelUtils(sparkSession) {
 
     override def updateEvents(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isEventCacheUpdated()) {
-            super.updateEvents(false)
+            if (!AdapterValues.onlyDataset) {
+                super.updateEvents(false)
+            }
+
             // Note, to avoid "Out of memory" errors, storing is done one project at a time
             eventUtils.storeProjectCommits()
 
@@ -60,7 +66,10 @@ extends ModelUtils(sparkSession) {
 
     override def updateAuthors(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isAuthorCacheUpdated()) {
-            super.updateAuthors(false)
+            if (!AdapterValues.onlyDataset) {
+                super.updateAuthors(false)
+            }
+
             storeObjects(authorUtils.getUserAuthors(), UserAuthor.UserAuthorType)
 
             if (updateIndexes) {
@@ -71,9 +80,24 @@ extends ModelUtils(sparkSession) {
 
     override def updateArtifacts(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isArtifactCacheUpdated()) {
-            super.updateArtifacts(false)
+            if (!AdapterValues.onlyDataset) {
+                super.updateArtifacts(false)
+            }
+
             storeObjects(artifactUtils.getJiraIssues(), JiraIssueArtifact.JiraIssueArtifactType)
             storeObjects(artifactUtils.getSonarMeasures(), SonarMeasuresArtifact.SonarMeasuresArtifactType)
+
+            if (updateIndexes) {
+                updateArtifactIndexes()
+            }
+        }
+    }
+
+    override def updateMetadata(updateIndexes: Boolean): Unit = {
+        if (!modelUtilsObject.isMetadataCacheUpdated()) {
+            if (!AdapterValues.onlyDataset) {
+                super.updateMetadata(false)
+            }
 
             if (updateIndexes) {
                 updateArtifactIndexes()
