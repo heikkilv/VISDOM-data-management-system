@@ -20,8 +20,16 @@ stages:
         - docker:19.03.15-dind
     variables:
         DOCKER_TLS_CERTDIR: "/certs"
+        IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     before_script:
-        - cd scala
+        - echo -n $CI_REGISTRY_PASSWORD |
+          docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+
+.docker_build_process: &docker_build_process
+    - cd $SOURCE_FOLDER
+    - docker pull $IMAGE_TAG || true
+    - docker build --pull --cache-from $IMAGE_TAG --tag $IMAGE_TAG --file $DOCKERFILE_NAME .
+    - docker push $IMAGE_TAG
 
 scalastyle:
     stage: Static Analysis
@@ -44,14 +52,90 @@ unit_test:
     script:
         - sbt test
 
-docker_build:
+build_broker:
     stage: Build
     extends:
         - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-broker:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-broker
     script:
-        - docker build --tag visdom-broker:test --file Dockerfile-broker .
-        - docker build --tag visdom-fetcher-gitlab:test --file Dockerfile-fetcher-gitlab .
-        - docker build --tag visdom-fetcher-aplus:test --file Dockerfile-fetcher-aplus .
-        - docker build --tag visdom-adapter-gitlab:test --file Dockerfile-adapter-gitlab .
-        - docker build --tag visdom-adapter-course:test --file Dockerfile-adapter-course .
-        - docker build --tag visdom-adapter-general-model:test --file Dockerfile-adapter-general-model .
+        - <<:*docker_build_process
+
+build_fetcher_dataset:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: python/dataset-fetcher
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-dataset:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile
+    script:
+        - <<:*docker_build_process
+
+build_fetcher_gitlab:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-gitlab:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-fetcher-gitlab
+    script:
+        - <<:*docker_build_process
+
+build_fetcher_aplus:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-aplus:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-fetcher-aplus
+    script:
+        - <<:*docker_build_process
+
+build_adapter_gitlab:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-gitlab:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-adapter-gitlab
+    script:
+        - <<:*docker_build_process
+
+build_adapter_course:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-course:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-adapter-course
+    script:
+        - <<:*docker_build_process
+
+build_adapter_general-model:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-general-model:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-adapter-general-model
+    script:
+        - <<:*docker_build_process
+
+build_adapter_dataset:
+    stage: Build
+    extends:
+        - .docker_build
+    variables:
+        SOURCE_FOLDER: scala
+        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-dataset:$CI_COMMIT_REF_SLUG
+        DOCKERFILE_NAME: Dockerfile-adapter-dataset
+    script:
+        - <<:*docker_build_process
