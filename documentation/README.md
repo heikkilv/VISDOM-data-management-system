@@ -32,6 +32,7 @@ The following data fetchers have been implemented:
 
 - [GitLab data fetcher](fetchers/gitlab)
 - [A+ data fetcher](fetchers/aplus)
+- [Dataset fetcher](../python/dataset-fetcher)
 
 ## Data adapters
 
@@ -44,3 +45,4 @@ The following data adapters have been implemented:
 - [GitLab data adapter](adapters/gitlab)
 - [Programming course data adapter](adapters/course)
 - [General data model adapter](adapters/general)
+- [Dataset adapter](adapters/dataset)

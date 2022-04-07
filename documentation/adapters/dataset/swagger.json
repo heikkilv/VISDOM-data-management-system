@@ -1,0 +1,825 @@
+{
+    "openapi": "3.0.1",
+    "info": {
+        "title": "",
+        "description": "",
+        "termsOfService": "",
+        "version": "0.1"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8222"
+        }
+    ],
+    "security": [ ],
+    "paths": {
+        "/info": {
+            "get": {
+                "summary": "Returns general data model adapter information.",
+                "description": "Returns information about the data adapter that converts raw data to the general software data model, i.e. to events and artifacts.",
+                "operationId": "getInfoRoute",
+                "responses": {
+                    "200": {
+                        "description": "The information fetched successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InfoResponse"
+                                },
+                                "examples": {
+                                    "Example response": {
+                                        "description": "Example response",
+                                        "value": {
+                                            "componentName": "adapter-general-model",
+                                            "componentType": "adapter",
+                                            "adapterType": "GeneralModel",
+                                            "version": "0.1",
+                                            "startTime": "2021-11-08T12:00:00.000Z",
+                                            "apiAddress": "localhost:8795",
+                                            "swaggerDefinition": "/api-docs/swagger.json"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/artifacts": {
+            "get": {
+                "summary": "Returns the artifact objects.",
+                "description": "Returns the artifact objects.",
+                "operationId": "getServiceRoute",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "The page size used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "100"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Filter query to be applied.",
+                        "schema": {
+                            "type": "string",
+                            "example": "message==test commit"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "A comma-separated list of data attributes included in the response. Default: all attributes included",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "links",
+                        "in": "query",
+                        "description": "What links are included in the results. Default: all links included",
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "all",
+                                "events",
+                                "constructs",
+                                "none"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Test response example": {
+                                        "description": "Test response example",
+                                        "value": {
+                                            "count": 2,
+                                            "total_count": 2,
+                                            "page": 1,
+                                            "page_size": 100,
+                                            "previous_page": null,
+                                            "next_page": null,
+                                            "results": [
+                                                {
+                                                    "id": 1,
+                                                    "data": "data1"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "data": "data2"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/authors": {
+            "get": {
+                "summary": "Returns the author objects.",
+                "description": "Returns the author objects.",
+                "operationId": "getServiceRoute_1",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "The page size used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "100"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Filter query to be applied.",
+                        "schema": {
+                            "type": "string",
+                            "example": "message==test commit"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "A comma-separated list of data attributes included in the response. Default: all attributes included",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "links",
+                        "in": "query",
+                        "description": "What links are included in the results. Default: all links included",
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "all",
+                                "events",
+                                "constructs",
+                                "none"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Test response example": {
+                                        "description": "Test response example",
+                                        "value": {
+                                            "count": 2,
+                                            "total_count": 2,
+                                            "page": 1,
+                                            "page_size": 100,
+                                            "previous_page": null,
+                                            "next_page": null,
+                                            "results": [
+                                                {
+                                                    "id": 1,
+                                                    "data": "data1"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "data": "data2"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/events": {
+            "get": {
+                "summary": "Returns the event objects.",
+                "description": "Returns the event objects.",
+                "operationId": "getServiceRoute_2",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "The page size used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "100"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Filter query to be applied.",
+                        "schema": {
+                            "type": "string",
+                            "example": "message==test commit"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "A comma-separated list of data attributes included in the response. Default: all attributes included",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "links",
+                        "in": "query",
+                        "description": "What links are included in the results. Default: all links included",
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "all",
+                                "events",
+                                "constructs",
+                                "none"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Test response example": {
+                                        "description": "Test response example",
+                                        "value": {
+                                            "count": 2,
+                                            "total_count": 2,
+                                            "page": 1,
+                                            "page_size": 100,
+                                            "previous_page": null,
+                                            "next_page": null,
+                                            "results": [
+                                                {
+                                                    "id": 1,
+                                                    "data": "data1"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "data": "data2"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/metadata": {
+            "get": {
+                "summary": "Returns the metadata objects.",
+                "description": "Returns the metadata objects.",
+                "operationId": "getServiceRoute_3",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "The page size used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "100"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Filter query to be applied.",
+                        "schema": {
+                            "type": "string",
+                            "example": "message==test commit"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "A comma-separated list of data attributes included in the response. Default: all attributes included",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "links",
+                        "in": "query",
+                        "description": "What links are included in the results. Default: all links included",
+                        "schema": {
+                            "type": "string",
+                            "default": "all",
+                            "enum": [
+                                "all",
+                                "events",
+                                "constructs",
+                                "none"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Test response example": {
+                                        "description": "Test response example",
+                                        "value": {
+                                            "count": 2,
+                                            "total_count": 2,
+                                            "page": 1,
+                                            "page_size": 100,
+                                            "previous_page": null,
+                                            "next_page": null,
+                                            "results": [
+                                                {
+                                                    "id": 1,
+                                                    "data": "data1"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "data": "data2"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/origins": {
+            "get": {
+                "summary": "Returns the origin objects.",
+                "description": "Returns the origin objects.",
+                "operationId": "getServiceRoute_4",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "The page number used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "1"
+                        }
+                    },
+                    {
+                        "name": "pageSize",
+                        "in": "query",
+                        "description": "The page size used in filtering the results",
+                        "schema": {
+                            "type": "string",
+                            "default": "100"
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "query",
+                        "in": "query",
+                        "description": "Filter query to be applied.",
+                        "schema": {
+                            "type": "string",
+                            "example": "message==test commit"
+                        }
+                    },
+                    {
+                        "name": "data",
+                        "in": "query",
+                        "description": "A comma-separated list of data attributes included in the response. Default: all attributes included",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Test response example": {
+                                        "description": "Test response example",
+                                        "value": {
+                                            "count": 2,
+                                            "total_count": 2,
+                                            "page": 1,
+                                            "page_size": 100,
+                                            "previous_page": null,
+                                            "next_page": null,
+                                            "results": [
+                                                {
+                                                    "id": 1,
+                                                    "data": "data1"
+                                                },
+                                                {
+                                                    "id": 2,
+                                                    "data": "data2"
+                                                }
+                                            ]
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/single": {
+            "get": {
+                "summary": "Returns a single entity based on type and id.",
+                "description": "Returns a single entity based on type and id.",
+                "operationId": "getServiceRoute_5",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "description": "The type of the object",
+                        "schema": {
+                            "type": "string",
+                            "default": "commit"
+                        }
+                    },
+                    {
+                        "name": "uuid",
+                        "in": "query",
+                        "description": "The unique id of the object",
+                        "schema": {
+                            "type": "string",
+                            "default": "00000000-0000-0000-0000-000000000000"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successfully fetched result data.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Single response example": {
+                                        "description": "Single response example",
+                                        "value": {
+                                            "id": "00000000-0000-0000-0000-000000000000",
+                                            "type": "commit",
+                                            "data": { }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Did not find the object.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Single response not found example": {
+                                        "description": "Single response not found example",
+                                        "value": {
+                                            "description": "Did not find data for id '00000000-0000-0000-0000-000000000000' and type 'commit'.",
+                                            "status": "NotFound"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ResponseProblem"
+                                },
+                                "examples": {
+                                    "Timeout response example": {
+                                        "description": "Timeout response example",
+                                        "value": {
+                                            "status": "InternalServerError",
+                                            "description": "Futures timed out after [30 seconds]"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/update": {
+            "get": {
+                "summary": "Updates the object cache.",
+                "description": "Updates the object cache for all origins, events, artifacts and authors to make queries faster.",
+                "operationId": "getServiceRoute_6",
+                "responses": {
+                    "200": {
+                        "description": "The cache has been updated.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/JsObject"
+                                },
+                                "examples": {
+                                    "Cache update example": {
+                                        "description": "Cache update example",
+                                        "value": {
+                                            "message": "The cache has been updated."
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "InfoResponse": {
+                "required": [
+                    "adapterType",
+                    "apiAddress",
+                    "componentName",
+                    "componentType",
+                    "startTime",
+                    "swaggerDefinition",
+                    "version"
+                ],
+                "type": "object",
+                "properties": {
+                    "componentType": {
+                        "type": "string"
+                    },
+                    "componentName": {
+                        "type": "string"
+                    },
+                    "adapterType": {
+                        "type": "string"
+                    },
+                    "version": {
+                        "type": "string"
+                    },
+                    "startTime": {
+                        "type": "string"
+                    },
+                    "apiAddress": {
+                        "type": "string"
+                    },
+                    "swaggerDefinition": {
+                        "type": "string"
+                    }
+                }
+            },
+            "JsValue": {
+                "type": "object"
+            },
+            "JsObject": {
+                "required": [
+                    "fields"
+                ],
+                "type": "object",
+                "properties": {
+                    "fields": {
+                        "type": "object",
+                        "additionalProperties": {
+                            "$ref": "#/components/schemas/JsValue"
+                        }
+                    }
+                }
+            },
+            "ResponseProblem": {
+                "required": [
+                    "description",
+                    "status"
+                ],
+                "type": "object",
+                "properties": {
+                    "status": {
+                        "type": "string"
+                    },
+                    "description": {
+                        "type": "string"
+                    }
+                }
+            }
+        }
+    }
+}
