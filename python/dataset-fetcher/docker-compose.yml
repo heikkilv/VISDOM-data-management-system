@@ -1,0 +1,29 @@
+version: '3.7'
+
+services:
+
+    data-converter:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        image: visdom/dataset-fetcher:0.1
+        container_name: dataset-converter
+        restart: "no"
+        environment:
+            - MONGODB_HOST=${MONGODB_HOST}
+            - MONGODB_PORT=${MONGODB_PORT}
+            - MONGODB_USERNAME=${MONGODB_USERNAME}
+            - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+            - MONGODB_METADATA_DATABASE=${MONGODB_METADATA_DATABASE}
+            - MONGODB_TARGET_DATABASE=${MONGODB_TARGET_DATABASE}
+            - SQLITE_FILENAME=/converter/${SQLITE_FILENAME}
+        volumes:
+            - ./${SQLITE_FILENAME}:/converter/${SQLITE_FILENAME}:ro
+        networks:
+            - visdom-network
+
+networks:
+    visdom-network:
+        name: ${MONGODB_NETWORK}
+        external: true
+        driver: overlay

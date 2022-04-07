@@ -14,6 +14,11 @@ stages:
         - PATH=/usr/local/sbt/bin:${PATH}
         - cd scala
 
+.python_with_pyright:
+    image: nikolaik/python-nodejs:python3.7-nodejs12
+    before_script:
+        - npm install --global pyright
+
 .docker_build:
     image: docker:19.03.15
     services:
@@ -21,37 +26,69 @@ stages:
     variables:
         DOCKER_TLS_CERTDIR: "/certs"
     before_script:
-        - cd scala
+        - echo -n $DOCKER_REGISTRY_PASSWORD |
+          docker login -u $DOCKER_REGISTRY_USER --password-stdin $DOCKER_REGISTRY
 
 scalastyle:
     stage: Static Analysis
     extends:
         - .java_with_sbt
     script:
-        - sbt scalastyle
+        - sbt
+          core/scalastyle
+          dataBroker/scalastyle
+          gitlabFetcher/scalastyle
+          aPlusFetcher/scalastyle
+          coreAdapter/scalastyle
+          gitlabAdapter/scalastyle
+          adapterCourse/scalastyle
+          adapterGeneralModel/scalastyle
+          adapterDataset/scalastyle
 
 scapegoat:
     stage: Static Analysis
     extends:
         - .java_with_sbt
     script:
-        - sbt scapegoat
+        - sbt
+          core/scapegoat
+          dataBroker/scapegoat
+          gitlabFetcher/scapegoat
+          aPlusFetcher/scapegoat
+          coreAdapter/scapegoat
+          gitlabAdapter/scapegoat
+          adapterCourse/scapegoat
+          adapterGeneralModel/scapegoat
+          adapterDataset/scapegoat
+
+pyright:
+    stage: Static Analysis
+    extends:
+        - .python_with_pyright
+    script:
+        - cd python/dataset-fetcher
+        - python3 -m pip install -r requirements.txt
+        - pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
 
 unit_test:
     stage: Unit Test
     extends:
         - .java_with_sbt
     script:
-        - sbt test
+        - sbt
+          core/test
 
-docker_build:
+build_images:
     stage: Build
     extends:
         - .docker_build
     script:
-        - docker build --tag visdom-broker:test --file Dockerfile-broker .
-        - docker build --tag visdom-fetcher-gitlab:test --file Dockerfile-fetcher-gitlab .
-        - docker build --tag visdom-fetcher-aplus:test --file Dockerfile-fetcher-aplus .
-        - docker build --tag visdom-adapter-gitlab:test --file Dockerfile-adapter-gitlab .
-        - docker build --tag visdom-adapter-course:test --file Dockerfile-adapter-course .
-        - docker build --tag visdom-adapter-general-model:test --file Dockerfile-adapter-general-model .
+        - sh build_image.sh mongodb-initializer Dockerfile-init mongodb/utility-scripts
+        - sh build_image.sh broker Dockerfile-broker scala
+        - sh build_image.sh fetcher-gitlab Dockerfile-fetcher-gitlab scala
+        - sh build_image.sh fetcher-aplus Dockerfile-fetcher-aplus scala
+        - sh build_image.sh fetcher-dataset Dockerfile python/dataset-fetcher
+        - sh build_image.sh adapter-gitlab Dockerfile-adapter-gitlab scala
+        - sh build_image.sh adapter-course Dockerfile-adapter-course scala
+        - sh build_image.sh adapter-general-model Dockerfile-adapter-general-model scala
+        - sh build_image.sh adapter-dataset Dockerfile-adapter-dataset scala
