@@ -1,0 +1,8 @@
+**/*.__pyc
+**/__pycache__
+.vscode
+pyrightconfig.json
+.env
+
+# ignore the source database
+td_V2.db
