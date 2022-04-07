@@ -99,4 +99,8 @@ object TimeUtils {
          timeA.toEpochSecond() - timeB.toEpochSecond() +
          timeA.getNano() / CommonConstants.Billion - timeB.getNano() / CommonConstants.Billion
     }
+
+    def fromEpochMilliToString(epochTime: Long): String = {
+        getMillisString(Instant.ofEpochMilli(epochTime))
+    }
 }

@@ -17,6 +17,14 @@ object GeneralUtils {
         }
     }
 
+    def toLong(stringValue: String): Option[Long] = {
+        try {
+            Some(stringValue.toLong)
+        } catch {
+            case _: java.lang.NumberFormatException => None
+        }
+    }
+
     def toDouble(stringValue: String): Option[Double] = {
         try {
             Some(stringValue.toDouble)
@@ -48,6 +56,16 @@ object GeneralUtils {
             case numberValue: Number => Some(numberValue.intValue())
             case stringValue: String => toInt(stringValue)
             case Some(someValue: Any) => toIntOption(someValue)
+            case _ => None
+        }
+    }
+
+    def toLongOption(value: Any): Option[Long] = {
+        value match {
+            case longValue: Long => Some(longValue)
+            case numberValue: Number => Some(numberValue.longValue())
+            case stringValue: String => toLong(stringValue)
+            case Some(someValue: Any) => toLongOption(someValue)
             case _ => None
         }
     }
