@@ -20,10 +20,8 @@ stages:
         - docker:19.03.15-dind
     variables:
         DOCKER_TLS_CERTDIR: "/certs"
-        IMAGE_TAG: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG
     before_script:
-        - echo -n $CI_REGISTRY_PASSWORD |
-          docker login -u $CI_REGISTRY_USER --password-stdin $CI_REGISTRY
+        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
 
 .docker_build_process: &docker_build_process
     - cd $SOURCE_FOLDER
