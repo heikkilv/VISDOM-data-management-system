@@ -9,7 +9,9 @@ import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.json.JsonUtils
 import visdom.utils.CommonConstants
+import visdom.utils.GeneralUtils
 import visdom.utils.SnakeCaseConstants
+import visdom.utils.TimeUtils
 import visdom.utils.WartRemoverConstants
 
 
@@ -78,6 +80,27 @@ extends Data {
 }
 
 object ExerciseData {
+    def dateStringToIsoFormat(dateString: String): String = {
+        // If the input is of format '{"$date": 1589792400000}' converts it to ISO 8601 string.
+        // Otherwise, returns the input unchanged.
+        dateString.contains(SnakeCaseConstants.Date) match {
+            case true => {
+                GeneralUtils.toLongOption(
+                    dateString
+                        .replaceAll(CommonConstants.CurlyBracketEnd, CommonConstants.EmptyString)
+                        .split(CommonConstants.DoubleDot)
+                        .lastOption
+                        .getOrElse(CommonConstants.EmptyString)
+                        .trim()
+                ) match {
+                    case Some(unixTime: Long) => TimeUtils.fromEpochMilliToString(unixTime)
+                    case None => dateString
+                }
+            }
+            case false => dateString
+        }
+    }
+
     def fromExerciseSchema(
         exerciseSchema: ExerciseSchema,
         additionalSchema: ExerciseAdditionalSchema
@@ -89,8 +112,8 @@ object ExerciseData {
             html_url = exerciseSchema.html_url,
             is_submittable = exerciseSchema.is_submittable,
             difficulty = additionalSchema.difficulty,
-            start_date = additionalSchema.start_date,
-            end_date = additionalSchema.end_date,
+            start_date = additionalSchema.start_date.map(startDate => dateStringToIsoFormat(startDate)),
+            end_date = additionalSchema.end_date.map(endDate => dateStringToIsoFormat(endDate)),
             max_points = exerciseSchema.max_points,
             max_submissions = exerciseSchema.max_submissions,
             points_to_pass = additionalSchema.points_to_pass,
