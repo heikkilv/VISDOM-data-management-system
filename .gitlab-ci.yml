@@ -14,6 +14,11 @@ stages:
         - PATH=/usr/local/sbt/bin:${PATH}
         - cd scala
 
+.python_with_pyright:
+    image: nikolaik/python-nodejs:python3.7-nodejs12
+    before_script:
+        - npm install --global pyright
+
 .docker_build:
     image: docker:19.03.15
     services:
@@ -21,119 +26,69 @@ stages:
     variables:
         DOCKER_TLS_CERTDIR: "/certs"
     before_script:
-        - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
-
-.docker_build_process: &docker_build_process
-    - cd $SOURCE_FOLDER
-    - docker pull $IMAGE_TAG || true
-    - docker build --pull --cache-from $IMAGE_TAG --tag $IMAGE_TAG --file $DOCKERFILE_NAME .
-    - docker push $IMAGE_TAG
+        - echo -n $DOCKER_REGISTRY_PASSWORD |
+          docker login -u $DOCKER_REGISTRY_USER --password-stdin $DOCKER_REGISTRY
 
 scalastyle:
     stage: Static Analysis
     extends:
         - .java_with_sbt
     script:
-        - sbt scalastyle
+        - sbt
+          core/scalastyle
+          dataBroker/scalastyle
+          gitlabFetcher/scalastyle
+          aPlusFetcher/scalastyle
+          coreAdapter/scalastyle
+          gitlabAdapter/scalastyle
+          adapterCourse/scalastyle
+          adapterGeneralModel/scalastyle
+          adapterDataset/scalastyle
 
 scapegoat:
     stage: Static Analysis
     extends:
         - .java_with_sbt
     script:
-        - sbt scapegoat
+        - sbt
+          core/scapegoat
+          dataBroker/scapegoat
+          gitlabFetcher/scapegoat
+          aPlusFetcher/scapegoat
+          coreAdapter/scapegoat
+          gitlabAdapter/scapegoat
+          adapterCourse/scapegoat
+          adapterGeneralModel/scapegoat
+          adapterDataset/scapegoat
+
+pyright:
+    stage: Static Analysis
+    extends:
+        - .python_with_pyright
+    script:
+        - cd python/dataset-fetcher
+        - python3 -m pip install -r requirements.txt
+        - pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
 
 unit_test:
     stage: Unit Test
     extends:
         - .java_with_sbt
     script:
-        - sbt test
+        - sbt
+          core/test
 
-build_broker:
+build_images:
     stage: Build
     extends:
         - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-broker:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-broker
     script:
-        - <<:*docker_build_process
-
-build_fetcher_dataset:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: python/dataset-fetcher
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-dataset:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile
-    script:
-        - <<:*docker_build_process
-
-build_fetcher_gitlab:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-gitlab:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-fetcher-gitlab
-    script:
-        - <<:*docker_build_process
-
-build_fetcher_aplus:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-fetcher-aplus:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-fetcher-aplus
-    script:
-        - <<:*docker_build_process
-
-build_adapter_gitlab:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-gitlab:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-adapter-gitlab
-    script:
-        - <<:*docker_build_process
-
-build_adapter_course:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-course:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-adapter-course
-    script:
-        - <<:*docker_build_process
-
-build_adapter_general-model:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-general-model:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-adapter-general-model
-    script:
-        - <<:*docker_build_process
-
-build_adapter_dataset:
-    stage: Build
-    extends:
-        - .docker_build
-    variables:
-        SOURCE_FOLDER: scala
-        IMAGE_TAG: $CI_REGISTRY_IMAGE/visdom-adapter-dataset:$CI_COMMIT_REF_SLUG
-        DOCKERFILE_NAME: Dockerfile-adapter-dataset
-    script:
-        - <<:*docker_build_process
+        - sh build_image.sh mongodb-initializer Dockerfile-init mongodb/utility-scripts
+        - sh build_image.sh broker Dockerfile-broker scala
+        - sh build_image.sh fetcher-gitlab Dockerfile-fetcher-gitlab scala
+        - sh build_image.sh fetcher-aplus Dockerfile-fetcher-aplus scala
+        - sh build_image.sh fetcher-dataset Dockerfile python/dataset-fetcher
+        - sh build_image.sh adapter-gitlab Dockerfile-adapter-gitlab scala
+        - sh build_image.sh adapter-course Dockerfile-adapter-course scala
+        - sh build_image.sh adapter-general-model Dockerfile-adapter-general-model scala
+        - sh build_image.sh adapter-dataset Dockerfile-adapter-dataset scala
