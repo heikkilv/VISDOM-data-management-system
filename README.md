@@ -18,7 +18,7 @@ Installation instructions for the background components, [MongoDB](mongodb) and 
 
 ## Source code
 
-The Data Management System components have been implemented in Scala programming language and the source code for the components can be found at the [scala](scala) folder.
+The Data Management System components have been mostly implemented in Scala programming language and the source code for the components can be found at the [scala](scala) folder. One special fetcher for a specific software project dataset has been implemented using Python with the source code at the [python](python) folder.
 
 ## License
 
