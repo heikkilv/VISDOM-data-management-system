@@ -1,0 +1,229 @@
+name: Data management system CI
+
+on:
+    push:
+        branches: [ master, main ]
+        tags: [ 'v*.*.*' ]
+
+    # Allows to run this workflow manually from the Actions tab
+    workflow_dispatch:
+
+env:
+    REGISTRY: ghcr.io
+
+jobs:
+
+    static-analysis:
+        runs-on: ubuntu-18.04
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup Java JDK
+              uses: actions/setup-java@v3.1.0
+              with:
+                  java-version: '8'
+                  distribution: 'adopt'
+
+            - name: Scalastyle analysis
+              run: |
+                cd scala
+                sbt core/scalastyle dataBroker/scalastyle gitlabFetcher/scalastyle aPlusFetcher/scalastyle coreAdapter/scalastyle gitlabAdapter/scalastyle adapterCourse/scalastyle adapterGeneralModel/scalastyle adapterDataset/scalastyle
+
+            - name: Scapegoat analysis
+              run: |
+                cd scala
+                sbt core/scapegoat dataBroker/scapegoat gitlabFetcher/scapegoat aPlusFetcher/scapegoat coreAdapter/scapegoat gitlabAdapter/scapegoat adapterCourse/scapegoat adapterGeneralModel/scapegoat adapterDataset/scapegoat
+
+            - name: Install Python libraries
+              run: python3 -m pip install -r python/dataset-fetcher/requirements.txt
+
+            - name: Pyright analysis
+              uses: jakebailey/pyright-action@v1.1.0
+              with:
+                  version: 1.1.235
+                  working-directory: python/dataset-fetcher
+                  python-version: 3.7
+
+    unit-tests:
+        runs-on: ubuntu-18.04
+        steps:
+            - uses: actions/checkout@v3
+
+            - name: Setup Java JDK
+              uses: actions/setup-java@v3.1.0
+              with:
+                  java-version: '8'
+                  distribution: 'adopt'
+
+            - name: Scala unit tests
+              run: |
+                cd scala
+                sbt core/test
+
+    docker-images:
+        needs:
+            - static-analysis
+            - unit-tests
+        runs-on: ubuntu-18.04
+        permissions:
+            contents: read
+            packages: write
+            id-token: write
+
+        steps:
+            - uses: actions/checkout@v3
+
+            # Workaround: https://github.com/docker/build-push-action/issues/461
+            - name: Setup Docker buildx
+              uses: docker/setup-buildx-action@v1.6.0
+
+            - name: Log into registry ${{ env.REGISTRY }}
+              uses: docker/login-action@v1.14.1
+              with:
+                  registry: ${{ env.REGISTRY }}
+                  username: ${{ github.actor }}
+                  password: ${{ secrets.GITHUB_TOKEN }}
+
+            # MongoDB initializer
+            - name: Extract Docker metadata for MongoDB initializer
+              id: meta-mongodb-initializer
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/mongodb-initializer
+            - name: Build and push Docker image for MongoDB initializer
+              id: build-and-push-mongodb-initializer
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: mongodb/utility-scripts
+                  file: mongodb/utility-scripts/Dockerfile-init
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-mongodb-initializer.outputs.tags }}
+                  labels: ${{ steps.meta-mongodb-initializer.outputs.labels }}
+
+            # Broker
+            - name: Extract Docker metadata for broker
+              id: meta-broker
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/broker
+            - name: Build and push Docker image for broker
+              id: build-and-push-broker
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-broker
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-broker.outputs.tags }}
+                  labels: ${{ steps.meta-broker.outputs.labels }}
+
+            # GitLab fetcher
+            - name: Extract Docker metadata for GitLab fetcher
+              id: meta-fetcher-gitlab
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/fetcher-gitlab
+            - name: Build and push Docker image for GitLab fetcher
+              id: build-and-push-fetcher-gitlab
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-fetcher-gitlab
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-fetcher-gitlab.outputs.tags }}
+                  labels: ${{ steps.meta-fetcher-gitlab.outputs.labels }}
+
+            # A+ fetcher
+            - name: Extract Docker metadata for A+ fetcher
+              id: meta-fetcher-aplus
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/fetcher-aplus
+            - name: Build and push Docker image for A+ fetcher
+              id: build-and-push-fetcher-aplus
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-fetcher-aplus
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-fetcher-aplus.outputs.tags }}
+                  labels: ${{ steps.meta-fetcher-aplus.outputs.labels }}
+
+            # Dataset fetcher
+            - name: Extract Docker metadata for dataset fetcher
+              id: meta-fetcher-dataset
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/fetcher-dataset
+            - name: Build and push Docker image for dataset fetcher
+              id: build-and-push-fetcher-dataset
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: python/dataset-fetcher
+                  file: python/dataset-fetcher/Dockerfile
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-fetcher-dataset.outputs.tags }}
+                  labels: ${{ steps.meta-fetcher-dataset.outputs.labels }}
+
+            # GitLab adapter
+            - name: Extract Docker metadata for GitLab adapter
+              id: meta-adapter-gitlab
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/adapter-gitlab
+            - name: Build and push Docker image for GitLab adapter
+              id: build-and-push-adapter-gitlab
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-adapter-gitlab
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-adapter-gitlab.outputs.tags }}
+                  labels: ${{ steps.meta-adapter-gitlab.outputs.labels }}
+
+            # Course adapter
+            - name: Extract Docker metadata for course adapter
+              id: meta-adapter-course
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/adapter-course
+            - name: Build and push Docker image for course adapter
+              id: build-and-push-adapter-course
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-adapter-course
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-adapter-course.outputs.tags }}
+                  labels: ${{ steps.meta-adapter-course.outputs.labels }}
+
+            # General model adapter
+            - name: Extract Docker metadata for general model adapter
+              id: meta-adapter-general-model
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/adapter-general-model
+            - name: Build and push Docker image for general model adapter
+              id: build-and-push-adapter-general-model
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-adapter-general-model
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-adapter-general-model.outputs.tags }}
+                  labels: ${{ steps.meta-adapter-general-model.outputs.labels }}
+
+            # dataset adapter
+            - name: Extract Docker metadata for dataset adapter
+              id: meta-adapter-dataset
+              uses: docker/metadata-action@v3.7.0
+              with:
+                  images: ${{ env.REGISTRY }}/${{ github.repository }}/adapter-dataset
+            - name: Build and push Docker image for dataset adapter
+              id: build-and-push-adapter-dataset
+              uses: docker/build-push-action@v2.10.0
+              with:
+                  context: scala
+                  file: scala/Dockerfile-adapter-dataset
+                  push: ${{ github.event_name != 'pull_request' }}
+                  tags: ${{ steps.meta-adapter-dataset.outputs.tags }}
+                  labels: ${{ steps.meta-adapter-dataset.outputs.labels }}

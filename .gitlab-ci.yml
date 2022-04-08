@@ -83,12 +83,12 @@ build_images:
     extends:
         - .docker_build
     script:
-        - sh build_image.sh mongodb-initializer Dockerfile-init mongodb/utility-scripts
-        - sh build_image.sh broker Dockerfile-broker scala
-        - sh build_image.sh fetcher-gitlab Dockerfile-fetcher-gitlab scala
-        - sh build_image.sh fetcher-aplus Dockerfile-fetcher-aplus scala
-        - sh build_image.sh fetcher-dataset Dockerfile python/dataset-fetcher
-        - sh build_image.sh adapter-gitlab Dockerfile-adapter-gitlab scala
-        - sh build_image.sh adapter-course Dockerfile-adapter-course scala
-        - sh build_image.sh adapter-general-model Dockerfile-adapter-general-model scala
-        - sh build_image.sh adapter-dataset Dockerfile-adapter-dataset scala
+        - sh build_image.sh mongodb-initializer Dockerfile-init mongodb/utility-scripts true
+        - sh build_image.sh broker Dockerfile-broker scala false
+        - sh build_image.sh fetcher-gitlab Dockerfile-fetcher-gitlab scala false
+        - sh build_image.sh fetcher-aplus Dockerfile-fetcher-aplus scala false
+        - sh build_image.sh fetcher-dataset Dockerfile python/dataset-fetcher true
+        - sh build_image.sh adapter-gitlab Dockerfile-adapter-gitlab scala false
+        - sh build_image.sh adapter-course Dockerfile-adapter-course scala false
+        - sh build_image.sh adapter-general-model Dockerfile-adapter-general-model scala false
+        - sh build_image.sh adapter-dataset Dockerfile-adapter-dataset scala false
