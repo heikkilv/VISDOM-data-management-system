@@ -30,7 +30,19 @@ jobs:
                 sbt core/scalastyle dataBroker/scalastyle gitlabFetcher/scalastyle aPlusFetcher/scalastyle coreAdapter/scalastyle gitlabAdapter/scalastyle adapterCourse/scalastyle adapterGeneralModel/scalastyle adapterDataset/scalastyle
 
             - name: Scapegoat analysis
-              run: sbt core/scapegoat dataBroker/scapegoat gitlabFetcher/scapegoat aPlusFetcher/scapegoat coreAdapter/scapegoat gitlabAdapter/scapegoat adapterCourse/scapegoat adapterGeneralModel/scapegoat adapterDataset/scapegoat
+              run: |
+                cd scala
+                sbt core/scapegoat dataBroker/scapegoat gitlabFetcher/scapegoat aPlusFetcher/scapegoat coreAdapter/scapegoat gitlabAdapter/scapegoat adapterCourse/scapegoat adapterGeneralModel/scapegoat adapterDataset/scapegoat
+
+            - name: Install Python libraries
+              run: python3 -m pip install -r python/dataset-fetcher/requirements.txt
+
+            - name: Pyright analysis
+              uses: jakebailey/pyright-action@v1.1.0
+              with:
+                  version: 1.1.235
+                  working-directory: python/dataset-fetcher
+                  python-version: 3.7
 
     unit-tests:
         needs: static-analysis
