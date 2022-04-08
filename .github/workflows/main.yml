@@ -1,8 +1,8 @@
-name: CI for data management system
+name: Data management system CI
 
 on:
     push:
-        branches: [ master, action-test ]
+        branches: [ master, main ]
         tags: [ 'v*.*.*' ]
 
     # Allows to run this workflow manually from the Actions tab
@@ -207,7 +207,7 @@ jobs:
               uses: docker/build-push-action@v2.10.0
               with:
                   context: scala
-                  file: scala/Dockerfile-adapter-general-model-model
+                  file: scala/Dockerfile-adapter-general-model
                   push: ${{ github.event_name != 'pull_request' }}
                   tags: ${{ steps.meta-adapter-general-model.outputs.tags }}
                   labels: ${{ steps.meta-adapter-general-model.outputs.labels }}
