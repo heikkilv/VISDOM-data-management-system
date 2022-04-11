@@ -208,6 +208,7 @@ object ArtifactResult {
         additionalSchema: ExerciseAdditionalSchema,
         moduleId: Int,
         userId: Int,
+        relatedCommitEventLinks: Seq[LinkTrait],
         updateTime: String
     ): ExercisePointsArtifactResult = {
         val modulePointsArtifact: ExercisePointsArtifact = new ExercisePointsArtifact(
@@ -216,6 +217,7 @@ object ArtifactResult {
             additionalSchema,
             moduleId,
             userId,
+            relatedCommitEventLinks,
             updateTime
         )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
