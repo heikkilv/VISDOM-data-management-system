@@ -5,6 +5,7 @@ import visdom.adapters.general.model.artifacts.states.PointsState
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.base.LinkTrait
 import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.origins.AplusOrigin
@@ -21,6 +22,7 @@ class ExercisePointsArtifact(
     additionalSchema: ExerciseAdditionalSchema,
     moduleId: Int,
     userId: Int,
+    relatedCommitEventLinks: Seq[LinkTrait],
     updateTime: String
 )
 extends Artifact {
@@ -47,7 +49,11 @@ extends Artifact {
         }
     }
 
-    val data: ExercisePointsData = ExercisePointsData.fromPointsSchema(exercisePointsSchema, userId)
+    val data: ExercisePointsData = ExercisePointsData.fromPointsSchema(
+        exercisePointsSchema,
+        userId,
+        relatedCommitEventLinks
+    )
 
     val id: String = ExercisePointsArtifact.getId(origin.id, data.exercise_id, data.user_id)
 
@@ -69,14 +75,15 @@ extends Artifact {
         )
     )
 
-    // add submissions as related events
+    // add submissions and commits as related events
     addRelatedEvents(
         data.submissions_with_points.map(
             submission => ItemLink(
                 SubmissionEvent.getId(origin.id, submission.id),
                 SubmissionEvent.SubmissionEventType
             )
-        )
+        ) ++
+        relatedCommitEventLinks
     )
 }
 
@@ -96,6 +103,7 @@ object ExercisePointsArtifact {
         additionalSchema: ExerciseAdditionalSchema,
         moduleId: Int,
         userId: Int,
+        relatedCommitEventLinks: Seq[LinkTrait],
         updateTime: String
     ): ExercisePointsArtifact = {
         new ExercisePointsArtifact(
@@ -104,6 +112,7 @@ object ExercisePointsArtifact {
             additionalSchema,
             moduleId,
             userId,
+            relatedCommitEventLinks,
             updateTime
         )
     }

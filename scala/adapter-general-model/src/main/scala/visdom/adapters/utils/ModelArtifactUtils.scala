@@ -2,6 +2,8 @@ package visdom.adapters.utils
 
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import visdom.adapters.general.model.base.ItemLink
+import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.CoursePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ExercisePointsArtifactResult
@@ -11,9 +13,11 @@ import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifa
 import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
+import visdom.adapters.general.schemas.FileIdSchema
 import visdom.adapters.general.schemas.FileSchema
-import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.ModuleSchema
+import visdom.adapters.general.schemas.PipelineReportSchema
+import visdom.adapters.general.schemas.SubmissionGitDataSchema
 import visdom.database.mongodb.MongoConstants
 import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
@@ -113,6 +117,90 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
+    def getSubmissionFileMap(): Map[Int, FileIdSchema] = {
+        // returns a mapping from submission id to file for those submissions that have GitLab content
+        val exerciseGitMap: Map[Int, String] = modelUtils.getExerciseGitMap()
+
+        modelUtils.getSubmissionSchemas()
+            .flatMap(
+                submission => submission.submission_data.map(submissionData => submissionData.git).flatten match {
+                    case Some(gitData: SubmissionGitDataSchema) =>
+                        exerciseGitMap.get(submission.exercise.id) match {
+                            case Some(gitPath: String) => Some(
+                                (
+                                    submission.id,
+                                    FileIdSchema(
+                                        path = gitPath,
+                                        project_name = gitData.project_name,
+                                        host_name = gitData.host_name
+                                    )
+                                )
+                            )
+                            case None => None
+                        }
+                    case None => None
+                }
+            )
+            .collect()
+            .toMap
+    }
+
+    def getFileCommitMap(fileIds: Seq[FileIdSchema]): Map[FileIdSchema, Seq[ItemLink]] = {
+        // returns a mapping from files to a list of commit event links
+        modelUtils.loadMongoDataGitlab[FileSchema](MongoConstants.CollectionFiles)
+            .flatMap(row => FileSchema.fromRow(row))
+            .map(
+                file => (
+                    FileIdSchema(
+                        path = file.path,
+                        project_name = file.project_name,
+                        host_name = file.host_name
+                    ),
+                    file
+                )
+            )
+            .filter(fileWithIdSchema => fileIds.contains(fileWithIdSchema._1))
+            .map({
+                case (fileIdSchema, file) => (
+                    fileIdSchema,
+                    file._links.map(
+                        links => links.commits.map(
+                            commits => commits.map(
+                                commit => ItemLink(
+                                    CommitEvent.getId(file.host_name, file.project_name, commit),
+                                    CommitEvent.CommitEventType
+                                )
+                            )
+                        )
+                    ).flatten match {
+                        case Some(commitEventIds: Seq[ItemLink]) => commitEventIds
+                        case None => Seq.empty
+                    }
+                )
+            })
+            .collect()
+            .toMap
+    }
+
+    def getSubmissionCommitMap(): Map[Int, Seq[ItemLink]] = {
+        // returns a mapping from submission id to a list of commit event links
+        val submissionFileMap: Map[Int, FileIdSchema] = getSubmissionFileMap()
+        val allSubmissionFiles: Seq[FileIdSchema] = submissionFileMap.map({case (_, file) => file}).toSeq.distinct
+        val fileCommitMap: Map[FileIdSchema, Seq[ItemLink]] = getFileCommitMap(allSubmissionFiles)
+
+        submissionFileMap
+            .map({
+                case (submissionId, fileIdSchema) => (
+                    submissionId,
+                    fileCommitMap.get(fileIdSchema) match {
+                        case Some(commits: Seq[ItemLink]) => commits
+                        case None => Seq.empty
+                    }
+                )
+            })
+            .filter({case (_, commits) => commits.nonEmpty})
+    }
+
     def getExercisePoints(): Dataset[ExercisePointsArtifactResult] = {
         val exerciseMetadataMap: Map[Int, ExerciseSchema] =
             modelUtils.getExerciseSchemas()
@@ -120,6 +208,8 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 .collect()
                 .toMap
         val exerciseAdditionalMap: Map[Int, ExerciseAdditionalSchema] = modelUtils.getExerciseAdditionalMap()
+
+        val submissionCommitMap: Map[Int, Seq[ItemLink]] = getSubmissionCommitMap()
 
         modelUtils.getPointsSchemas()
             .flatMap(
@@ -132,7 +222,11 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                                 module.id,
                                 exercise,
                                 exerciseMetadata,
-                                exerciseAdditionalMap.getOrElse(exercise.id, ExerciseAdditionalSchema.getEmpty())
+                                exerciseAdditionalMap.getOrElse(exercise.id, ExerciseAdditionalSchema.getEmpty()),
+                                exercise.submissions_with_points
+                                    .map(submission => submissionCommitMap.getOrElse(submission.id, Seq.empty))
+                                    .flatten
+                                    .distinct
                             )
                         )
                     )
@@ -141,13 +235,14 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .flatMap(sequence => sequence)
             .flatMap(option => option)
             .map({
-                case (userId, lastModified, moduleId, exercise, exerciseMetadata, exerciseAdditionalData) =>
+                case (userId, lastModified, moduleId, exercise, exerciseMetadata, exerciseAdditionalData, commits) =>
                     ArtifactResult.fromExercisePointsSchema(
                         exercisePointsSchema = exercise,
                         exerciseSchema = exerciseMetadata,
                         additionalSchema = exerciseAdditionalData,
                         moduleId = moduleId,
                         userId = userId,
+                        relatedCommitEventLinks = commits,
                         updateTime = lastModified
                     )
             })

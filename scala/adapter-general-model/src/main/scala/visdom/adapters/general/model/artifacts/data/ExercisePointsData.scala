@@ -6,6 +6,7 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
+import visdom.adapters.general.model.base.LinkTrait
 import visdom.adapters.general.schemas.PointsExerciseSchema
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
@@ -16,6 +17,7 @@ final case class ExercisePointsData(
     exercise_id: Int,
     user_id: Int,
     submission_count: Int,
+    commit_count: Int,
     points: Int,
     passed: Boolean,
     official: Boolean,
@@ -30,6 +32,7 @@ extends Data {
                 SnakeCaseConstants.ExerciseId -> JsonUtils.toBsonValue(exercise_id),
                 SnakeCaseConstants.UserId -> JsonUtils.toBsonValue(user_id),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toBsonValue(submission_count),
+                SnakeCaseConstants.CommitCount -> JsonUtils.toBsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toBsonValue(points),
                 SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed),
                 SnakeCaseConstants.Official -> JsonUtils.toBsonValue(official),
@@ -48,6 +51,7 @@ extends Data {
                 SnakeCaseConstants.ExerciseId -> JsonUtils.toJsonValue(exercise_id),
                 SnakeCaseConstants.UserId -> JsonUtils.toJsonValue(user_id),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toJsonValue(submission_count),
+                SnakeCaseConstants.CommitCount -> JsonUtils.toJsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toJsonValue(points),
                 SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed),
                 SnakeCaseConstants.Official -> JsonUtils.toJsonValue(official),
@@ -61,11 +65,16 @@ extends Data {
 }
 
 object ExercisePointsData {
-    def fromPointsSchema(exercisePointsSchema: PointsExerciseSchema, userId: Int): ExercisePointsData = {
+    def fromPointsSchema(
+        exercisePointsSchema: PointsExerciseSchema,
+        userId: Int,
+        relatedCommitEventLinks: Seq[LinkTrait]
+    ): ExercisePointsData = {
         ExercisePointsData(
             exercise_id = exercisePointsSchema.id,
             user_id = userId,
             submission_count = exercisePointsSchema.submission_count,
+            commit_count = relatedCommitEventLinks.size,
             points = exercisePointsSchema.points,
             passed = exercisePointsSchema.passed,
             official = exercisePointsSchema.official,
