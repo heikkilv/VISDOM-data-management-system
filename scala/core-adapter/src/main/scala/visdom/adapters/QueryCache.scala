@@ -7,14 +7,20 @@ import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.results.BaseResultValue
 import visdom.database.mongodb.MongoConnection
 import visdom.utils.TimeUtils
+import visdom.utils.WartRemoverConstants
 
 
 class QueryCache(databases: Seq[String]) {
-    private val results: mutable.Map[(Int, BaseQueryOptions), QueryResult] = mutable.Map.empty
+    private val results: mutable.Map[(Int, BaseQueryOptions), (QueryResult, Int)] = mutable.Map.empty
+
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var startIndex: Int = 0
+    @SuppressWarnings(Array(WartRemoverConstants.WartsVar))
+    private var endIndex: Int = 0
 
     def getResult(queryCode: Int, options: BaseQueryOptions): Option[BaseResultValue] = {
         results.get((queryCode, options)) match {
-            case Some(result: QueryResult) => QueryCache.getLastDatabaseUpdateTime(databases) match {
+            case Some((result: QueryResult, _)) => QueryCache.getLastDatabaseUpdateTime(databases) match {
                 case Some(databaseUpdateTime: Instant) => result.timestamp.compareTo(databaseUpdateTime) >= 0 match {
                     case true => Some(result.data)
                     case false => None
@@ -25,16 +31,77 @@ class QueryCache(databases: Seq[String]) {
         }
     }
 
+    private def checkIndexOverflow(): Unit = {
+        if (endIndex == Int.MaxValue) {
+            val _ = results.transform({
+                case (_, (result, index)) => (result, index - startIndex)
+            })
+            endIndex -= startIndex
+            startIndex = 0
+        }
+    }
+
+    private def removeOldest(): Unit = {
+        results
+            .find({case (_, (_, index)) => index == startIndex + 1})
+            .map({case (cacheKey, _) => cacheKey}) match {
+                case Some(cacheKey) => val _ = results -= cacheKey
+                case None =>
+        }
+    }
+
     def addResult(queryCode: Int, options: BaseQueryOptions, data: BaseResultValue): Unit = {
-        val _ = results += (((queryCode, options), QueryResult(data, Instant.now())))
+        def updateResult(): Unit = {
+            results.update(
+                (queryCode, options),
+                (QueryResult(data, Instant.now()), endIndex)
+            )
+        }
+
+        def addResultInternal(): Unit = {
+            endIndex += 1
+            updateResult()
+        }
+
+        def adjustIndexes(resultIndex: Int): Unit = {
+            val _ = results.transform({
+                case (_, (result, index)) => (
+                    result,
+                    index <= resultIndex match {
+                        case true => index
+                        case false => index - 1
+                    }
+                )
+            })
+        }
+
+        results.get((queryCode, options)) match {
+            case Some((result: QueryResult, resultIndex: Int)) => {
+                if (resultIndex < endIndex) {
+                    adjustIndexes(resultIndex)
+                }
+                updateResult()
+            }
+            case None => {
+                checkIndexOverflow()
+                if (endIndex - startIndex >= QueryCache.MemoryLimit) {
+                    removeOldest()
+                }
+                addResultInternal()
+            }
+        }
     }
 
     def clearCache(): Unit = {
         results.clear()
+        startIndex = 0
+        endIndex = 0
     }
 }
 
 object QueryCache {
+    val MemoryLimit: Int = 1000
+
     def getLastDatabaseUpdateTime(databases: Seq[String]): Option[Instant] = {
         def getUpdateTimeInternal(nextDatabases: Seq[String], lastUpdateTime: Option[Instant]): Option[Instant] = {
             nextDatabases.headOption match {
