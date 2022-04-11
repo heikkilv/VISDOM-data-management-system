@@ -198,7 +198,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     }
                 )
             })
-            .filter({case (_, commits) => commits.size > 0})
+            .filter({case (_, commits) => commits.nonEmpty})
     }
 
     def getExercisePoints(): Dataset[ExercisePointsArtifactResult] = {
