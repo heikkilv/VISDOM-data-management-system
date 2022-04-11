@@ -4,6 +4,7 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import spray.json.JsObject
 import spray.json.JsString
+import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.usecases.SingleQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
@@ -19,6 +20,7 @@ import visdom.utils.WartRemoverConstants
 class SingleActor extends Actor with ActorLogging {
     val singleQueryClass: Class[_ <: SingleQuery] = classOf[SingleQuery]
     val singleQueryObject: IncludesQueryCode = SingleQuery
+    val queryUtils: QueryUtils = AdapterValues.queryUtils
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
@@ -27,7 +29,7 @@ class SingleActor extends Actor with ActorLogging {
 
             val response: BaseResponse = {
                 (
-                    QueryUtils.runCacheResultQuery(
+                    queryUtils.runCacheResultQuery(
                         singleQueryObject.queryCode,
                         singleQueryClass,
                         inputOptions.toQueryOptions(),

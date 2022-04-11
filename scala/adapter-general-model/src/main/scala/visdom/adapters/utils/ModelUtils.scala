@@ -10,7 +10,7 @@ import org.mongodb.scala.MongoCollection
 import org.mongodb.scala.bson.BsonDocument
 import org.mongodb.scala.bson.Document
 import scala.reflect.runtime.universe.TypeTag
-import visdom.adapters.DefaultAdapterValues
+import visdom.adapters.QueryCache
 import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
@@ -53,7 +53,7 @@ import visdom.utils.SnakeCaseConstants
 
 
 // scalastyle:off number.of.methods
-class ModelUtils(sparkSession: SparkSession) {
+class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtils: GeneralQueryUtils) {
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
     import sparkSession.implicits.newStringEncoder
@@ -463,7 +463,7 @@ class ModelUtils(sparkSession: SparkSession) {
         }
 
         // clear the memory cache after any update attempt for the Mongo cache
-        DefaultAdapterValues.cache.clearCache()
+        cache.clearCache()
     }
 
     def getReadConfigGitlab(collectionName: String): ReadConfig = {
@@ -485,9 +485,11 @@ class ModelUtils(sparkSession: SparkSession) {
     }
 
     def storeObjects[ObjectType](dataset: Dataset[ObjectType], collectionName: String): Unit = {
-        GeneralQueryUtils.storeObjects(sparkSession, dataset, collectionName)
+        generalQueryUtils.storeObjects(sparkSession, dataset, collectionName)
     }
 }
 
-object ModelUtils extends ModelUtilsTrait
+object ModelUtils extends ModelUtilsTrait {
+    val generalQueryUtils: GeneralQueryUtils = AdapterValues.generalQueryUtils
+}
 // scalastyle:on number.of.methods

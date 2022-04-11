@@ -1,5 +1,6 @@
 package visdom.adapters.general.usecases
 
+import visdom.adapters.general.AdapterValues
 import visdom.adapters.options.CacheQueryOptions
 import visdom.adapters.options.ObjectTypes
 import visdom.adapters.options.ObjectTypesTrait
@@ -19,6 +20,7 @@ extends BaseCacheQuery(queryOptions) {
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
     val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
+    val generalQueryUtils: GeneralQueryUtils = AdapterValues.generalQueryUtils
 
     def cacheCheck(): Boolean = {
         objectTypes.getTargetType(queryOptions.objectType) match {
@@ -37,7 +39,7 @@ extends BaseCacheQuery(queryOptions) {
     }
 
     def getResults(): Option[BaseResultValue] = {
-        GeneralQueryUtils.getCacheResult(queryOptions)
+        generalQueryUtils.getCacheResult(queryOptions)
     }
 }
 

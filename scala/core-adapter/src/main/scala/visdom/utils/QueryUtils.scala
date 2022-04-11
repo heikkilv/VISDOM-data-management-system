@@ -10,7 +10,7 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.duration.Duration
 import scala.language.existentials
-import visdom.adapters.DefaultAdapterValues
+import visdom.adapters.QueryCache
 import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.queries.BaseCacheQuery
 import visdom.adapters.queries.BaseSparkQuery
@@ -19,7 +19,7 @@ import visdom.adapters.results.NoResult
 import visdom.adapters.results.Result
 
 
-object QueryUtils {
+class QueryUtils(cache: QueryCache) {
     implicit val ec: ExecutionContext = ExecutionContext.global
     private val log = org.slf4j.LoggerFactory.getLogger("QueryUtils")
 
@@ -98,7 +98,7 @@ object QueryUtils {
         queryType: Class[_ <: BaseSparkQuery],
         queryOptions: BaseQueryOptions
     ): Either[String, BaseResultValue] = {
-        DefaultAdapterValues.cache.getResult(queryCode, queryOptions) match {
+        cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
                 log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
                 Right(cachedResult)
@@ -108,7 +108,7 @@ object QueryUtils {
 
                 result match {
                     case Right(resultValue: Result) =>
-                        DefaultAdapterValues.cache.addResult(queryCode, queryOptions, resultValue)
+                        cache.addResult(queryCode, queryOptions, resultValue)
                     case _ =>
                 }
 
@@ -122,7 +122,7 @@ object QueryUtils {
         queryType: Class[_ <: BaseCacheQuery],
         queryOptions: BaseQueryOptions
     ): Option[BaseResultValue] = {
-        DefaultAdapterValues.cache.getResult(queryCode, queryOptions) match {
+        cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
                 log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
                 Some(cachedResult)
@@ -140,7 +140,7 @@ object QueryUtils {
                 val result: Option[BaseResultValue] = query.getResults()
                 result match {
                     case Some(resultValue: BaseResultValue) =>
-                        DefaultAdapterValues.cache.addResult(queryCode, queryOptions, resultValue)
+                        cache.addResult(queryCode, queryOptions, resultValue)
                     case None =>
                 }
 
