@@ -51,16 +51,16 @@ class QueryCache(databases: Seq[String]) {
     }
 
     def addResult(queryCode: Int, options: BaseQueryOptions, data: BaseResultValue): Unit = {
-        def updateResult(): Unit = {
+        def updateResult(targetIndex: Int): Unit = {
             results.update(
                 (queryCode, options),
-                (QueryResult(data, Instant.now()), endIndex)
+                (QueryResult(data, Instant.now()), targetIndex)
             )
         }
 
         def addResultInternal(): Unit = {
             endIndex += 1
-            updateResult()
+            updateResult(endIndex)
         }
 
         def adjustIndexes(resultIndex: Int): Unit = {
@@ -77,10 +77,10 @@ class QueryCache(databases: Seq[String]) {
 
         results.get((queryCode, options)) match {
             case Some((result: QueryResult, resultIndex: Int)) => {
-                if (resultIndex < endIndex) {
-                    adjustIndexes(resultIndex)
-                }
-                updateResult()
+                // if (resultIndex < endIndex) {
+                //     adjustIndexes(resultIndex)
+                // }
+                updateResult(resultIndex)
             }
             case None => {
                 checkIndexOverflow()
