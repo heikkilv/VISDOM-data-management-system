@@ -93,6 +93,14 @@ class QueryUtils(cache: QueryCache) {
         }
     }
 
+    private def logCacheUsage(code: Int, options: BaseQueryOptions): Unit = {
+        log.info(
+            "Using result from cache " +
+            s"(${cache.getResultIndex(code, options).getOrElse(CommonConstants.MinusOne)}) " +
+            s"for query ${code} with ${options}"
+        )
+    }
+
     def runSparkResultQueryUsingCache(
         queryCode: Int,
         queryType: Class[_ <: BaseSparkQuery],
@@ -100,7 +108,7 @@ class QueryUtils(cache: QueryCache) {
     ): Either[String, BaseResultValue] = {
         cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
-                log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
+                logCacheUsage(queryCode, queryOptions)
                 Right(cachedResult)
             }
             case None => {
@@ -124,7 +132,7 @@ class QueryUtils(cache: QueryCache) {
     ): Option[BaseResultValue] = {
         cache.getResult(queryCode, queryOptions) match {
             case Some(cachedResult: BaseResultValue) => {
-                log.info(s"Using result from cache for query ${queryCode} with ${queryOptions}")
+                logCacheUsage(queryCode, queryOptions)
                 Some(cachedResult)
             }
             case None => {

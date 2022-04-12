@@ -31,6 +31,13 @@ class QueryCache(databases: Seq[String]) {
         }
     }
 
+    def getResultIndex(queryCode: Int, options: BaseQueryOptions): Option[Int] = {
+        results.get((queryCode, options)) match {
+            case Some((_, index: Int)) => Some(index)
+            case None => None
+        }
+    }
+
     private def checkIndexOverflow(): Unit = {
         if (endIndex == Int.MaxValue) {
             val _ = results.transform({
@@ -100,7 +107,7 @@ class QueryCache(databases: Seq[String]) {
 }
 
 object QueryCache {
-    val MemoryLimit: Int = 1000
+    val MemoryLimit: Int = 500
 
     def getLastDatabaseUpdateTime(databases: Seq[String]): Option[Instant] = {
         def getUpdateTimeInternal(nextDatabases: Seq[String], lastUpdateTime: Option[Instant]): Option[Instant] = {
