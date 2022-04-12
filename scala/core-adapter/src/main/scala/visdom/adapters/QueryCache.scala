@@ -49,8 +49,9 @@ class QueryCache(databases: Seq[String]) {
     }
 
     private def removeOldest(): Unit = {
+        startIndex += 1
         results
-            .find({case (_, (_, index)) => index == startIndex + 1})
+            .find({case (_, (_, index)) => index == startIndex})
             .map({case (cacheKey, _) => cacheKey}) match {
                 case Some(cacheKey) => val _ = results -= cacheKey
                 case None =>
@@ -107,7 +108,7 @@ class QueryCache(databases: Seq[String]) {
 }
 
 object QueryCache {
-    val MemoryLimit: Int = 500
+    val MemoryLimit: Int = 1000
 
     def getLastDatabaseUpdateTime(databases: Seq[String]): Option[Instant] = {
         def getUpdateTimeInternal(nextDatabases: Seq[String], lastUpdateTime: Option[Instant]): Option[Instant] = {
