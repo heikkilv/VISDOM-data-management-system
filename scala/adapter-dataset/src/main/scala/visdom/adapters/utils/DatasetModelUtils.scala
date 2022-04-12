@@ -6,6 +6,7 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import scala.reflect.runtime.universe.TypeTag
+import visdom.adapters.QueryCache
 import visdom.adapters.dataset.AdapterValues
 import visdom.adapters.dataset.model.artifacts.JiraIssueArtifact
 import visdom.adapters.dataset.model.artifacts.SonarMeasuresArtifact
@@ -19,8 +20,8 @@ import visdom.database.mongodb.MongoConstants
 import visdom.spark.ConfigUtils
 
 
-class DatasetModelUtils(sparkSession: SparkSession)
-extends ModelUtils(sparkSession) {
+class DatasetModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtils: GeneralQueryUtils)
+extends ModelUtils(sparkSession, cache, generalQueryUtils) {
     import sparkSession.implicits.newProductEncoder
 
     override val objectTypes: ObjectTypesTrait = DatasetObjectTypes
@@ -122,4 +123,6 @@ extends ModelUtils(sparkSession) {
 
 object DatasetModelUtils extends ModelUtilsTrait {
     override val objectTypes: ObjectTypesTrait = DatasetObjectTypes
+
+    val generalQueryUtils: GeneralQueryUtils = AdapterValues.generalQueryUtils
 }

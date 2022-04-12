@@ -1,6 +1,7 @@
 package visdom.adapters.general.usecases
 
 import org.mongodb.scala.model.Filters
+import visdom.adapters.general.AdapterValues
 import visdom.adapters.options.AttributeFilterTrait
 import visdom.adapters.options.BaseQueryOptions
 import visdom.adapters.options.CacheQueryOptions
@@ -21,6 +22,7 @@ extends BaseCacheQuery(queryOptions) {
     val objectTypes: ObjectTypesTrait = ObjectTypes
     val modelUtilsObject: ModelUtilsTrait = ModelUtils
     val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
+    val generalQueryUtils: GeneralQueryUtils = AdapterValues.generalQueryUtils
 
     private val dataAttributes: Option[Seq[String]] = queryOptions.dataAttributes
     private val extraAttributes: Seq[String] =
@@ -49,14 +51,14 @@ extends BaseCacheQuery(queryOptions) {
         consideredObjects.nonEmpty match {
             case true => Some(
                 queryOptions.query match {
-                    case Some(filters: Seq[AttributeFilterTrait]) => GeneralQueryUtils.getCacheResults(
+                    case Some(filters: Seq[AttributeFilterTrait]) => generalQueryUtils.getCacheResults(
                         objectTypes = consideredObjects,
                         pageOptions = queryOptions,
                         dataAttributes = dataAttributes,
                         extraAttributes = extraAttributes,
                         filter = Filters.and(filters.map(filter => filter.getFilter(consideredObjects)):_*)
                     )
-                    case None => GeneralQueryUtils.getCacheResults(
+                    case None => generalQueryUtils.getCacheResults(
                         objectTypes = consideredObjects,
                         pageOptions = queryOptions,
                         dataAttributes = dataAttributes,

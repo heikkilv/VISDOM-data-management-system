@@ -10,6 +10,7 @@ import visdom.spark.ConfigUtils
 
 trait ModelUtilsTrait {
     val objectTypes: ObjectTypesTrait = ObjectTypes
+    val generalQueryUtils: GeneralQueryUtils
 
     def isOriginCacheUpdated(): Boolean = {
         isTargetCacheUpdated(objectTypes.TargetTypeOrigin)
@@ -34,7 +35,7 @@ trait ModelUtilsTrait {
     def isTargetCacheUpdated(targetType: String): Boolean = {
         objectTypes.objectTypes.get(targetType) match {
             case Some(objectTypes: Set[String]) =>
-                objectTypes.forall(objectType => GeneralQueryUtils.isCacheUpdated(objectType))
+                objectTypes.forall(objectType => generalQueryUtils.isCacheUpdated(objectType))
             case None => false
         }
     }

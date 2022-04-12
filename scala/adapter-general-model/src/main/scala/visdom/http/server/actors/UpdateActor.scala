@@ -5,6 +5,7 @@ import akka.actor.ActorLogging
 import java.util.concurrent.TimeUnit
 import scala.concurrent.duration.Duration
 import spray.json.JsObject
+import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.usecases.CacheUpdater
 import visdom.adapters.options.CacheQueryOptions
 import visdom.adapters.options.ObjectTypes
@@ -20,13 +21,14 @@ import visdom.utils.WartRemoverConstants
 
 class UpdateActor extends Actor with ActorLogging {
     val cacheUpdaterClass: Class[_ <: CacheUpdater] = classOf[CacheUpdater]
+    val queryUtils: QueryUtils = AdapterValues.queryUtils
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
         case QueryOptionsBaseObject => {
             log.info("Received update query")
 
-            QueryUtils.runSparkQuery(
+            queryUtils.runSparkQuery(
                 queryType = cacheUpdaterClass,
                 queryOptions = CacheQueryOptions(ObjectTypes.TargetTypeAll),
                 timeoutSeconds = Duration(2, TimeUnit.HOURS).toSeconds

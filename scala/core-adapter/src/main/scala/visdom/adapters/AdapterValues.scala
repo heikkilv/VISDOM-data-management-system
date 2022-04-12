@@ -15,6 +15,7 @@ import visdom.utils.EnvironmentVariables.EnvironmentApplicationName
 import visdom.utils.EnvironmentVariables.EnvironmentHostName
 import visdom.utils.EnvironmentVariables.EnvironmentHostPort
 import visdom.utils.EnvironmentVariables.getEnvironmentVariable
+import visdom.utils.QueryUtils
 
 
 trait AdapterValues {
@@ -44,7 +45,9 @@ trait AdapterValues {
     val cacheDatabaseName: String = getEnvironmentVariable(EnvironmentCacheDatabase, AdapterVariableMap)
     val datasetDatabaseName: String = getEnvironmentVariable(EnvironmentDatasetDatabase, AdapterVariableMap)
 
-    val cache: QueryCache = new QueryCache(Seq(aPlusDatabaseName, gitlabDatabaseName))
+    val supportedDatabases: Seq[String] = Seq(aPlusDatabaseName, gitlabDatabaseName)
+    val cache: QueryCache = new QueryCache(supportedDatabases)
+    val queryUtils: QueryUtils = new QueryUtils(cache)
 
     val AdapterType: String = AdapterConstants.DefaultAdapterType
     val Version: String = AdapterConstants.DefaultAdapterVersion

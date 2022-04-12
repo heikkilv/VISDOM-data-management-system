@@ -4,6 +4,7 @@ import akka.actor.Actor
 import akka.actor.ActorLogging
 import spray.json.JsObject
 import spray.json.JsString
+import visdom.adapters.general.AdapterValues
 import visdom.adapters.general.usecases.MultiQuery
 import visdom.adapters.queries.IncludesQueryCode
 import visdom.adapters.results.BaseResultValue
@@ -19,6 +20,7 @@ import visdom.utils.WartRemoverConstants
 class MultiActor extends Actor with ActorLogging {
     val multiQueryClass: Class[_ <: MultiQuery] = classOf[MultiQuery]
     val multiQueryObject: IncludesQueryCode = MultiQuery
+    val queryUtils: QueryUtils = AdapterValues.queryUtils
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def receive: Receive = {
@@ -27,7 +29,7 @@ class MultiActor extends Actor with ActorLogging {
 
             val response: BaseResponse = {
                 (
-                    QueryUtils.runCacheResultQuery(
+                    queryUtils.runCacheResultQuery(
                         multiQueryObject.queryCode,
                         multiQueryClass,
                         inputOptions.toQueryOptions(),

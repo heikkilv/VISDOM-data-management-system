@@ -13,7 +13,6 @@ import org.mongodb.scala.bson.Document
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.QueryCache
-import visdom.adapters.general.AdapterValues
 import visdom.adapters.options.BaseQueryWithPageOptions
 import visdom.adapters.options.SingleQueryOptions
 import visdom.adapters.results.MultiResult
@@ -28,21 +27,19 @@ import visdom.spark.ConfigUtils
 import visdom.utils.SnakeCaseConstants
 
 
-object GeneralQueryUtils {
+class GeneralQueryUtils(cacheDatabaseName: String, supportedDatabases: Seq[String]) {
     def getWriteConfig(sparkSession: SparkSession, collectionName: String): WriteConfig = {
         ConfigUtils.getWriteConfig(
             sparkSession,
-            AdapterValues.cacheDatabaseName,
+            cacheDatabaseName,
             collectionName
         )
     }
 
     def isCacheUpdated(objectType: String): Boolean = {
-        MongoConnection.getCacheUpdateTime(AdapterValues.cacheDatabaseName, objectType) match {
+        MongoConnection.getCacheUpdateTime(cacheDatabaseName, objectType) match {
             case Some(cacheUpdateTime: Instant) =>
-                QueryCache.getLastDatabaseUpdateTime(
-                    Seq(AdapterValues.gitlabDatabaseName, AdapterValues.aPlusDatabaseName)
-                ) match {
+                QueryCache.getLastDatabaseUpdateTime(supportedDatabases) match {
                     case Some(dataUpdateTime: Instant) => cacheUpdateTime.compareTo(dataUpdateTime) > 0
                     case None => true
                 }
@@ -72,7 +69,7 @@ object GeneralQueryUtils {
 
     def updateCacheMetadata(objectType: String): Unit = {
          MongoConnection.storeDocument(
-            MongoConnection.getCollection(AdapterValues.cacheDatabaseName, MongoConstants.CollectionMetadata),
+            MongoConnection.getCollection(cacheDatabaseName, MongoConstants.CollectionMetadata),
             getCacheMetadataDocument(objectType),
             Array(MongoConstants.AttributeType)
          )
@@ -83,8 +80,8 @@ object GeneralQueryUtils {
         objects: Dataset[ObjectType],
         objectType: String
     ): Unit = {
-        GeneralQueryUtils.updateCache(sparkSession, objects, objectType)
-        GeneralQueryUtils.updateCacheMetadata(objectType)
+        updateCache(sparkSession, objects, objectType)
+        updateCacheMetadata(objectType)
     }
 
     private def cleanCacheResult(
@@ -146,7 +143,7 @@ object GeneralQueryUtils {
         indexAttribute: String
     ): Result = {
         val cacheCollections: Seq[MongoCollection[Document]] =
-            objectTypes.map(objectType => MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType))
+            objectTypes.map(objectType => MongoConnection.getCollection(cacheDatabaseName, objectType))
 
         val resultData: Seq[JsValue] = cleanCacheResults(
             cacheCollections.map(
@@ -183,7 +180,7 @@ object GeneralQueryUtils {
         filter: Bson
     ): Result = {
         val cacheCollections: Seq[MongoCollection[Document]] =
-            objectTypes.map(objectType => MongoConnection.getCollection(AdapterValues.cacheDatabaseName, objectType))
+            objectTypes.map(objectType => MongoConnection.getCollection(cacheDatabaseName, objectType))
 
         val resultDataFull: Seq[JsValue] = cleanCacheResults(
             cacheCollections.map(
@@ -270,7 +267,7 @@ object GeneralQueryUtils {
 
     def getCacheResult(singleOptions: SingleQueryOptions): Option[SingleResult] = {
         MongoConnection.getDocuments(
-            MongoConnection.getCollection(AdapterValues.cacheDatabaseName, singleOptions.objectType),
+            MongoConnection.getCollection(cacheDatabaseName, singleOptions.objectType),
             List(
                 MongoConnection.getEqualFilter(SnakeCaseConstants.Id, JsonUtils.toBsonValue(singleOptions.uuid))
             )
