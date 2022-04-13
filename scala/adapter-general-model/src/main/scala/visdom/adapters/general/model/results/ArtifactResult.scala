@@ -195,10 +195,11 @@ object ArtifactResult {
         modulePointsSchema: PointsModuleSchema,
         moduleSchema: ModuleSchema,
         userId: Int,
+        commitCount: Int,
         updateTime: String
     ): ModulePointsArtifactResult = {
         val modulePointsArtifact: ModulePointsArtifact =
-            new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, updateTime)
+            new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, commitCount, updateTime)
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
     }
 

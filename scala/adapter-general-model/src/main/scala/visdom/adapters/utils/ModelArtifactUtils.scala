@@ -112,6 +112,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         modulePointsSchema = module,
                         moduleSchema = moduleMetadata,
                         userId = userId,
+                        commitCount = 0,
                         updateTime = lastModified
                     )
             })
