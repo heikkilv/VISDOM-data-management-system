@@ -17,6 +17,7 @@ class ModulePointsArtifact(
     modulePointsSchema: PointsModuleSchema,
     moduleSchema: ModuleSchema,
     userId: Int,
+    commitCount: Int,
     updateTime: String
 )
 extends Artifact {
@@ -45,7 +46,7 @@ extends Artifact {
         }
     }
 
-    val data: ModulePointsData = ModulePointsData.fromPointsSchema(modulePointsSchema, userId)
+    val data: ModulePointsData = ModulePointsData.fromPointsSchema(modulePointsSchema, userId, commitCount)
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)
 
@@ -90,8 +91,9 @@ object ModulePointsArtifact {
         modulePointsSchema: PointsModuleSchema,
         moduleSchema: ModuleSchema,
         userId: Int,
+        commitCount: Int,
         updateTime: String
     ): ModulePointsArtifact = {
-        new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, updateTime)
+        new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, commitCount, updateTime)
     }
 }
