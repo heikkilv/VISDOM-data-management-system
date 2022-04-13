@@ -97,22 +97,30 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 .collect()
                 .toMap
 
+        val moduleCommitCount: Map[(Int, Int), Int] = getModuleCommitCountMap()
+
         modelUtils.getPointsSchemas()
             .flatMap(
                 points => points.modules.map(
                     module => moduleMetadataMap.get(module.id).map(
-                        moduleMetadata => (points.id, points.metadata.last_modified, module, moduleMetadata)
+                        moduleMetadata => (
+                            points.id,
+                            points.metadata.last_modified,
+                            moduleCommitCount.getOrElse((points.id, module.id), 0),
+                            module,
+                            moduleMetadata
+                        )
                     )
                 )
             )
             .flatMap(option => option)
             .map({
-                case (userId, lastModified, module, moduleMetadata) =>
+                case (userId, lastModified, commitCount, module, moduleMetadata) =>
                     ArtifactResult.fromModulePointsSchema(
                         modulePointsSchema = module,
                         moduleSchema = moduleMetadata,
                         userId = userId,
-                        commitCount = 0,
+                        commitCount = commitCount,
                         updateTime = lastModified
                     )
             })
@@ -200,6 +208,31 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 )
             })
             .filter({case (_, commits) => commits.nonEmpty})
+    }
+
+    def getModuleCommitCountMap(): Map[(Int, Int), Int] = {
+        // returns a mapping from (userId, moduleId) to commit count
+        val submissionCommitMap: Map[Int, Seq[String]] = getSubmissionCommitMap()
+            .map({case (submissionId, commits) => (submissionId, commits.map(commitLink => commitLink.id))})
+
+        modelUtils.getPointsSchemas()
+            .flatMap(
+                points => points.modules.map(
+                    module => (
+                        (points.id, module.id),
+                        module.exercises.flatMap(
+                            exercise => exercise.submissions_with_points
+                                .map(submission => submissionCommitMap.getOrElse(submission.id, Seq.empty))
+                                .flatten
+                                .distinct
+                        )
+                        .distinct
+                        .size
+                    )
+                )
+            )
+            .collect()
+            .toMap
     }
 
     def getExercisePoints(): Dataset[ExercisePointsArtifactResult] = {
