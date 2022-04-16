@@ -3,6 +3,7 @@ package visdom.adapters.options
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.authors.AplusAuthor
@@ -41,7 +42,8 @@ object ObjectTypes extends ObjectTypesTrait {
         PipelineReportArtifact.PipelineReportArtifactType,
         CoursePointsArtifact.CoursePointsArtifactType,
         ModulePointsArtifact.ModulePointsArtifactType,
-        ExercisePointsArtifact.ExercisePointsArtifactType
+        ExercisePointsArtifact.ExercisePointsArtifactType,
+        ModuleAverageArtifact.ModuleAverageArtifactType
     )
     val MetadataTypes: Set[String] = Set(
         CourseMetadata.CourseMetadataType,
@@ -123,6 +125,16 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CommitCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Official) -> BooleanType
+        ),
+        ModuleAverageArtifact.ModuleAverageArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleNumber) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Grade) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Total) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgPoints) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgExercises) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgSubmissions) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCommits) -> DoubleType
         ),
         CourseMetadata.CourseMetadataType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,

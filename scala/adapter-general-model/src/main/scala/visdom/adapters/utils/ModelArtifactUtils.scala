@@ -8,6 +8,7 @@ import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.CoursePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ExercisePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.ModuleAverageArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ModulePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
 import visdom.adapters.general.schemas.CourseSchema
@@ -280,5 +281,9 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         updateTime = lastModified
                     )
             })
+    }
+
+    def getModuleAverages(): Dataset[ModuleAverageArtifactResult] = {
+        sparkSession.createDataset(Seq.empty)
     }
 }
