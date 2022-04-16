@@ -7,11 +7,13 @@ import spray.json.JsValue
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.artifacts.data.CoursePointsData
 import visdom.adapters.general.model.artifacts.data.ExercisePointsData
 import visdom.adapters.general.model.artifacts.data.FileData
+import visdom.adapters.general.model.artifacts.data.ModuleAverageData
 import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
 import visdom.adapters.general.model.authors.AplusAuthor
@@ -32,6 +34,7 @@ import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
+import visdom.adapters.general.schemas.ModuleAverageSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PipelineUserSchema
@@ -105,6 +108,7 @@ object ArtifactResult {
     type CoursePointsArtifactResult = ArtifactResult[CoursePointsData]
     type ModulePointsArtifactResult = ArtifactResult[ModulePointsData]
     type ExercisePointsArtifactResult = ArtifactResult[ExercisePointsData]
+    type ModuleAverageArtifactResult = ArtifactResult[ModuleAverageData]
 
     type CommitAuthorResult = ArtifactResult[CommitAuthorData]
     type GitlabAuthorResult = ArtifactResult[GitlabAuthorData]
@@ -222,5 +226,18 @@ object ArtifactResult {
             updateTime
         )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
+    }
+
+    def fromModuleAverageSchema(
+        moduleAverageSchema: ModuleAverageSchema,
+        courseSchema: CourseSchema,
+        updateTime: String
+    ): ModuleAverageArtifactResult = {
+        val moduleAverageArtifact: ModuleAverageArtifact = new ModuleAverageArtifact(
+            moduleAverageSchema,
+            courseSchema,
+            updateTime
+        )
+        fromArtifact(moduleAverageArtifact, moduleAverageArtifact.data)
     }
 }
