@@ -11,7 +11,7 @@ from os import environ
 from sqlite3 import connect as sqlite3_connect
 from typing import Any, Dict, List, Optional, Union
 
-from pymongo import MongoClient
+from pymongo.mongo_client import MongoClient
 from pymongo.collection import Collection as MongoCollection
 
 
