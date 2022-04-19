@@ -3,6 +3,7 @@ package visdom.adapters.general.schemas
 import visdom.adapters.schemas.BaseSchema
 import visdom.adapters.schemas.BaseSchemaTrait2
 import visdom.spark.FieldDataModel
+import visdom.utils.GeneralUtils
 import visdom.utils.GeneralUtils.toIntOption
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.TupleUtils
@@ -14,7 +15,15 @@ final case class PointsDifficultySchema(
     categoryP: Option[Int],
     categoryG: Option[Int]
 )
-extends BaseSchema
+extends BaseSchema {
+    def add(otherPoints: PointsDifficultySchema): PointsDifficultySchema = {
+        PointsDifficultySchema(
+            category = GeneralUtils.sumValues(category, otherPoints.category),
+            categoryP = GeneralUtils.sumValues(categoryP, otherPoints.categoryP),
+            categoryG = GeneralUtils.sumValues(categoryG, otherPoints.categoryG),
+        )
+    }
+}
 
 object PointsDifficultySchema extends BaseSchemaTrait2[PointsDifficultySchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))

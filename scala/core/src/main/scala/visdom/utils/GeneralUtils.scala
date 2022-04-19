@@ -253,4 +253,14 @@ object GeneralUtils {
             case None => itemMap.update(key, Seq(value))
         }
     }
+
+    def sumValues(first: Option[Int], second: Option[Int]): Option[Int] = {
+        first match {
+            case Some(firstValue: Int) => second match {
+                case Some(secondValue: Int) => Some(firstValue + secondValue)
+                case None => first
+            }
+            case None => second
+        }
+    }
 }

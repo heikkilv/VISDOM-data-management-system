@@ -4,6 +4,7 @@ import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.events.CommitEvent
+import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.model.results.ArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.CoursePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ExercisePointsArtifactResult
@@ -16,6 +17,7 @@ import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.FileIdSchema
 import visdom.adapters.general.schemas.FileSchema
+import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.SubmissionGitDataSchema
@@ -26,6 +28,7 @@ import visdom.utils.SnakeCaseConstants
 
 
 class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
+    import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
 
@@ -281,6 +284,56 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         updateTime = lastModified
                     )
             })
+    }
+
+    def getModuleNumbersMap(): Map[(Int, Int), ModuleNumbersSchema] = {
+        val moduleMetadataMap: Map[Int, ModuleSchema] =
+            modelUtils.getModuleSchemas()
+                .map(module => (module.id, module))
+                .collect()
+                .toMap
+
+        val moduleCommitCount: Map[(Int, Int), Int] = getModuleCommitCountMap()
+
+        modelUtils.getPointsSchemas()
+            .flatMap(
+                points => points.modules.map(
+                    module => moduleMetadataMap.get(module.id).map(
+                        moduleMetadata => (
+                            (
+                                points.id,
+                                moduleMetadata.id
+                            ),
+                            ModuleNumbersSchema(
+                                point_count = module.points_by_difficulty,
+                                exercise_count = module.exercises.filter(exercise => exercise.points > 0).size,
+                                submission_count = module.submission_count,
+                                commit_count = moduleCommitCount.getOrElse((points.id, module.id), 0)
+                            )
+                        )
+                    )
+                )
+            )
+            .flatMap(option => option)
+            .collect()
+            .toMap
+    }
+
+    def getModuleNumberToIdsMap(): Map[Int, (Int, Int)] = {
+        val moduleNumberMap: Map[Int, Int] = modelUtils.getModuleSchemas()
+            .map(module => (module.id, ModuleData.getModuleNumber(module.display_name)))
+            .collect()
+            .toMap
+
+        modelUtils.getCourseSchemas()
+            .flatMap(course =>
+                course._links
+                    .map(links => links.modules.getOrElse(Seq.empty))
+                    .getOrElse(Seq.empty)
+                    .map(moduleId => (moduleId, (course.id, moduleNumberMap.getOrElse(moduleId, 0))))
+            )
+            .collect()
+            .toMap
     }
 
     def getModuleAverages(): Dataset[ModuleAverageArtifactResult] = {
