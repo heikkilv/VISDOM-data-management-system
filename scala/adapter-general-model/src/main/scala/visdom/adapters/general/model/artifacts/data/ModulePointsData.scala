@@ -14,6 +14,7 @@ import visdom.utils.SnakeCaseConstants
 final case class ModulePointsData(
     module_id: Int,
     user_id: Int,
+    exercise_count: Int,
     submission_count: Int,
     commit_count: Int,
     points: Int,
@@ -26,6 +27,7 @@ extends Data {
             Map(
                 SnakeCaseConstants.ModuleId -> JsonUtils.toBsonValue(module_id),
                 SnakeCaseConstants.UserId -> JsonUtils.toBsonValue(user_id),
+                SnakeCaseConstants.ExerciseCount -> JsonUtils.toBsonValue(exercise_count),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toBsonValue(submission_count),
                 SnakeCaseConstants.CommitCount -> JsonUtils.toBsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toBsonValue(points),
@@ -40,6 +42,7 @@ extends Data {
             Map(
                 SnakeCaseConstants.ModuleId -> JsonUtils.toJsonValue(module_id),
                 SnakeCaseConstants.UserId -> JsonUtils.toJsonValue(user_id),
+                SnakeCaseConstants.ExerciseCount -> JsonUtils.toJsonValue(exercise_count),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toJsonValue(submission_count),
                 SnakeCaseConstants.CommitCount -> JsonUtils.toJsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toJsonValue(points),
@@ -51,10 +54,16 @@ extends Data {
 }
 
 object ModulePointsData {
-    def fromPointsSchema(modulePointsSchema: PointsModuleSchema, userId: Int, commitCount: Int): ModulePointsData = {
+    def fromPointsSchema(
+        modulePointsSchema: PointsModuleSchema,
+        userId: Int,
+        exerciseCount: Int,
+        commitCount: Int
+    ): ModulePointsData = {
         ModulePointsData(
             module_id = modulePointsSchema.id,
             user_id = userId,
+            exercise_count = exerciseCount,
             submission_count = modulePointsSchema.submission_count,
             commit_count = commitCount,
             points = modulePointsSchema.points,
