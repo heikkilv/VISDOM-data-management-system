@@ -20,7 +20,7 @@ extends BaseSchema {
         PointsDifficultySchema(
             category = GeneralUtils.sumValues(category, otherPoints.category),
             categoryP = GeneralUtils.sumValues(categoryP, otherPoints.categoryP),
-            categoryG = GeneralUtils.sumValues(categoryG, otherPoints.categoryG),
+            categoryG = GeneralUtils.sumValues(categoryG, otherPoints.categoryG)
         )
     }
 }
