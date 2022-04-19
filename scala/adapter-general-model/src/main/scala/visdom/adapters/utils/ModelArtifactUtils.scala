@@ -90,6 +90,20 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .map(points => ArtifactResult.fromCoursePointsSchema(points, courseMetadata.get(points.course_id)))
     }
 
+    def getModuleExerciseCountMap(): Map[(Int, Int), Int] = {
+        modelUtils.getPointsSchemas()
+            .flatMap(
+                points => points.modules.map(
+                    module => (
+                        (points.id, module.id),
+                        module.exercises.count(exercise => exercise.points > 0)
+                    )
+                )
+            )
+            .collect()
+            .toMap
+    }
+
     def getModulePoints(): Dataset[ModulePointsArtifactResult] = {
         val moduleMetadataMap: Map[Int, ModuleSchema] =
             modelUtils.getModuleSchemas()
@@ -97,6 +111,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 .collect()
                 .toMap
 
+        val moduleExerciseCount: Map[(Int, Int), Int] = getModuleExerciseCountMap()
         val moduleCommitCount: Map[(Int, Int), Int] = getModuleCommitCountMap()
 
         modelUtils.getPointsSchemas()
@@ -106,6 +121,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         moduleMetadata => (
                             points.id,
                             points.metadata.last_modified,
+                            moduleExerciseCount.getOrElse((points.id, module.id), 0),
                             moduleCommitCount.getOrElse((points.id, module.id), 0),
                             module,
                             moduleMetadata
@@ -115,11 +131,12 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             )
             .flatMap(option => option)
             .map({
-                case (userId, lastModified, commitCount, module, moduleMetadata) =>
+                case (userId, lastModified, exerciseCount, commitCount, module, moduleMetadata) =>
                     ArtifactResult.fromModulePointsSchema(
                         modulePointsSchema = module,
                         moduleSchema = moduleMetadata,
                         userId = userId,
+                        exerciseCount = exerciseCount,
                         commitCount = commitCount,
                         updateTime = lastModified
                     )

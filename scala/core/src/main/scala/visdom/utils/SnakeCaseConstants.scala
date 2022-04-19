@@ -100,6 +100,7 @@ object SnakeCaseConstants {
     val EndingTime: String = "ending_time"
     val ErrorCount: String = "error_count"
     val Exercise: String = "exercise"
+    val ExerciseCount: String = "exercise_count"
     val ExerciseId: String = "exercise_id"
     val ExerciseNumber: String = "exercise_number"
     val Exercises: String = "exercises"
