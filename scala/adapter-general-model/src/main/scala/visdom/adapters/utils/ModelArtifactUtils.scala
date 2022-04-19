@@ -106,6 +106,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         moduleMetadata => (
                             points.id,
                             points.metadata.last_modified,
+                            0,  // exerciseCount set to 0 for now
                             moduleCommitCount.getOrElse((points.id, module.id), 0),
                             module,
                             moduleMetadata
@@ -115,11 +116,12 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             )
             .flatMap(option => option)
             .map({
-                case (userId, lastModified, commitCount, module, moduleMetadata) =>
+                case (userId, lastModified, exerciseCount, commitCount, module, moduleMetadata) =>
                     ArtifactResult.fromModulePointsSchema(
                         modulePointsSchema = module,
                         moduleSchema = moduleMetadata,
                         userId = userId,
+                        exerciseCount = exerciseCount,
                         commitCount = commitCount,
                         updateTime = lastModified
                     )
