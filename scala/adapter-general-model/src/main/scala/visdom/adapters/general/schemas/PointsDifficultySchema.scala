@@ -25,6 +25,10 @@ extends BaseSchema {
             categoryG = GeneralUtils.sumValues(categoryG, otherPoints.categoryG)
         )
     }
+
+    def total(): Int = {
+        category.getOrElse(0) + categoryP.getOrElse(0) + categoryG.getOrElse(0)
+    }
 }
 
 object PointsDifficultySchema extends BaseSchemaTrait2[PointsDifficultySchema] {
