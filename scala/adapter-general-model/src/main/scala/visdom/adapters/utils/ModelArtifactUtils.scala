@@ -20,6 +20,7 @@ import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
+import visdom.adapters.general.schemas.PointsDifficultySchema
 import visdom.adapters.general.schemas.SubmissionGitDataSchema
 import visdom.database.mongodb.MongoConstants
 import visdom.utils.CommonConstants
@@ -303,7 +304,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
-    def getModuleNumbersMap(): Map[(Int, Int), ModuleNumbersSchema] = {
+    def getModuleIdToNumbersMap(): Map[(Int, Int), ModuleNumbersSchema] = {
         val moduleMetadataMap: Map[Int, ModuleSchema] =
             modelUtils.getModuleSchemas()
                 .map(module => (module.id, module))
@@ -323,7 +324,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                             ),
                             ModuleNumbersSchema(
                                 point_count = module.points_by_difficulty,
-                                exercise_count = module.exercises.filter(exercise => exercise.points > 0).size,
+                                exercise_count = module.exercises.count(exercise => exercise.points > 0),
                                 submission_count = module.submission_count,
                                 commit_count = moduleCommitCount.getOrElse((points.id, module.id), 0)
                             )
@@ -336,7 +337,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .toMap
     }
 
-    def getModuleNumberToIdsMap(): Map[Int, (Int, Int)] = {
+    def getModuleIdToWeekMap(): Map[Int, (Int, Int)] = {
         val moduleNumberMap: Map[Int, Int] = modelUtils.getModuleSchemas()
             .map(module => (module.id, ModuleData.getModuleNumber(module.display_name)))
             .collect()
@@ -349,6 +350,69 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     .getOrElse(Seq.empty)
                     .map(moduleId => (moduleId, (course.id, moduleNumberMap.getOrElse(moduleId, 0))))
             )
+            .collect()
+            .toMap
+    }
+
+    def getModuleNumbersMap(): Map[(Int, Int, Int), ModuleNumbersSchema] = {
+        val moduleIdToWeekMap: Map[Int, (Int, Int)] = getModuleIdToWeekMap()
+
+        getModuleIdToNumbersMap()
+            .flatMap({case ((userId, moduleId), numbers) =>
+                moduleIdToWeekMap.get(moduleId)
+                    .map({case (courseId, moduleNumber) => (
+                        courseId,
+                        moduleNumber,
+                        userId,
+                        numbers
+                    )})
+            })
+            .groupBy({case (courseId, moduleNumber, userId, _) => (courseId, moduleNumber, userId)})
+            .map({case (keys, values) =>
+                (
+                    keys,
+                    values
+                        .map({case (_, _, _, numbers) => numbers})
+                        .reduceOption((first, second) => first.add(second))
+                        .getOrElse(ModuleNumbersSchema.getEmpty())
+                )
+            })
+    }
+
+    def getUserTotalPointsMap(): Map[(Int, Int), PointsDifficultySchema] = {
+        modelUtils.getPointsSchemas()
+            .map(
+                points => (
+                    (
+                        points.id,
+                        points.course_id
+                    ),
+                    points.points_by_difficulty
+                )
+            )
+            .collect()
+            .toMap
+    }
+
+    def getCourseMaxPointsMap(): Map[Int, PointsDifficultySchema] = {
+        modelUtils.getPointsSchemas()
+            .map(points => (points.course_id, points))
+            .groupByKey({case (courseId, points) => courseId})
+            .mapValues({case (_, points) => points})
+            .reduceGroups((first, second) => first)  // take just the first points schema for each course
+            .map({
+                case (courseId, points) => (
+                    courseId,
+                    points.modules.flatMap(
+                        module => module.exercises.map(
+                            exercise => PointsDifficultySchema.getSingle(exercise.difficulty, exercise.max_points)
+                        )
+                            .reduceOption((first, second) => first.add(second))
+                    )
+                        .reduceOption((first, second) => first.add(second))
+                        .getOrElse(PointsDifficultySchema.getEmpty())
+                )
+            })
             .collect()
             .toMap
     }

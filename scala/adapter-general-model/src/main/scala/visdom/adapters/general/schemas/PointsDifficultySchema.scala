@@ -3,8 +3,10 @@ package visdom.adapters.general.schemas
 import visdom.adapters.schemas.BaseSchema
 import visdom.adapters.schemas.BaseSchemaTrait2
 import visdom.spark.FieldDataModel
+import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 import visdom.utils.GeneralUtils.toIntOption
+import visdom.utils.PascalCaseConstants
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.TupleUtils
 import visdom.utils.WartRemoverConstants
@@ -41,5 +43,30 @@ object PointsDifficultySchema extends BaseSchemaTrait2[PointsDifficultySchema] {
             )
             case None => None
         }
+    }
+
+    def getEmpty(): PointsDifficultySchema = {
+        PointsDifficultySchema(
+            category = None,
+            categoryP = None,
+            categoryG = None
+        )
+    }
+
+    def getSingle(difficulty: String, points: Int): PointsDifficultySchema = {
+        PointsDifficultySchema(
+            category = difficulty match {
+                case CommonConstants.EmptyString => Some(points)
+                case _ => None
+            },
+            categoryP = difficulty match {
+                case PascalCaseConstants.P => Some(points)
+                case _ => None
+            },
+             categoryG = difficulty match {
+                case PascalCaseConstants.G => Some(points)
+                case _ => None
+            }
+        )
     }
 }
