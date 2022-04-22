@@ -15,6 +15,7 @@
         - [Example pipeline job event](#example-pipeline-job-event)
         - [Example file artifact](#example-file-artifact)
         - [Example pipeline report artifact](#example-pipeline-report-artifact)
+        - [Example module average artifact](#example-module-average-artifact)
         - [Example committer author](#example-committer-author)
         - [Example gitlab user author](#example-gitlab-user-author)
     - [Example info endpoint response](#example-info-endpoint-response)
@@ -410,6 +411,47 @@ One example for successful query for each supported object type is given below:
 ```
 
 TODO: add an example with some actual pipeline report content
+
+#### Example module average artifact
+
+```json
+{
+    "id": "4e1befae-7d96-5338-87ea-b91426d55d65",
+    "type": "module_average",
+    "name": "Week 12 averages - grade 3",
+    "description": "Week 12 averages for grade 3 in course 40",
+    "state": "finished",
+    "origin": {
+        "id": "5810771b-f368-57fc-026f-87b630179991",
+        "type": "aplus"
+    },
+    "data": {
+        "module_number": 12,
+        "grade": 3,
+        "course_id": 40,
+        "total": 21,
+        "avg_points": 69.61904761904762,
+        "avg_exercises": 3.4285714285714284,
+        "avg_submissions": 8.19047619047619,
+        "avg_commits": 8.952380952380953
+    },
+    "related_constructs": [
+        {
+            "id": "880b1a7b-0269-5682-2f63-289a952f6d8f",
+            "type": "course"
+        },
+        {
+            "id": "b8cfa110-e729-5f2d-9e6f-8155b2f5a79b",
+            "type": "module"
+        },
+        {
+            "id": "ce89f7d3-2b15-544f-906d-5f249ede6a7b",
+            "type": "module"
+        }
+    ],
+    "related_events": []
+}
+```
 
 #### Example committer author
 
