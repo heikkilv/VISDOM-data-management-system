@@ -79,9 +79,13 @@ object ModuleData {
             url = moduleSchema.url,
             html_url = moduleSchema.html_url,
             is_open = moduleSchema.is_open,
-            start_date = moduleSchema.metadata.other.map(other => other.start_date),
-            end_date = moduleSchema.metadata.other.map(other => other.end_date),
-            late_submission_date = moduleSchema.metadata.other.map(other => other.late_submission_date).flatten,
+            start_date =
+                moduleSchema.metadata.other.map(other => ExerciseData.dateStringToIsoFormat(other.start_date)),
+            end_date =
+                moduleSchema.metadata.other.map(other => ExerciseData.dateStringToIsoFormat(other.end_date)),
+            late_submission_date =
+                moduleSchema.metadata.other.map(other => other.late_submission_date).flatten
+                    .map(date => ExerciseData.dateStringToIsoFormat(date)),
             max_points = additionalSchema.max_points,
             points_to_pass = additionalSchema.points_to_pass,
             course_id = moduleSchema.course_id,
