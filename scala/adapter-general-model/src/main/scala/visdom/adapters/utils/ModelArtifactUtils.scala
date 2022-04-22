@@ -21,6 +21,7 @@ import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PointsDifficultySchema
+import visdom.adapters.general.schemas.PointsPerCategory
 import visdom.adapters.general.schemas.SubmissionGitDataSchema
 import visdom.database.mongodb.MongoConstants
 import visdom.utils.CommonConstants
@@ -379,22 +380,22 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
-    def getUserTotalPointsMap(): Map[(Int, Int), PointsDifficultySchema] = {
+    def getUserTotalPointsMap(): Map[(Int, Int), PointsPerCategory] = {
         modelUtils.getPointsSchemas()
             .map(
                 points => (
                     (
-                        points.id,
-                        points.course_id
+                        points.course_id,
+                        points.id
                     ),
-                    points.points_by_difficulty
+                    PointsPerCategory.fromPointsDifficultySchema(points.points_by_difficulty)
                 )
             )
             .collect()
             .toMap
     }
 
-    def getCourseMaxPointsMap(): Map[Int, PointsDifficultySchema] = {
+    def getCourseMaxPointsMap(): Map[Int, PointsPerCategory] = {
         modelUtils.getPointsSchemas()
             .map(points => (points.course_id, points))
             .groupByKey({case (courseId, points) => courseId})
@@ -403,18 +404,39 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .map({
                 case (courseId, points) => (
                     courseId,
-                    points.modules.flatMap(
-                        module => module.exercises.map(
-                            exercise => PointsDifficultySchema.getSingle(exercise.difficulty, exercise.max_points)
+                    PointsPerCategory.fromPointsDifficultySchema(
+                        points.modules.flatMap(
+                            module => module.exercises.map(
+                                exercise => PointsDifficultySchema.getSingle(exercise.difficulty, exercise.max_points)
+                            )
+                                .reduceOption((first, second) => first.add(second))
                         )
                             .reduceOption((first, second) => first.add(second))
+                            .getOrElse(PointsDifficultySchema.getEmpty())
                     )
-                        .reduceOption((first, second) => first.add(second))
-                        .getOrElse(PointsDifficultySchema.getEmpty())
                 )
             })
             .collect()
             .toMap
+    }
+
+    def getCourseGradeMap(): Map[(Int, Int), Int] = {
+        val courseMaxPoints: Map[Int, PointsPerCategory] = getCourseMaxPointsMap()
+
+        getUserTotalPointsMap()
+            .flatMap({
+                case ((courseId, userId), points) =>
+                    courseMaxPoints.get(courseId)
+                        .map(
+                            maxPoints => (
+                                (
+                                    courseId,
+                                    userId
+                                ),
+                                CourseUtils.getPredictedGrade(maxPoints, points)
+                            )
+                        )
+            })
     }
 
     def getModuleAverages(): Dataset[ModuleAverageArtifactResult] = {
