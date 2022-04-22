@@ -16,7 +16,6 @@ import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 
 
-// TODO: add max_points and points_to_pass attributes from points documents
 final case class ModuleData(
     module_id: Int,
     module_number: Int,
@@ -91,14 +90,27 @@ object ModuleData {
     }
 
     def getModuleNumber(displayName: ModuleNameSchema): Int = {
-        displayName.number match {
-            case Some(moduleNumberString: String) => GeneralUtils.toIntOption(
-                moduleNumberString.replace(CommonConstants.Dot, CommonConstants.EmptyString)
-            ) match {
-                case Some(moduleNumber: Int) => moduleNumber
+        def getNumberFromEnglishName(): Option[Int] = {
+            displayName.en match {
+                case Some(englishName: String) => englishName.split(CommonConstants.LiteralDot).headOption match {
+                    case Some(numberPart: String) => GeneralUtils.toIntOption(numberPart)
+                    case None => None
+                }
+                case None => None
+            }
+        }
+
+        getNumberFromEnglishName() match {
+            case Some(englishNumber: Int) => englishNumber
+            case None => displayName.number match {
+                case Some(moduleNumberString: String) => GeneralUtils.toIntOption(
+                    moduleNumberString.replace(CommonConstants.Dot, CommonConstants.EmptyString)
+                ) match {
+                    case Some(moduleNumber: Int) => moduleNumber
+                    case None => 0
+                }
                 case None => 0
             }
-            case None => 0
         }
     }
 }

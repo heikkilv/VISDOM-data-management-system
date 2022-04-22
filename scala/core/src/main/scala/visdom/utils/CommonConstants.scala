@@ -16,6 +16,7 @@ object CommonConstants {
     final val GreaterThanOrEqual: String = ">="
     final val LessThan: String = "<"
     final val LessThanOrEqual: String = "<="
+    final val LiteralDot: String = "\\."
     final val NotEqual: String = "!="
     final val Regex: String = "~="
     final val Semicolon: String = ";"

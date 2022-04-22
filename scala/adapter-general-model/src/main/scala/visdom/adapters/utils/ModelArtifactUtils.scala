@@ -369,6 +369,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         numbers
                     )})
             })
+            .filter(data => data._2 > 0)  // only include modules with moduleNumber > 0
             .groupByKey({case (courseId, moduleNumber, userId, _) => (courseId, moduleNumber, userId)})
             .mapValues({case (_, _, _, numbers) => numbers})
             .reduceGroups((first, second) => first.add(second))
