@@ -448,6 +448,18 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .toMap
     }
 
+    def getWeekToModuleIdMap(): Map[(Int, Int), Seq[Int]] = {
+        getModuleIdToWeekMap()
+            .toSeq
+            .groupBy({case (moduleId, (courseId, moduleNumber)) => (courseId, moduleNumber)})
+            .map({
+                case (key, values) => (
+                    key,
+                    values.map({case (moduleId, (courseId, moduleNumber)) => moduleId})
+                )
+            })
+    }
+
     def getAvailableModuleAverages(
         courseSchemas: Map[Int, CourseSchema],
         courseUpdateTimes: Map[Int, String]
@@ -535,6 +547,8 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 .collect()
                 .toMap
 
+        val weekToModuleIds: Map[(Int, Int), Seq[Int]] = getWeekToModuleIdMap()
+
         val availableModuleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)] =
             getAvailableModuleAverages(courseSchemas, courseUpdateTimes)
 
@@ -547,6 +561,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     ArtifactResult.fromModuleAverageSchema(
                         moduleAverageSchema = moduleAverageSchema,
                         courseSchema = courseSchema,
+                        moduleIds = weekToModuleIds.getOrElse((courseSchema.id, moduleAverageSchema.module_number), Seq.empty),
                         updateTime = updateTime
                     )
             })

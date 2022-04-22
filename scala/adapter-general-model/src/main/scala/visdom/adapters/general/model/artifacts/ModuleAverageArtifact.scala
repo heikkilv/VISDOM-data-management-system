@@ -16,6 +16,7 @@ import visdom.utils.GeneralUtils
 class ModuleAverageArtifact(
     moduleAverageSchema: ModuleAverageSchema,
     courseSchema: CourseSchema,
+    moduleIds: Seq[Int],
     updateTime: String
 )
 extends Artifact {
@@ -45,15 +46,12 @@ extends Artifact {
     // add linked course and module metadata as related constructs
     addRelatedConstructs(
         (
-            courseSchema._links match {
-                case Some(links: CourseLinksSchema) => links.modules.getOrElse(Seq.empty).map(
-                    moduleId => ItemLink(
-                        ModuleMetadata.getId(origin.id, moduleId),
-                        ModuleMetadata.ModuleMetadataType
-                    )
+            moduleIds.map(
+                moduleId => ItemLink(
+                    ModuleMetadata.getId(origin.id, moduleId),
+                    ModuleMetadata.ModuleMetadataType
                 )
-                case None => Seq.empty
-            }
+            )
         ) :+
         ItemLink(
             CourseMetadata.getId(origin.id, data.course_id),
@@ -72,8 +70,9 @@ object ModuleAverageArtifact {
     def fromModuleAverageSchema(
         moduleAverageSchema: ModuleAverageSchema,
         courseSchema: CourseSchema,
+        moduleIds: Seq[Int],
         updateTime: String
     ): ModuleAverageArtifact = {
-        new ModuleAverageArtifact(moduleAverageSchema, courseSchema, updateTime)
+        new ModuleAverageArtifact(moduleAverageSchema, courseSchema, moduleIds, updateTime)
     }
 }

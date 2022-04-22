@@ -232,11 +232,13 @@ object ArtifactResult {
     def fromModuleAverageSchema(
         moduleAverageSchema: ModuleAverageSchema,
         courseSchema: CourseSchema,
+        moduleIds: Seq[Int],
         updateTime: String
     ): ModuleAverageArtifactResult = {
         val moduleAverageArtifact: ModuleAverageArtifact = new ModuleAverageArtifact(
             moduleAverageSchema,
             courseSchema,
+            moduleIds,
             updateTime
         )
         fromArtifact(moduleAverageArtifact, moduleAverageArtifact.data)
