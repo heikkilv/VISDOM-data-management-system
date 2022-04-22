@@ -7,6 +7,7 @@ import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
 import visdom.adapters.general.schemas.ModuleAdditionalSchema
 import visdom.adapters.general.schemas.ModuleLinksSchema
+import visdom.adapters.general.schemas.ModuleNameSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
@@ -15,7 +16,6 @@ import visdom.utils.CommonConstants
 import visdom.utils.GeneralUtils
 
 
-// TODO: add max_points and points_to_pass attributes from points documents
 final case class ModuleData(
     module_id: Int,
     module_number: Int,
@@ -75,7 +75,38 @@ object ModuleData {
     def fromModuleSchema(moduleSchema: ModuleSchema, additionalSchema: ModuleAdditionalSchema): ModuleData = {
         ModuleData(
             module_id = moduleSchema.id,
-            module_number = moduleSchema.display_name.number match {
+            module_number = getModuleNumber(moduleSchema.display_name),
+            url = moduleSchema.url,
+            html_url = moduleSchema.html_url,
+            is_open = moduleSchema.is_open,
+            start_date =
+                moduleSchema.metadata.other.map(other => ExerciseData.dateStringToIsoFormat(other.start_date)),
+            end_date =
+                moduleSchema.metadata.other.map(other => ExerciseData.dateStringToIsoFormat(other.end_date)),
+            late_submission_date =
+                moduleSchema.metadata.other.map(other => other.late_submission_date).flatten
+                    .map(date => ExerciseData.dateStringToIsoFormat(date)),
+            max_points = additionalSchema.max_points,
+            points_to_pass = additionalSchema.points_to_pass,
+            course_id = moduleSchema.course_id,
+            exercises = moduleSchema._links.map(links => links.exercises).flatten.getOrElse(Seq.empty)
+        )
+    }
+
+    def getModuleNumber(displayName: ModuleNameSchema): Int = {
+        def getNumberFromEnglishName(): Option[Int] = {
+            displayName.en match {
+                case Some(englishName: String) => englishName.split(CommonConstants.LiteralDot).headOption match {
+                    case Some(numberPart: String) => GeneralUtils.toIntOption(numberPart)
+                    case None => None
+                }
+                case None => None
+            }
+        }
+
+        getNumberFromEnglishName() match {
+            case Some(englishNumber: Int) => englishNumber
+            case None => displayName.number match {
                 case Some(moduleNumberString: String) => GeneralUtils.toIntOption(
                     moduleNumberString.replace(CommonConstants.Dot, CommonConstants.EmptyString)
                 ) match {
@@ -83,17 +114,7 @@ object ModuleData {
                     case None => 0
                 }
                 case None => 0
-            },
-            url = moduleSchema.url,
-            html_url = moduleSchema.html_url,
-            is_open = moduleSchema.is_open,
-            start_date = moduleSchema.metadata.other.map(other => other.start_date),
-            end_date = moduleSchema.metadata.other.map(other => other.end_date),
-            late_submission_date = moduleSchema.metadata.other.map(other => other.late_submission_date).flatten,
-            max_points = additionalSchema.max_points,
-            points_to_pass = additionalSchema.points_to_pass,
-            course_id = moduleSchema.course_id,
-            exercises = moduleSchema._links.map(links => links.exercises).flatten.getOrElse(Seq.empty)
-        )
+            }
+        }
     }
 }

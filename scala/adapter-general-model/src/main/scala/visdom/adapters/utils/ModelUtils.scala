@@ -18,6 +18,7 @@ import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.artifacts.CoursePointsArtifact
 import visdom.adapters.general.model.artifacts.ExercisePointsArtifact
 import visdom.adapters.general.model.artifacts.FileArtifact
+import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
 import visdom.adapters.general.model.events.CommitEvent
@@ -324,6 +325,7 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
             storeObjects(artifactUtils.getModulePoints(), ModulePointsArtifact.ModulePointsArtifactType)
             storeObjects(artifactUtils.getExercisePoints(), ExercisePointsArtifact.ExercisePointsArtifactType)
+            storeObjects(artifactUtils.getModuleAverages(), ModuleAverageArtifact.ModuleAverageArtifactType)
 
             if (updateIndexes) {
                 updateArtifactIndexes()
