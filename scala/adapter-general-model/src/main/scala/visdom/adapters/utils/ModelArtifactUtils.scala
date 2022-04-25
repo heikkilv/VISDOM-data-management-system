@@ -105,7 +105,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 points => points.modules.map(
                     module => (
                         (points.id, module.id),
-                        module.exercises.count(exercise => exercise.points > 0)
+                        module.exercises.count(exercise => exercise.submission_count > 0)
                     )
                 )
             )
@@ -328,7 +328,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                             ),
                             ModuleNumbersSchema(
                                 point_count = module.points_by_difficulty,
-                                exercise_count = module.exercises.count(exercise => exercise.points > 0),
+                                exercise_count = module.exercises.count(exercise => exercise.submission_count > 0),
                                 submission_count = module.submission_count,
                                 commit_count = moduleCommitCount.getOrElse((points.id, module.id), 0)
                             )
