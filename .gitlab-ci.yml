@@ -90,6 +90,11 @@ unit_test:
     script:
         - sbt
           core/test
+    artifacts:
+        when: always
+        reports:
+            junit:
+                - /builds/cs/VISDOM/data-management-system/scala/core/target/TEST*.xml
 
 build_images:
     stage: Build
