@@ -85,7 +85,8 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 pipelineJobSchema =>
                     EventResult.fromPipelineJobSchema(
                         pipelineJobSchema,
-                        projectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString),
+                        Seq.empty  // TODO: add test suite names
                     )
             )
     }

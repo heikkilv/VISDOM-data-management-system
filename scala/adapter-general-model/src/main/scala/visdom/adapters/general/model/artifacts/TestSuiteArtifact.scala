@@ -20,7 +20,7 @@ class TestSuiteArtifact(
     pipelineJobId: Option[Int]
 )
 extends Artifact {
-    def getType: String = PipelineReportArtifact.PipelineReportArtifactType
+    def getType: String = TestSuiteArtifact.TestSuiteArtifactType
 
     val origin: ItemLink = ItemLink(
         GitlabOrigin.getId(hostName, projectName),
@@ -59,6 +59,15 @@ extends Artifact {
             PipelineReportArtifact.PipelineReportArtifactType
         )
     )
+    // add test case artifacts to related constructs
+    addRelatedConstructs(
+        testSuiteSchema.test_cases.map(
+            testCase => ItemLink(
+                TestCaseArtifact.getId(origin.id, pipelineId, name, testCase.name),
+                TestCaseArtifact.TestCaseArtifactType
+            )
+        )
+    )
 }
 
 object TestSuiteArtifact {
@@ -67,14 +76,4 @@ object TestSuiteArtifact {
     def getId(originId: String, pipelineId: Int, testSuiteName: String): String = {
         GeneralUtils.getUuid(originId, TestSuiteArtifactType, pipelineId.toString(), testSuiteName)
     }
-
-    // def fromTestSuiteSchema(
-    //     testSuiteSchema: TestSuiteSchema,
-    //     hostName: String,
-    //     projectName: String,
-    //     pipelineId: Int,
-    //     pipelineJobId: Option[Int]
-    // ): TestSuiteArtifact = {
-    //     new TestSuiteArtifact(testSuiteSchema, hostName, projectName, pipelineId, pipelineJobId)
-    // }
 }

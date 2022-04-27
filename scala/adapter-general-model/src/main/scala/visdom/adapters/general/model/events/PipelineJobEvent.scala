@@ -1,6 +1,7 @@
 package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
+import visdom.adapters.general.model.artifacts.TestSuiteArtifact
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
@@ -15,7 +16,8 @@ import visdom.utils.TimeUtils
 
 class PipelineJobEvent(
     pipelineJobSchema: PipelineJobSchema,
-    projectName: String
+    projectName: String,
+    testSuiteNames: Seq[String]
 )
 extends Event {
     def getType: String = PipelineJobEvent.PipelineJobEventType
@@ -44,7 +46,16 @@ extends Event {
     val id: String = PipelineJobEvent.getId(origin.id, data.job_id)
 
     // add a link to the author
-    addRelatedConstructs(Seq(author))
+    addRelatedConstruct(author)
+    // add links to the related test suites
+    addRelatedConstructs(
+        testSuiteNames.map(
+            testSuiteName => ItemLink(
+                TestSuiteArtifact.getId(origin.id, data.pipeline_id, testSuiteName),
+                TestSuiteArtifact.TestSuiteArtifactType
+            )
+        )
+    )
 
     // add links to the related pipeline and commit events
     addRelatedEvents(
@@ -58,9 +69,9 @@ extends Event {
 object PipelineJobEvent {
     final val PipelineJobEventType: String = "pipeline_job"
 
-    def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEvent = {
-        new PipelineJobEvent(pipelineJobSchema, projectName)
-    }
+    // def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEvent = {
+    //     new PipelineJobEvent(pipelineJobSchema, projectName)
+    // }
 
     def getId(originId: String, jobId: Int): String = {
         GeneralUtils.getUuid(originId, PipelineJobEventType, jobId.toString())
