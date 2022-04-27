@@ -5,6 +5,7 @@ import visdom.adapters.schemas.BaseSchemaTrait2
 import visdom.spark.FieldDataModel
 import visdom.utils.GeneralUtils.toDoubleOption
 import visdom.utils.GeneralUtils.toIntOption
+import visdom.utils.GeneralUtils.toSeqOption
 import visdom.utils.GeneralUtils.toStringOption
 import visdom.utils.SnakeCaseConstants
 import visdom.utils.TupleUtils
@@ -19,7 +20,7 @@ final case class PipelineReportSchema(
     failed_count: Int,
     skipped_count: Int,
     error_count: Int,
-    // test_suites: Seq[TestSuiteSchema],  // Note, leave out for now
+    test_suites: Seq[TestSuiteSchema],
     host_name: String
 )
 extends BaseSchema
@@ -34,13 +35,13 @@ object PipelineReportSchema extends BaseSchemaTrait2[PipelineReportSchema] {
         FieldDataModel(SnakeCaseConstants.FailedCount, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.SkippedCount, false, toIntOption),
         FieldDataModel(SnakeCaseConstants.ErrorCount, false, toIntOption),
+        FieldDataModel(SnakeCaseConstants.TestSuites, false, (value: Any) => toSeqOption(value, TestSuiteSchema.fromAny)),
         FieldDataModel(SnakeCaseConstants.HostName, false, toStringOption)
     )
 
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def createInstance(values: Seq[Any]): Option[PipelineReportSchema] = {
-
-        TupleUtils.toTuple[Int, Double, Int, Int, Int, Int, Int, String](values) match {
+        TupleUtils.toTuple[Int, Double, Int, Int, Int, Int, Int, Seq[TestSuiteSchema], String](values) match {
             case Some(inputValues) => Some(
                 (PipelineReportSchema.apply _).tupled(inputValues)
             )
