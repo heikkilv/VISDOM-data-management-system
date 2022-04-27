@@ -21,26 +21,15 @@ extends Event {
     def getType: String = PipelineJobEvent.PipelineJobEventType
     val duration: Double = pipelineJobSchema.duration.getOrElse(0.0)
 
-    val origin: ItemLink =
-        new GitlabOrigin(
-            pipelineJobSchema.host_name,
-            CommonConstants.EmptyString,
-            projectName,
-            None
-        ).link
+    val origin: ItemLink = ItemLink(
+        GitlabOrigin.getId(pipelineJobSchema.host_name, projectName),
+        GitlabOrigin.GitlabOriginType
+    )
 
-    val author: ItemLink =
-        new GitlabAuthor(
-            userId = pipelineJobSchema.user.id,
-            username = pipelineJobSchema.user.username,
-            authorName = pipelineJobSchema.user.name,
-            authorState = pipelineJobSchema.user.state,
-            hostName = pipelineJobSchema.host_name,
-            relatedCommitterIds = Seq.empty,
-            relatedCommitEventIds = Seq.empty,
-            relatedPipelineEventIds = Seq.empty,
-            relatedPipelineJobEventIds = Seq.empty
-        ).link
+    val author: ItemLink = ItemLink(
+        GitlabAuthor.getId(GitlabOrigin.getId(pipelineJobSchema.host_name), pipelineJobSchema.user.id),
+        GitlabAuthor.GitlabAuthorType
+    )
 
     val data: PipelineJobData = PipelineJobData.fromPipelineJobSchema(pipelineJobSchema)
 

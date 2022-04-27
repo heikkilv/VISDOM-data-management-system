@@ -23,7 +23,7 @@ final case class TestCaseSchema(
 )
 extends BaseSchema
 
-object TestSuiteSchema extends BaseSchemaTrait2[TestCaseSchema] {
+object TestCaseSchema extends BaseSchemaTrait2[TestCaseSchema] {
     @SuppressWarnings(Array(WartRemoverConstants.WartsAny))
     def fields: Seq[FieldDataModel] = Seq(
         FieldDataModel(SnakeCaseConstants.Status, false, toStringOption),
