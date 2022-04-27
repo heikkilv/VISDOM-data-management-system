@@ -60,6 +60,19 @@ scapegoat:
           adapterCourse/scapegoat
           adapterGeneralModel/scapegoat
           adapterDataset/scapegoat
+    artifacts:
+        when: always
+    reports:
+        junit:
+            - core/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - broker/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - gitlab-fetcher/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - aplus-fetcher/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - core-adapter/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - gitlab-adapter/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - adapter-course/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - adapter-general-model/target/scala-2.12/scapegoat-report/scapegoat.xml
+            - adapter-dataset/target/scala-2.12/scapegoat-report/scapegoat.xml
 
 pyright:
     stage: Static Analysis
