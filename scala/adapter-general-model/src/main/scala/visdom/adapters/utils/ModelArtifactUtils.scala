@@ -601,7 +601,25 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getTestCases(): Dataset[TestCaseArtifactResult] = {
-        // TODO: add getTestCases function
-        sparkSession.createDataset(Seq.empty)
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+
+        getPipelineReportSchemas()
+            .flatMap(
+                report => report.test_suites.flatMap(
+                    testSuite => testSuite.test_cases.map(
+                        testCase => (
+                            testCase,
+                            report.host_name,
+                            projectNames.getOrElse((report.host_name, report.pipeline_id), CommonConstants.EmptyString),
+                            report.pipeline_id,
+                            testSuite.name
+                        )
+                    )
+                )
+            )
+            .map({
+                case (testSuite, hostName, projectName, pipelineId, testSuiteName) =>
+                    ArtifactResult.fromTestCaseSchema(testSuite, hostName, projectName, pipelineId, testSuiteName)
+            })
     }
 }
