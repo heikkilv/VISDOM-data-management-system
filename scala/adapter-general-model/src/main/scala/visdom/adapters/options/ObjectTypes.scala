@@ -113,10 +113,12 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SuccessCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.FailedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SkippedCount) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PipelineId) -> IntType
         ),
         TestCaseArtifact.TestCaseArtifactType -> Map(
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExecutionTime) -> DoubleType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExecutionTime) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PipelineId) -> IntType
         ),
         CoursePointsArtifact.CoursePointsArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,

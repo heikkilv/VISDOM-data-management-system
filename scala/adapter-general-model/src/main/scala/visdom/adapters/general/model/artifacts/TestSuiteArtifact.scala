@@ -31,7 +31,7 @@ extends Artifact {
     val description: String = s"Test suite ${testSuiteSchema.name} for pipeline ${pipelineId}"
     // NOTE: all test suites use the same state for now
     val state: String = TestSuiteState.SuiteComplete
-    val data: TestSuiteData = TestSuiteData.fromTestSuiteSchema(testSuiteSchema)
+    val data: TestSuiteData = TestSuiteData.fromTestSuiteSchema(testSuiteSchema, pipelineId)
 
     val id: String = TestSuiteArtifact.getId(origin.id, pipelineId, testSuiteSchema.name)
 

@@ -18,7 +18,8 @@ final case class TestSuiteData(
     failed_count: Int,
     skipped_count: Int,
     error_count: Int,
-    suite_error: Option[String]
+    suite_error: Option[String],
+    pipeline_id: Int
 )
 extends Data {
     def toBsonValue(): BsonValue = {
@@ -30,7 +31,8 @@ extends Data {
                 SnakeCaseConstants.FailedCount -> JsonUtils.toBsonValue(failed_count),
                 SnakeCaseConstants.SkippedCount -> JsonUtils.toBsonValue(skipped_count),
                 SnakeCaseConstants.ErrorCount -> JsonUtils.toBsonValue(error_count),
-                SnakeCaseConstants.SuiteError -> JsonUtils.toBsonValue(suite_error)
+                SnakeCaseConstants.SuiteError -> JsonUtils.toBsonValue(suite_error),
+                SnakeCaseConstants.PipelineId -> JsonUtils.toBsonValue(pipeline_id)
             )
         )
     }
@@ -44,14 +46,15 @@ extends Data {
                 SnakeCaseConstants.FailedCount -> JsonUtils.toJsonValue(failed_count),
                 SnakeCaseConstants.SkippedCount -> JsonUtils.toJsonValue(skipped_count),
                 SnakeCaseConstants.ErrorCount -> JsonUtils.toJsonValue(error_count),
-                SnakeCaseConstants.SuiteError -> JsonUtils.toJsonValue(suite_error)
+                SnakeCaseConstants.SuiteError -> JsonUtils.toJsonValue(suite_error),
+                SnakeCaseConstants.PipelineId -> JsonUtils.toJsonValue(pipeline_id)
             )
         )
     }
 }
 
 object TestSuiteData {
-    def fromTestSuiteSchema(testSuiteSchema: TestSuiteSchema): TestSuiteData = {
+    def fromTestSuiteSchema(testSuiteSchema: TestSuiteSchema, pipelineId: Int): TestSuiteData = {
         TestSuiteData(
             total_time = testSuiteSchema.total_time,
             total_count = testSuiteSchema.total_count,
@@ -59,7 +62,8 @@ object TestSuiteData {
             failed_count = testSuiteSchema.failed_count,
             skipped_count = testSuiteSchema.skipped_count,
             error_count = testSuiteSchema.error_count,
-            suite_error = testSuiteSchema.suite_error
+            suite_error = testSuiteSchema.suite_error,
+            pipeline_id = pipelineId
         )
     }
 }

@@ -277,6 +277,7 @@ object SnakeCaseConstants {
     val TargetTitle: String = "target_title"
     val TargetType: String = "target_type"
     val TestCases: String = "test_cases"
+    val TestSuite: String = "test_suite"
     val TestSuites: String = "test_suites"
     val Text: String = "text"
     val Time: String = "time"

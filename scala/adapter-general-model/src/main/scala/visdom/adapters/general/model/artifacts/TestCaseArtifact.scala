@@ -30,7 +30,7 @@ extends Artifact {
     val description: String = s"Test case ${testCaseSchema.name} for pipeline ${pipelineId} and suite ${testSuiteName}"
 
     val state: String = testCaseSchema.status
-    val data: TestCaseData = TestCaseData.fromTestCaseSchema(testCaseSchema)
+    val data: TestCaseData = TestCaseData.fromTestCaseSchema(testCaseSchema, pipelineId, testSuiteName)
 
     val id: String = TestSuiteArtifact.getId(origin.id, pipelineId, testCaseSchema.name)
 
