@@ -10,12 +10,16 @@ import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.artifacts.TestSuiteArtifact
+import visdom.adapters.general.model.artifacts.TestCaseArtifact
 import visdom.adapters.general.model.artifacts.data.CoursePointsData
 import visdom.adapters.general.model.artifacts.data.ExercisePointsData
 import visdom.adapters.general.model.artifacts.data.FileData
 import visdom.adapters.general.model.artifacts.data.ModuleAverageData
 import visdom.adapters.general.model.artifacts.data.ModulePointsData
 import visdom.adapters.general.model.artifacts.data.PipelineReportData
+import visdom.adapters.general.model.artifacts.data.TestCaseData
+import visdom.adapters.general.model.artifacts.data.TestSuiteData
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
@@ -41,6 +45,8 @@ import visdom.adapters.general.schemas.PipelineUserSchema
 import visdom.adapters.general.schemas.PointsExerciseSchema
 import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.adapters.general.schemas.PointsSchema
+import visdom.adapters.general.schemas.TestCaseSchema
+import visdom.adapters.general.schemas.TestSuiteSchema
 import visdom.adapters.results.BaseResultValue
 import visdom.adapters.results.IdValue
 import visdom.json.JsonUtils
@@ -104,6 +110,8 @@ with IdValue {
 object ArtifactResult {
     type FileArtifactResult = ArtifactResult[FileData]
     type PipelineReportArtifactResult = ArtifactResult[PipelineReportData]
+    type TestSuiteArtifactResult = ArtifactResult[TestSuiteData]
+    type TestCaseArtifactResult = ArtifactResult[TestCaseData]
 
     type CoursePointsArtifactResult = ArtifactResult[CoursePointsData]
     type ModulePointsArtifactResult = ArtifactResult[ModulePointsData]
@@ -242,5 +250,39 @@ object ArtifactResult {
             updateTime
         )
         fromArtifact(moduleAverageArtifact, moduleAverageArtifact.data)
+    }
+
+    def fromTestSuiteSchema(
+        testSuiteSchema: TestSuiteSchema,
+        hostName: String,
+        projectName: String,
+        pipelineId: Int,
+        pipelineJobId: Option[Int]
+    ): TestSuiteArtifactResult = {
+        val testSuiteArtifact: TestSuiteArtifact = new TestSuiteArtifact(
+            testSuiteSchema,
+            hostName,
+            projectName,
+            pipelineId,
+            pipelineJobId
+        )
+        fromArtifact(testSuiteArtifact, testSuiteArtifact.data)
+    }
+
+    def fromTestCaseSchema(
+        testCaseSchema: TestCaseSchema,
+        hostName: String,
+        projectName: String,
+        pipelineId: Int,
+        testSuiteName: String
+    ): TestCaseArtifactResult = {
+        val testCaseArtifact: TestCaseArtifact = new TestCaseArtifact(
+            testCaseSchema,
+            hostName,
+            projectName,
+            pipelineId,
+            testSuiteName
+        )
+        fromArtifact(testCaseArtifact, testCaseArtifact.data)
     }
 }

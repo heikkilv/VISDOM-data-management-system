@@ -13,6 +13,8 @@ import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ModuleAverageArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ModulePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.TestCaseArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.TestSuiteArtifactResult
 import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
@@ -571,5 +573,11 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
-    // TODO: add data mappers for test suites and test cases
+    def getTestSuites(): Dataset[TestSuiteArtifactResult] = {
+        sparkSession.createDataset(Seq.empty)
+    }
+
+    def getTestCases(): Dataset[TestCaseArtifactResult] = {
+        sparkSession.createDataset(Seq.empty)
+    }
 }
