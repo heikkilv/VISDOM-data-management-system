@@ -74,11 +74,15 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             )
     }
 
+    def getPipelineReportSchemas(): Dataset[PipelineReportSchema] = {
+        modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
+            .flatMap(row => PipelineReportSchema.fromRow(row))
+    }
+
     def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
         val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
 
-        modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
-            .flatMap(row => PipelineReportSchema.fromRow(row))
+       getPipelineReportSchemas()
             // include only the reports that have a known project name
             .filter(report => projectNames.keySet.contains((report.host_name, report.pipeline_id)))
             .map(
@@ -574,10 +578,30 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getTestSuites(): Dataset[TestSuiteArtifactResult] = {
-        sparkSession.createDataset(Seq.empty)
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+        val pipelineToJobs: Map[(String, Int), Seq[(Int, String)]] = modelUtils.getPipelineToJobMap()
+
+        getPipelineReportSchemas()
+            .flatMap(report => report.test_suites.map(
+                testSuite => (
+                    testSuite,
+                    report.host_name,
+                    projectNames.getOrElse((report.host_name, report.pipeline_id), CommonConstants.EmptyString),
+                    report.pipeline_id,
+                    pipelineToJobs.get((report.host_name, report.pipeline_id))
+                        .map(jobSeq => jobSeq.find({case (jobId, jobName) => jobName == testSuite.name}))
+                        .flatten
+                        .map({case (jobId, _) => jobId})
+                )
+            ))
+            .map({
+                case (testSuite, hostName, projectName, pipelineId, pipelineJobId) =>
+                    ArtifactResult.fromTestSuiteSchema(testSuite, hostName, projectName, pipelineId, pipelineJobId)
+            })
     }
 
     def getTestCases(): Dataset[TestCaseArtifactResult] = {
+        // TODO: add getTestCases function
         sparkSession.createDataset(Seq.empty)
     }
 }

@@ -294,6 +294,24 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             .toMap
     }
 
+    def getPipelineToJobMap(): Map[(String, Int), Seq[(Int, String)]] = {
+        // returns mapping from (host name, pipeline id) pair to a list of (pipeline job id, job name) pairs
+        getPipelineJobSchemas()
+            .map(
+                pipelineJob => (
+                    pipelineJob.host_name,
+                    pipelineJob.pipeline.id,
+                    pipelineJob.id,
+                    pipelineJob.name
+                )
+            )
+            .groupByKey({case (hostName, pipelineId, _, _) => (hostName, pipelineId)})
+            .mapValues({case (_, _, jobId, jobName) => Seq((jobId, jobName))})
+            .reduceGroups((first, second) => first ++ second)
+            .collect()
+            .toMap
+    }
+
     def updateOrigins(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)

@@ -76,27 +76,9 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .map(pipelineSchema => EventResult.fromPipelineSchema(pipelineSchema))
     }
 
-    def getPipelineToJobMap(): Map[(String, Int), Seq[(Int, String)]] = {
-        // returns mapping from (host name, pipeline id) pair to a list of (pipeline job id, job name) pairs
-        modelUtils.getPipelineJobSchemas()
-            .map(
-                pipelineJob => (
-                    pipelineJob.host_name,
-                    pipelineJob.pipeline.id,
-                    pipelineJob.id,
-                    pipelineJob.name
-                )
-            )
-            .groupByKey({case (hostName, pipelineId, _, _) => (hostName, pipelineId)})
-            .mapValues({case (_, _, jobId, jobName) => Seq((jobId, jobName))})
-            .reduceGroups((first, second) => first ++ second)
-            .collect()
-            .toMap
-    }
-
     def getTestSuiteNameMap(): Map[(String, Int), Seq[String]] = {
         // returns a mapping from (host name, pipeline job id) to a list of test suite names
-        val pipelineToJobs: Map[(String, Int), Seq[(Int, String)]] = getPipelineToJobMap()
+        val pipelineToJobs: Map[(String, Int), Seq[(Int, String)]] = modelUtils.getPipelineToJobMap()
 
         modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
             .flatMap(row => PipelineReportSchema.fromRow(row))
