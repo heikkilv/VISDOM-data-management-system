@@ -52,7 +52,7 @@ extends Artifact {
             ItemLink(
                 TestSuiteArtifact.getId(origin.id, pipelineId, testSuiteName),
                 TestSuiteArtifact.TestSuiteArtifactType
-            ),
+            )
         )
     )
 }
