@@ -15,9 +15,9 @@ stages:
         - cd scala
 
 .python_with_pyright:
-    image: nikolaik/python-nodejs:python3.7-nodejs12
+    image: python:3.7.13
     before_script:
-        - npm install --global pyright
+        - python3 -m pip install pyright
 
 .docker_build:
     image: docker:19.03.15
@@ -81,7 +81,7 @@ pyright:
     script:
         - cd python/dataset-fetcher
         - python3 -m pip install -r requirements.txt
-        - pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
+        - python3 -m pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
 
 unit_test:
     stage: Unit Test
