@@ -73,17 +73,20 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
     }
 
     def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
-        val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
 
         modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
             .flatMap(row => PipelineReportSchema.fromRow(row))
             // include only the reports that have a known project name
-            .filter(report => projectNames.keySet.contains(report.pipeline_id))
+            .filter(report => projectNames.keySet.contains((report.host_name, report.pipeline_id)))
             .map(
                 reportSchema =>
                     ArtifactResult.fromPipelineReportSchema(
                         reportSchema,
-                        projectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(
+                            (reportSchema.host_name, reportSchema.pipeline_id),
+                            CommonConstants.EmptyString
+                        )
                     )
             )
     }
@@ -567,4 +570,6 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                     )
             })
     }
+
+    // TODO: add data mappers for test suites and test cases
 }

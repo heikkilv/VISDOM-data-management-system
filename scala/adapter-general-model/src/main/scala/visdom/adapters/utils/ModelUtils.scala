@@ -69,6 +69,7 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
     protected val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
 
     def getProjectNameMap(): Map[Int, String] = {
+        // returns a mapping from project id to project name
         getPipelineProjectNames() ++
         originUtils.getGitlabProjects()
             .flatMap(schema => schema.project_id match {
@@ -282,6 +283,15 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             .toMap
     }
 
+    def getPipelineProjectNameMap(): Map[(String, Int), String] = {
+        // returns a mapping from (host name, pipeline id) pair to project name
+        getPipelineSchemas()
+            .map(pipeline => ((pipeline.host_name, pipeline.id), pipeline.project_name))
+            .distinct()
+            .collect()
+            .toMap
+    }
+
     def updateOrigins(updateIndexes: Boolean): Unit = {
         if (!modelUtilsObject.isOriginCacheUpdated()) {
             storeObjects(originUtils.getGitlabOrigins(), GitlabOrigin.GitlabOriginType)
@@ -326,6 +336,7 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             storeObjects(artifactUtils.getModulePoints(), ModulePointsArtifact.ModulePointsArtifactType)
             storeObjects(artifactUtils.getExercisePoints(), ExercisePointsArtifact.ExercisePointsArtifactType)
             storeObjects(artifactUtils.getModuleAverages(), ModuleAverageArtifact.ModuleAverageArtifactType)
+            // TODO: add functions for test suites and test cases
 
             if (updateIndexes) {
                 updateArtifactIndexes()
