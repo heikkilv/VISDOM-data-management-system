@@ -122,6 +122,7 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Points) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.MaxPoints) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CommitCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
