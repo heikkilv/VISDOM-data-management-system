@@ -18,6 +18,7 @@ final case class ModulePointsData(
     submission_count: Int,
     commit_count: Int,
     points: Int,
+    max_points: Int,
     points_by_difficulty: PointsByDifficulty,
     passed: Boolean
 )
@@ -31,6 +32,7 @@ extends Data {
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toBsonValue(submission_count),
                 SnakeCaseConstants.CommitCount -> JsonUtils.toBsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toBsonValue(points),
+                SnakeCaseConstants.MaxPoints -> JsonUtils.toBsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toBsonValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed)
             )
@@ -46,6 +48,7 @@ extends Data {
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toJsonValue(submission_count),
                 SnakeCaseConstants.CommitCount -> JsonUtils.toJsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toJsonValue(points),
+                SnakeCaseConstants.MaxPoints -> JsonUtils.toJsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toJsValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed)
             )
@@ -67,6 +70,7 @@ object ModulePointsData {
             submission_count = modulePointsSchema.submission_count,
             commit_count = commitCount,
             points = modulePointsSchema.points,
+            max_points = modulePointsSchema.max_points,
             points_by_difficulty = PointsByDifficulty(
                 categoryN = modulePointsSchema.points_by_difficulty.category,
                 categoryP = modulePointsSchema.points_by_difficulty.categoryP,
