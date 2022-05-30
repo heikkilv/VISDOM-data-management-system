@@ -617,6 +617,45 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
+    def getCourseGradeCumulativeAverages(
+        moduleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)]
+    ): Map[(Int, Int, Int), ModuleAverageSchema] = {
+        val courseGradeAverages: Map[(Int, Int),Seq[(Int, ModuleAverageSchema)]] =
+            moduleAverages
+                .map({
+                    case (course, _, moduleAverages) => (
+                        course.id,
+                        moduleAverages.grade,
+                        moduleAverages.module_number,
+                        moduleAverages
+                    )
+                })
+                .groupByKey({case (courseId, grade, _, _) => (courseId, grade)})
+                .mapValues({case (_, _, moduleNumber, moduleAverages) => Seq((moduleNumber, moduleAverages))})
+                .reduceGroups((first, second) => first ++ second)
+                .collect()
+                .toMap
+
+        moduleAverages
+            .map({
+                case (course, _, moduleAverages) => (
+                    (
+                        course.id,
+                        moduleAverages.grade,
+                        moduleAverages.module_number
+                    ),
+                    courseGradeAverages
+                        .getOrElse((course.id, moduleAverages.grade), Seq.empty)
+                        .filter({case (otherModuleNumber, _) => otherModuleNumber <= moduleAverages.module_number})
+                        .map({case (_, otherModuleAverages) => otherModuleAverages})
+                        .reduceOption((first, second) => first.sum(second))
+                        .getOrElse(ModuleAverageSchema.getEmpty(moduleAverages.module_number, moduleAverages.grade))
+                )
+            })
+            .collect()
+            .toMap
+    }
+
     def getModuleAverages(): Dataset[ModuleAverageArtifactResult] = {
         val courseUpdateTimes: Map[Int, String] = getCourseUpdateTimeMap()
         val courseSchemas: Map[Int, CourseSchema] =
@@ -633,13 +672,26 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
         val missingModuleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)] =
             getMissingModuleAverages(availableModuleAverages, courseSchemas, courseUpdateTimes)
 
-        availableModuleAverages.union(missingModuleAverages)
+        val allModuleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)] =
+            availableModuleAverages.union(missingModuleAverages)
+
+        val courseGradeCumulativeAveragesMap: Map[(Int, Int, Int), ModuleAverageSchema] =
+            getCourseGradeCumulativeAverages(allModuleAverages)
+
+        allModuleAverages
             .map({
                 case (courseSchema, updateTime, moduleAverageSchema) =>
                     ArtifactResult.fromModuleAverageSchema(
                         moduleAverageSchema = moduleAverageSchema,
+                        cumulativeValues = courseGradeCumulativeAveragesMap.getOrElse(
+                            (courseSchema.id, moduleAverageSchema.grade, moduleAverageSchema.module_number),
+                            ModuleAverageSchema.getEmpty(moduleAverageSchema.module_number, moduleAverageSchema.grade)
+                        ),
                         courseSchema = courseSchema,
-                        moduleIds = weekToModuleIds.getOrElse((courseSchema.id, moduleAverageSchema.module_number), Seq.empty),
+                        moduleIds = weekToModuleIds.getOrElse(
+                            (courseSchema.id, moduleAverageSchema.module_number),
+                            Seq.empty
+                        ),
                         updateTime = updateTime
                     )
             })

@@ -241,12 +241,14 @@ object ArtifactResult {
 
     def fromModuleAverageSchema(
         moduleAverageSchema: ModuleAverageSchema,
+        cumulativeValues: ModuleAverageSchema,
         courseSchema: CourseSchema,
         moduleIds: Seq[Int],
         updateTime: String
     ): ModuleAverageArtifactResult = {
         val moduleAverageArtifact: ModuleAverageArtifact = new ModuleAverageArtifact(
             moduleAverageSchema,
+            cumulativeValues,
             courseSchema,
             moduleIds,
             updateTime

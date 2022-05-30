@@ -19,7 +19,11 @@ final case class ModuleAverageData(
     avg_points: Double,
     avg_exercises: Double,
     avg_submissions: Double,
-    avg_commits: Double
+    avg_commits: Double,
+    avg_cum_points: Double,
+    avg_cum_exercises: Double,
+    avg_cum_submissions: Double,
+    avg_cum_commits: Double
 )
 extends Data {
     def toBsonValue(): BsonValue = {
@@ -32,7 +36,11 @@ extends Data {
                 SnakeCaseConstants.AvgPoints -> JsonUtils.toBsonValue(avg_points),
                 SnakeCaseConstants.AvgExercises -> JsonUtils.toBsonValue(avg_exercises),
                 SnakeCaseConstants.AvgSubmissions -> JsonUtils.toBsonValue(avg_submissions),
-                SnakeCaseConstants.AvgCommits -> JsonUtils.toBsonValue(avg_commits)
+                SnakeCaseConstants.AvgCommits -> JsonUtils.toBsonValue(avg_commits),
+                SnakeCaseConstants.AvgCumPoints -> JsonUtils.toBsonValue(avg_cum_points),
+                SnakeCaseConstants.AvgCumExercises -> JsonUtils.toBsonValue(avg_cum_exercises),
+                SnakeCaseConstants.AvgCumSubmissions -> JsonUtils.toBsonValue(avg_cum_submissions),
+                SnakeCaseConstants.AvgCumCommits -> JsonUtils.toBsonValue(avg_cum_commits)
             )
         )
     }
@@ -47,14 +55,22 @@ extends Data {
                 SnakeCaseConstants.AvgPoints -> JsonUtils.toJsonValue(avg_points),
                 SnakeCaseConstants.AvgExercises -> JsonUtils.toJsonValue(avg_exercises),
                 SnakeCaseConstants.AvgSubmissions -> JsonUtils.toJsonValue(avg_submissions),
-                SnakeCaseConstants.AvgCommits -> JsonUtils.toJsonValue(avg_commits)
+                SnakeCaseConstants.AvgCommits -> JsonUtils.toJsonValue(avg_commits),
+                SnakeCaseConstants.AvgCumPoints -> JsonUtils.toJsonValue(avg_cum_points),
+                SnakeCaseConstants.AvgCumExercises -> JsonUtils.toJsonValue(avg_cum_exercises),
+                SnakeCaseConstants.AvgCumSubmissions -> JsonUtils.toJsonValue(avg_cum_submissions),
+                SnakeCaseConstants.AvgCumCommits -> JsonUtils.toJsonValue(avg_cum_commits)
             )
         )
     }
 }
 
 object ModuleAverageData {
-    def fromModuleAverageSchema(moduleAverageSchema: ModuleAverageSchema, courseId: Int): ModuleAverageData = {
+    def fromModuleAverageSchema(
+        moduleAverageSchema: ModuleAverageSchema,
+        cumulativeValues: ModuleAverageSchema,
+        courseId: Int
+    ): ModuleAverageData = {
         ModuleAverageData(
             module_number = moduleAverageSchema.module_number,
             course_id = courseId,
@@ -63,7 +79,11 @@ object ModuleAverageData {
             avg_points = moduleAverageSchema.avg_points,
             avg_exercises = moduleAverageSchema.avg_exercises,
             avg_submissions = moduleAverageSchema.avg_submissions,
-            avg_commits = moduleAverageSchema.avg_commits
+            avg_commits = moduleAverageSchema.avg_commits,
+            avg_cum_points = cumulativeValues.avg_points,
+            avg_cum_exercises = cumulativeValues.avg_exercises,
+            avg_cum_submissions = cumulativeValues.avg_submissions,
+            avg_cum_commits = cumulativeValues.avg_commits
         )
     }
 }

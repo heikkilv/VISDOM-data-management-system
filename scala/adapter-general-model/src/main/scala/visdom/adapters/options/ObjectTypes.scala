@@ -142,7 +142,11 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgPoints) -> DoubleType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgExercises) -> DoubleType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgSubmissions) -> DoubleType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCommits) -> DoubleType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCommits) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCumPoints) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCumExercises) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCumSubmissions) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.AvgCumCommits) -> DoubleType
         ),
         CourseMetadata.CourseMetadataType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,
