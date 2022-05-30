@@ -14,14 +14,14 @@ env:
 jobs:
 
     static-analysis:
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         steps:
             - uses: actions/checkout@v3
 
             - name: Setup Java JDK
               uses: actions/setup-java@v3.1.0
               with:
-                  java-version: '8'
+                  java-version: '11'
                   distribution: 'adopt'
 
             - name: Scalastyle analysis
@@ -45,14 +45,14 @@ jobs:
                   python-version: 3.7
 
     unit-tests:
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         steps:
             - uses: actions/checkout@v3
 
             - name: Setup Java JDK
               uses: actions/setup-java@v3.1.0
               with:
-                  java-version: '8'
+                  java-version: '11'
                   distribution: 'adopt'
 
             - name: Scala unit tests
@@ -64,7 +64,7 @@ jobs:
         needs:
             - static-analysis
             - unit-tests
-        runs-on: ubuntu-18.04
+        runs-on: ubuntu-20.04
         permissions:
             contents: read
             packages: write

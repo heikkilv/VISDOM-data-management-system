@@ -1,6 +1,6 @@
-FROM openjdk:8u292-jdk AS builder
+FROM openjdk:11.0.15-jdk AS builder
 
-ENV SBT_VERSION 1.5.2
+ENV SBT_VERSION 1.6.2
 RUN wget -O - https://github.com/sbt/sbt/releases/download/v${SBT_VERSION}/sbt-${SBT_VERSION}.tgz | gunzip | tar -x -C /usr/local
 ENV PATH /usr/local/sbt/bin:${PATH}
 
