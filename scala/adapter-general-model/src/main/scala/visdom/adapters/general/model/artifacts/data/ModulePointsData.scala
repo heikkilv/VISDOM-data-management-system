@@ -6,6 +6,7 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
+import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.json.JsonUtils
@@ -14,6 +15,7 @@ import visdom.utils.SnakeCaseConstants
 
 final case class ModulePointsData(
     module_id: Int,
+    module_number: Int,
     user_id: Int,
     exercise_count: Int,
     submission_count: Int,
@@ -22,16 +24,17 @@ final case class ModulePointsData(
     max_points: Int,
     points_by_difficulty: PointsByDifficulty,
     passed: Boolean,
-    cumulative_exercises: Int,
+    cumulative_exercise_count: Int,
     cumulative_points: Int,
-    cumulative_submissions: Int,
-    cumulative_commits: Int
+    cumulative_submission_count: Int,
+    cumulative_commit_count: Int
 )
 extends Data {
     def toBsonValue(): BsonValue = {
         BsonDocument(
             Map(
                 SnakeCaseConstants.ModuleId -> JsonUtils.toBsonValue(module_id),
+                SnakeCaseConstants.ModuleNumber -> JsonUtils.toBsonValue(module_number),
                 SnakeCaseConstants.UserId -> JsonUtils.toBsonValue(user_id),
                 SnakeCaseConstants.ExerciseCount -> JsonUtils.toBsonValue(exercise_count),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toBsonValue(submission_count),
@@ -40,10 +43,10 @@ extends Data {
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toBsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toBsonValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed),
-                SnakeCaseConstants.CumulativeExercises -> JsonUtils.toBsonValue(cumulative_exercises),
+                SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toBsonValue(cumulative_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toBsonValue(cumulative_points),
-                SnakeCaseConstants.CumulativeSubmissions -> JsonUtils.toBsonValue(cumulative_submissions),
-                SnakeCaseConstants.CumulativeCommits -> JsonUtils.toBsonValue(cumulative_commits)
+                SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toBsonValue(cumulative_submission_count),
+                SnakeCaseConstants.CumulativeCommitCount -> JsonUtils.toBsonValue(cumulative_commit_count)
             )
         )
     }
@@ -52,6 +55,7 @@ extends Data {
         JsObject(
             Map(
                 SnakeCaseConstants.ModuleId -> JsonUtils.toJsonValue(module_id),
+                SnakeCaseConstants.ModuleNumber -> JsonUtils.toJsonValue(module_number),
                 SnakeCaseConstants.UserId -> JsonUtils.toJsonValue(user_id),
                 SnakeCaseConstants.ExerciseCount -> JsonUtils.toJsonValue(exercise_count),
                 SnakeCaseConstants.SubmissionCount -> JsonUtils.toJsonValue(submission_count),
@@ -60,10 +64,10 @@ extends Data {
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toJsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toJsValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed),
-                SnakeCaseConstants.CumulativeExercises -> JsonUtils.toJsonValue(cumulative_exercises),
+                SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toJsonValue(cumulative_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toJsonValue(cumulative_points),
-                SnakeCaseConstants.CumulativeSubmissions -> JsonUtils.toJsonValue(cumulative_submissions),
-                SnakeCaseConstants.CumulativeCommits -> JsonUtils.toJsonValue(cumulative_commits)
+                SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toJsonValue(cumulative_submission_count),
+                SnakeCaseConstants.CumulativeCommitCount -> JsonUtils.toJsonValue(cumulative_commit_count)
             )
         )
     }
@@ -79,6 +83,7 @@ object ModulePointsData {
     ): ModulePointsData = {
         ModulePointsData(
             module_id = modulePointsSchema.id,
+            module_number = ModuleData.getModuleNumber(modulePointsSchema.name),
             user_id = userId,
             exercise_count = exerciseCount,
             submission_count = modulePointsSchema.submission_count,
@@ -91,10 +96,10 @@ object ModulePointsData {
                 categoryG = modulePointsSchema.points_by_difficulty.categoryG
             ),
             passed = modulePointsSchema.passed,
-            cumulative_exercises = cumulativeValues.exercise_count,
+            cumulative_exercise_count = cumulativeValues.exercise_count,
             cumulative_points = cumulativeValues.point_count.total(),
-            cumulative_submissions = cumulativeValues.submission_count,
-            cumulative_commits = cumulativeValues.commit_count
+            cumulative_submission_count = cumulativeValues.submission_count,
+            cumulative_commit_count = cumulativeValues.commit_count
         )
     }
 }

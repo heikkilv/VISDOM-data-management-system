@@ -185,7 +185,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 case (userId, _, _, _, _, moduleMetadata) => (
                     userId,
                     moduleMetadata.course_id,
-                    ModuleData.getModuleNumber(moduleMetadata.display_name),
+                    ModuleData.getModuleNumber(moduleMetadata.display_name)
                 )
             })
             .distinct()

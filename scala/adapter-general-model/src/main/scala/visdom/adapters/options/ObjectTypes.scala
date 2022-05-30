@@ -111,6 +111,7 @@ object ObjectTypes extends ObjectTypesTrait {
         ),
         ModulePointsArtifact.ModulePointsArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleId) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ModuleNumber) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.UserId) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Points) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.MaxPoints) -> IntType,
@@ -118,10 +119,10 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CommitCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeExercises) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeExerciseCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativePoints) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeSubmissions) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeCommits) -> IntType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeSubmissionCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeCommitCount) -> IntType
         ),
         ExercisePointsArtifact.ExercisePointsArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
