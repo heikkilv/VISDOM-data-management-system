@@ -117,7 +117,11 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SubmissionCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CommitCount) -> IntType,
-            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeExercises) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativePoints) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeSubmissions) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeCommits) -> IntType
         ),
         ExercisePointsArtifact.ExercisePointsArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExerciseId) -> IntType,
