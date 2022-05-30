@@ -76,6 +76,7 @@ object SnakeCaseConstants {
     val CriticalViolations: String = "critical_violations"
     val CumulativeCommitCount: String = "cumulative_commit_count"
     val CumulativeExerciseCount: String = "cumulative_exercise_count"
+    val CumulativeMaxPoints: String = "cumulative_max_points"
     val CumulativePoints: String = "cumulative_points"
     val CumulativeSubmissionCount: String = "cumulative_submission_count"
     val Data: String = "data"

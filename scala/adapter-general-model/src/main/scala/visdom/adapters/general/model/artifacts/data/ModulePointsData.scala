@@ -26,6 +26,7 @@ final case class ModulePointsData(
     passed: Boolean,
     cumulative_exercise_count: Int,
     cumulative_points: Int,
+    cumulative_max_points: Int,
     cumulative_submission_count: Int,
     cumulative_commit_count: Int
 )
@@ -45,6 +46,7 @@ extends Data {
                 SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed),
                 SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toBsonValue(cumulative_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toBsonValue(cumulative_points),
+                SnakeCaseConstants.CumulativeMaxPoints -> JsonUtils.toBsonValue(cumulative_max_points),
                 SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toBsonValue(cumulative_submission_count),
                 SnakeCaseConstants.CumulativeCommitCount -> JsonUtils.toBsonValue(cumulative_commit_count)
             )
@@ -66,6 +68,7 @@ extends Data {
                 SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed),
                 SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toJsonValue(cumulative_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toJsonValue(cumulative_points),
+                SnakeCaseConstants.CumulativeMaxPoints -> JsonUtils.toJsonValue(cumulative_max_points),
                 SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toJsonValue(cumulative_submission_count),
                 SnakeCaseConstants.CumulativeCommitCount -> JsonUtils.toJsonValue(cumulative_commit_count)
             )
@@ -79,7 +82,8 @@ object ModulePointsData {
         userId: Int,
         exerciseCount: Int,
         commitCount: Int,
-        cumulativeValues: ModuleNumbersSchema
+        cumulativeValues: ModuleNumbersSchema,
+        cumulativeMaxPoints: Int
     ): ModulePointsData = {
         ModulePointsData(
             module_id = modulePointsSchema.id,
@@ -99,7 +103,8 @@ object ModulePointsData {
             cumulative_exercise_count = cumulativeValues.exercise_count,
             cumulative_points = cumulativeValues.point_count.total(),
             cumulative_submission_count = cumulativeValues.submission_count,
-            cumulative_commit_count = cumulativeValues.commit_count
+            cumulative_commit_count = cumulativeValues.commit_count,
+            cumulative_max_points = cumulativeMaxPoints
         )
     }
 }

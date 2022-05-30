@@ -121,6 +121,7 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.Passed) -> BooleanType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeExerciseCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativePoints) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeMaxPoints) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeSubmissionCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CumulativeCommitCount) -> IntType
         ),

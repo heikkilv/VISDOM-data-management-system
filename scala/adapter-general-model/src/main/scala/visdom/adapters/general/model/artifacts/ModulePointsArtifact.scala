@@ -21,6 +21,7 @@ class ModulePointsArtifact(
     exerciseCount: Int,
     commitCount: Int,
     cumulativeValues: ModuleNumbersSchema,
+    cumulativeMaxPoints: Int,
     updateTime: String
 )
 extends Artifact {
@@ -54,7 +55,8 @@ extends Artifact {
         userId,
         exerciseCount,
         commitCount,
-        cumulativeValues
+        cumulativeValues,
+        cumulativeMaxPoints
     )
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)

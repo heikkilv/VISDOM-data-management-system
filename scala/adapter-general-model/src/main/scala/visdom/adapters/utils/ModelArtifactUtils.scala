@@ -206,10 +206,13 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
 
     def getModulePoints(): Dataset[ModulePointsArtifactResult] = {
         val cumulativeValuesMap: Map[(Int, Int, Int), ModuleNumbersSchema] = getCumulativeValuesMap()
+        val moduleCumulativeMaxPoints: Map[Int, Map[Int, Int]] = modelUtils.getModuleCumulativeMaxPoints()
 
         getModulePointsInformation()
             .map({
-                case (userId, lastModified, exerciseCount, commitCount, module, moduleMetadata) =>
+                case (userId, lastModified, exerciseCount, commitCount, module, moduleMetadata) => {
+                    val moduleNumber: Int = ModuleData.getModuleNumber(moduleMetadata.display_name)
+
                     ArtifactResult.fromModulePointsSchema(
                         modulePointsSchema = module,
                         moduleSchema = moduleMetadata,
@@ -220,12 +223,17 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                             (
                                 userId,
                                 moduleMetadata.course_id,
-                                ModuleData.getModuleNumber(moduleMetadata.display_name)
+                                moduleNumber
                             ),
                             ModuleNumbersSchema.getEmpty()
                         ),
+                        cumulativeMaxPoints =
+                            moduleCumulativeMaxPoints
+                                .getOrElse(moduleMetadata.course_id, Map.empty)
+                                .getOrElse(moduleNumber, 0),
                         updateTime = lastModified
                     )
+                }
             })
     }
 

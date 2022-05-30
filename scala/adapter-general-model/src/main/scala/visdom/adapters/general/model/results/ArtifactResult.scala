@@ -203,6 +203,7 @@ object ArtifactResult {
         exerciseCount: Int,
         commitCount: Int,
         cumulativeValues: ModuleNumbersSchema,
+        cumulativeMaxPoints: Int,
         updateTime: String
     ): ModulePointsArtifactResult = {
         val modulePointsArtifact: ModulePointsArtifact =
@@ -213,6 +214,7 @@ object ArtifactResult {
                 exerciseCount,
                 commitCount,
                 cumulativeValues,
+                cumulativeMaxPoints,
                 updateTime
             )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)

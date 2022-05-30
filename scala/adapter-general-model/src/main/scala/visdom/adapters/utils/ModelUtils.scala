@@ -28,6 +28,7 @@ import visdom.adapters.general.model.events.SubmissionEvent
 import visdom.adapters.general.model.metadata.CourseMetadata
 import visdom.adapters.general.model.metadata.ExerciseMetadata
 import visdom.adapters.general.model.metadata.ModuleMetadata
+import visdom.adapters.general.model.metadata.data.ModuleData
 import visdom.adapters.general.model.origins.AplusOrigin
 import visdom.adapters.general.model.origins.GitlabOrigin
 import visdom.adapters.general.schemas.CommitSimpleSchema
@@ -55,6 +56,7 @@ import visdom.utils.SnakeCaseConstants
 
 // scalastyle:off number.of.methods
 class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtils: GeneralQueryUtils) {
+    import sparkSession.implicits.newIntEncoder
     import sparkSession.implicits.newProductEncoder
     import sparkSession.implicits.newSequenceEncoder
     import sparkSession.implicits.newStringEncoder
@@ -280,6 +282,55 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             )
             .collect()
             .toMap
+    }
+
+    def getModuleMaxPoints(): Map[Int, Map[Int, Int]] = {
+        // returns a mapping from course id to a mapping from module number to max points for the module
+        getPointsSchemas()
+            .flatMap(
+                points => points.modules.map(
+                    module => (
+                        points.course_id,
+                        module.id,
+                        ModuleData.getModuleNumber(module.name),
+                        module.max_points
+                    )
+                )
+            )
+            .distinct()
+            .groupByKey({case (courseId, _, moduleNumber, _) => (courseId, moduleNumber)})
+            .mapValues({case (_, _, _, maxPoints) => maxPoints})
+            .reduceGroups((first, second) => first + second)
+            .groupByKey({case ((courseId, _), _) => courseId})
+            .mapValues({case ((_, moduleNumber), maxPoints) => Seq((moduleNumber, maxPoints))})
+            .reduceGroups((first, second) => first ++ second)
+            .map({case (courseId, modules) => (courseId, modules.toMap)})
+            .collect()
+            .toMap
+    }
+
+    def getModuleCumulativeMaxPoints(): Map[Int, Map[Int, Int]] = {
+        // returns a mapping from course id to a mapping from module number to cumulative max points for the module
+        val moduleMaxPoints: Map[Int, Map[Int, Int]] = getModuleMaxPoints()
+
+        moduleMaxPoints
+            .map({
+                case (courseId, courseMaxPoints) => (
+                    courseId,
+                    courseMaxPoints.map({
+                        case (moduleNumber, _) => (
+                            moduleNumber,
+                            moduleMaxPoints
+                                .getOrElse(courseId, Map.empty)
+                                .toSeq
+                                .filter({case (otherModuleNumber, _) => otherModuleNumber <= moduleNumber})
+                                .map({case (_, maxPoints) => maxPoints})
+                                .reduceOption((first, second) => first + second)
+                                .getOrElse(0)
+                        )
+                    })
+                )
+            })
     }
 
     def updateOrigins(updateIndexes: Boolean): Unit = {
