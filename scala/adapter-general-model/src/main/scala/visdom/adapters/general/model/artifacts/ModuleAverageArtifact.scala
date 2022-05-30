@@ -15,6 +15,7 @@ import visdom.utils.GeneralUtils
 
 class ModuleAverageArtifact(
     moduleAverageSchema: ModuleAverageSchema,
+    cumulativeValues: ModuleAverageSchema,
     courseSchema: CourseSchema,
     moduleIds: Seq[Int],
     updateTime: String
@@ -39,7 +40,8 @@ extends Artifact {
         case _ => ModuleAverageState.Active
     }
 
-    val data: ModuleAverageData = ModuleAverageData.fromModuleAverageSchema(moduleAverageSchema, courseSchema.id)
+    val data: ModuleAverageData =
+        ModuleAverageData.fromModuleAverageSchema(moduleAverageSchema, cumulativeValues, courseSchema.id)
 
     val id: String = ModuleAverageArtifact.getId(origin.id, data.module_number, data.grade)
 
@@ -65,14 +67,5 @@ object ModuleAverageArtifact {
 
     def getId(originId: String, moduleNumber: Int, grade: Int): String = {
         GeneralUtils.getUuid(originId, ModuleAverageArtifactType, moduleNumber.toString(), grade.toString())
-    }
-
-    def fromModuleAverageSchema(
-        moduleAverageSchema: ModuleAverageSchema,
-        courseSchema: CourseSchema,
-        moduleIds: Seq[Int],
-        updateTime: String
-    ): ModuleAverageArtifact = {
-        new ModuleAverageArtifact(moduleAverageSchema, courseSchema, moduleIds, updateTime)
     }
 }

@@ -2,6 +2,7 @@ package visdom.adapters.utils
 
 import org.apache.spark.sql.Dataset
 import org.apache.spark.sql.SparkSession
+import org.apache.spark.storage.StorageLevel
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.events.CommitEvent
@@ -23,6 +24,7 @@ import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PointsDifficultySchema
+import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.adapters.general.schemas.PointsPerCategory
 import visdom.adapters.general.schemas.SubmissionGitDataSchema
 import visdom.database.mongodb.MongoConstants
@@ -113,7 +115,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .toMap
     }
 
-    def getModulePoints(): Dataset[ModulePointsArtifactResult] = {
+    def getModulePointsInformation(): Dataset[(Int, String, Int, Int, PointsModuleSchema, ModuleSchema)] = {
         val moduleMetadataMap: Map[Int, ModuleSchema] =
             modelUtils.getModuleSchemas()
                 .map(module => (module.id, module))
@@ -139,6 +141,73 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                 )
             )
             .flatMap(option => option)
+            .persist(StorageLevel.MEMORY_ONLY)
+    }
+
+    def getModuleValuesMap(): Map[(Int, Int), Map[Int, (Int, ModuleNumbersSchema)]] = {
+        // returns a map from (userId, courseId, moduleId) to (moduleNumber, moduleValues)
+        getModulePointsInformation()
+            .map({
+                case (userId, _, exerciseCount, commitCount, module, moduleMetadata) => (
+                    userId,
+                    moduleMetadata.course_id,
+                    moduleMetadata.id,
+                    ModuleData.getModuleNumber(moduleMetadata.display_name),
+                    ModuleNumbersSchema(
+                        point_count = module.points_by_difficulty,
+                        exercise_count = exerciseCount,
+                        submission_count = module.submission_count,
+                        commit_count = commitCount
+                    )
+                )
+            })
+            .groupByKey({case (userId, courseId, _, _, _) => (userId, courseId)})
+            .mapGroups({
+                case ((userId, courseId), modules) => (
+                    (userId, courseId),
+                    modules.toSeq.map({
+                        case (_, _, moduleId, moduleNumber, moduleValues) => (moduleId, (moduleNumber, moduleValues))
+                    })
+                )
+            })
+            .persist(StorageLevel.MEMORY_ONLY)
+            .collect()
+            .toMap
+            .map({case ((userId, courseId), modules) => ((userId, courseId), modules.toMap)})
+    }
+
+    def getCumulativeValuesMap(): Map[(Int, Int, Int), ModuleNumbersSchema] = {
+        // returns a map from (userId, courseId, moduleNumber) to cumulative moduleValues
+        val moduleValuesMap: Map[(Int, Int),Map[Int,(Int, ModuleNumbersSchema)]] = getModuleValuesMap()
+
+        getModulePointsInformation()
+            .map({
+                case (userId, _, _, _, _, moduleMetadata) => (
+                    userId,
+                    moduleMetadata.course_id,
+                    ModuleData.getModuleNumber(moduleMetadata.display_name)
+                )
+            })
+            .distinct()
+            .map({
+                case (userId, courseId, moduleNumber) => (
+                    (userId, courseId, moduleNumber),
+                    moduleValuesMap
+                        .getOrElse((userId, courseId), Map.empty)
+                        .filter({case (moduleId, (mapModuleNumber, _)) => mapModuleNumber <= moduleNumber})
+                        .map({case (_, (_, moduleValues)) => moduleValues})
+                        .reduceOption((first, second) => first.add(second))
+                        .getOrElse(ModuleNumbersSchema.getEmpty())
+                )
+            })
+            .collect()
+            .toMap
+    }
+
+    def getModulePoints(): Dataset[ModulePointsArtifactResult] = {
+        val cumulativeValuesMap: Map[(Int, Int, Int), ModuleNumbersSchema] = getCumulativeValuesMap()
+
+        getModulePointsInformation()
             .map({
                 case (userId, lastModified, exerciseCount, commitCount, module, moduleMetadata) =>
                     ArtifactResult.fromModulePointsSchema(
@@ -147,6 +216,14 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         userId = userId,
                         exerciseCount = exerciseCount,
                         commitCount = commitCount,
+                        cumulativeValues = cumulativeValuesMap.getOrElse(
+                            (
+                                userId,
+                                moduleMetadata.course_id,
+                                ModuleData.getModuleNumber(moduleMetadata.display_name)
+                            ),
+                            ModuleNumbersSchema.getEmpty()
+                        ),
                         updateTime = lastModified
                     )
             })
@@ -540,6 +617,45 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             })
     }
 
+    def getCourseGradeCumulativeAverages(
+        moduleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)]
+    ): Map[(Int, Int, Int), ModuleAverageSchema] = {
+        val courseGradeAverages: Map[(Int, Int),Seq[(Int, ModuleAverageSchema)]] =
+            moduleAverages
+                .map({
+                    case (course, _, moduleAverages) => (
+                        course.id,
+                        moduleAverages.grade,
+                        moduleAverages.module_number,
+                        moduleAverages
+                    )
+                })
+                .groupByKey({case (courseId, grade, _, _) => (courseId, grade)})
+                .mapValues({case (_, _, moduleNumber, moduleAverages) => Seq((moduleNumber, moduleAverages))})
+                .reduceGroups((first, second) => first ++ second)
+                .collect()
+                .toMap
+
+        moduleAverages
+            .map({
+                case (course, _, moduleAverages) => (
+                    (
+                        course.id,
+                        moduleAverages.grade,
+                        moduleAverages.module_number
+                    ),
+                    courseGradeAverages
+                        .getOrElse((course.id, moduleAverages.grade), Seq.empty)
+                        .filter({case (otherModuleNumber, _) => otherModuleNumber <= moduleAverages.module_number})
+                        .map({case (_, otherModuleAverages) => otherModuleAverages})
+                        .reduceOption((first, second) => first.sum(second))
+                        .getOrElse(ModuleAverageSchema.getEmpty(moduleAverages.module_number, moduleAverages.grade))
+                )
+            })
+            .collect()
+            .toMap
+    }
+
     def getModuleAverages(): Dataset[ModuleAverageArtifactResult] = {
         val courseUpdateTimes: Map[Int, String] = getCourseUpdateTimeMap()
         val courseSchemas: Map[Int, CourseSchema] =
@@ -556,13 +672,26 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
         val missingModuleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)] =
             getMissingModuleAverages(availableModuleAverages, courseSchemas, courseUpdateTimes)
 
-        availableModuleAverages.union(missingModuleAverages)
+        val allModuleAverages: Dataset[(CourseSchema, String, ModuleAverageSchema)] =
+            availableModuleAverages.union(missingModuleAverages)
+
+        val courseGradeCumulativeAveragesMap: Map[(Int, Int, Int), ModuleAverageSchema] =
+            getCourseGradeCumulativeAverages(allModuleAverages)
+
+        allModuleAverages
             .map({
                 case (courseSchema, updateTime, moduleAverageSchema) =>
                     ArtifactResult.fromModuleAverageSchema(
                         moduleAverageSchema = moduleAverageSchema,
+                        cumulativeValues = courseGradeCumulativeAveragesMap.getOrElse(
+                            (courseSchema.id, moduleAverageSchema.grade, moduleAverageSchema.module_number),
+                            ModuleAverageSchema.getEmpty(moduleAverageSchema.module_number, moduleAverageSchema.grade)
+                        ),
                         courseSchema = courseSchema,
-                        moduleIds = weekToModuleIds.getOrElse((courseSchema.id, moduleAverageSchema.module_number), Seq.empty),
+                        moduleIds = weekToModuleIds.getOrElse(
+                            (courseSchema.id, moduleAverageSchema.module_number),
+                            Seq.empty
+                        ),
                         updateTime = updateTime
                     )
             })
