@@ -7,6 +7,7 @@ import visdom.adapters.general.model.base.Artifact
 import visdom.adapters.general.model.base.ItemLink
 import visdom.adapters.general.model.metadata.ModuleMetadata
 import visdom.adapters.general.model.origins.AplusOrigin
+import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.utils.CommonConstants
@@ -19,6 +20,7 @@ class ModulePointsArtifact(
     userId: Int,
     exerciseCount: Int,
     commitCount: Int,
+    cumulativeValues: ModuleNumbersSchema,
     updateTime: String
 )
 extends Artifact {
@@ -51,7 +53,8 @@ extends Artifact {
         modulePointsSchema,
         userId,
         exerciseCount,
-        commitCount
+        commitCount,
+        cumulativeValues
     )
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)
@@ -91,16 +94,5 @@ object ModulePointsArtifact {
 
     def getId(originId: String, moduleId: Int, userId: Int): String = {
         GeneralUtils.getUuid(originId, ModulePointsArtifactType, moduleId.toString(), userId.toString())
-    }
-
-    def fromPointsSchema(
-        modulePointsSchema: PointsModuleSchema,
-        moduleSchema: ModuleSchema,
-        userId: Int,
-        exerciseCount: Int,
-        commitCount: Int,
-        updateTime: String
-    ): ModulePointsArtifact = {
-        new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, exerciseCount, commitCount, updateTime)
     }
 }

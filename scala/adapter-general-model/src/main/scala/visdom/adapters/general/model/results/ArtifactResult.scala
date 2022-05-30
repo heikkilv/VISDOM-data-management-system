@@ -35,6 +35,7 @@ import visdom.adapters.general.schemas.ExerciseSchema
 import visdom.adapters.general.schemas.FileSchema
 import visdom.adapters.general.schemas.GitlabAuthorSchema
 import visdom.adapters.general.schemas.ModuleAverageSchema
+import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.ModuleSchema
 import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.PipelineUserSchema
@@ -201,10 +202,19 @@ object ArtifactResult {
         userId: Int,
         exerciseCount: Int,
         commitCount: Int,
+        cumulativeValues: ModuleNumbersSchema,
         updateTime: String
     ): ModulePointsArtifactResult = {
         val modulePointsArtifact: ModulePointsArtifact =
-            new ModulePointsArtifact(modulePointsSchema, moduleSchema, userId, exerciseCount, commitCount, updateTime)
+            new ModulePointsArtifact(
+                modulePointsSchema,
+                moduleSchema,
+                userId,
+                exerciseCount,
+                commitCount,
+                cumulativeValues,
+                updateTime
+            )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
     }
 

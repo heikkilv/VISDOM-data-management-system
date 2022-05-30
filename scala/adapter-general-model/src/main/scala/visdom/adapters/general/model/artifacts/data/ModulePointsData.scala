@@ -6,6 +6,7 @@ import org.mongodb.scala.bson.BsonValue
 import spray.json.JsObject
 import spray.json.JsValue
 import visdom.adapters.general.model.base.Data
+import visdom.adapters.general.schemas.ModuleNumbersSchema
 import visdom.adapters.general.schemas.PointsModuleSchema
 import visdom.json.JsonUtils
 import visdom.utils.SnakeCaseConstants
@@ -20,7 +21,11 @@ final case class ModulePointsData(
     points: Int,
     max_points: Int,
     points_by_difficulty: PointsByDifficulty,
-    passed: Boolean
+    passed: Boolean,
+    cumulative_exercises: Int,
+    cumulative_points: Int,
+    cumulative_submissions: Int,
+    cumulative_commits: Int
 )
 extends Data {
     def toBsonValue(): BsonValue = {
@@ -34,7 +39,11 @@ extends Data {
                 SnakeCaseConstants.Points -> JsonUtils.toBsonValue(points),
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toBsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toBsonValue(),
-                SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed)
+                SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed),
+                SnakeCaseConstants.CumulativeExercises -> JsonUtils.toBsonValue(cumulative_exercises),
+                SnakeCaseConstants.CumulativePoints -> JsonUtils.toBsonValue(cumulative_points),
+                SnakeCaseConstants.CumulativeSubmissions -> JsonUtils.toBsonValue(cumulative_submissions),
+                SnakeCaseConstants.CumulativeCommits -> JsonUtils.toBsonValue(cumulative_commits)
             )
         )
     }
@@ -50,7 +59,11 @@ extends Data {
                 SnakeCaseConstants.Points -> JsonUtils.toJsonValue(points),
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toJsonValue(max_points),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toJsValue(),
-                SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed)
+                SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed),
+                SnakeCaseConstants.CumulativeExercises -> JsonUtils.toJsonValue(cumulative_exercises),
+                SnakeCaseConstants.CumulativePoints -> JsonUtils.toJsonValue(cumulative_points),
+                SnakeCaseConstants.CumulativeSubmissions -> JsonUtils.toJsonValue(cumulative_submissions),
+                SnakeCaseConstants.CumulativeCommits -> JsonUtils.toJsonValue(cumulative_commits)
             )
         )
     }
@@ -61,7 +74,8 @@ object ModulePointsData {
         modulePointsSchema: PointsModuleSchema,
         userId: Int,
         exerciseCount: Int,
-        commitCount: Int
+        commitCount: Int,
+        cumulativeValues: ModuleNumbersSchema
     ): ModulePointsData = {
         ModulePointsData(
             module_id = modulePointsSchema.id,
@@ -76,7 +90,11 @@ object ModulePointsData {
                 categoryP = modulePointsSchema.points_by_difficulty.categoryP,
                 categoryG = modulePointsSchema.points_by_difficulty.categoryG
             ),
-            passed = modulePointsSchema.passed
+            passed = modulePointsSchema.passed,
+            cumulative_exercises = cumulativeValues.exercise_count,
+            cumulative_points = cumulativeValues.point_count.total(),
+            cumulative_submissions = cumulativeValues.submission_count,
+            cumulative_commits = cumulativeValues.commit_count
         )
     }
 }

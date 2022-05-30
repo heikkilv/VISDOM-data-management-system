@@ -147,6 +147,7 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         userId = userId,
                         exerciseCount = exerciseCount,
                         commitCount = commitCount,
+                        cumulativeValues = ModuleNumbersSchema.getEmpty(),
                         updateTime = lastModified
                     )
             })
