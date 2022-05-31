@@ -15,9 +15,9 @@ stages:
         - cd scala
 
 .python_with_pyright:
-    image: nikolaik/python-nodejs:python3.7-nodejs12
+    image: python:3.7.13
     before_script:
-        - npm install --global pyright
+        - python3 -m pip install pyright
 
 .docker_build:
     image: docker:19.03.15
@@ -60,6 +60,19 @@ scapegoat:
           adapterCourse/scapegoat
           adapterGeneralModel/scapegoat
           adapterDataset/scapegoat
+    artifacts:
+        when: always
+        reports:
+            junit:
+                - /builds/cs/VISDOM/data-management-system/scala/core/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/broker/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/gitlab-fetcher/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/aplus-fetcher/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/core-adapter/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/gitlab-adapter/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/adapter-course/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/adapter-general-model/target/scala-2.12/scapegoat-report/scapegoat.xml
+                - /builds/cs/VISDOM/data-management-system/scala/adapter-dataset/target/scala-2.12/scapegoat-report/scapegoat.xml
 
 pyright:
     stage: Static Analysis
@@ -68,7 +81,7 @@ pyright:
     script:
         - cd python/dataset-fetcher
         - python3 -m pip install -r requirements.txt
-        - pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
+        - python3 -m pyright --pythonplatform Linux --pythonversion 3.7 --lib --stats .
 
 unit_test:
     stage: Unit Test
@@ -77,6 +90,11 @@ unit_test:
     script:
         - sbt
           core/test
+    artifacts:
+        when: always
+        reports:
+            junit:
+                - /builds/cs/VISDOM/data-management-system/scala/core/target/TEST*.xml
 
 build_images:
     stage: Build

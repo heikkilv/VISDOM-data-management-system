@@ -21,6 +21,8 @@ import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.artifacts.TestCaseArtifact
+import visdom.adapters.general.model.artifacts.TestSuiteArtifact
 import visdom.adapters.general.model.events.CommitEvent
 import visdom.adapters.general.model.events.PipelineEvent
 import visdom.adapters.general.model.events.PipelineJobEvent
@@ -71,6 +73,7 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
     protected val metadataUtils: ModelMetadataUtils = new ModelMetadataUtils(sparkSession, this)
 
     def getProjectNameMap(): Map[Int, String] = {
+        // returns a mapping from project id to project name
         getPipelineProjectNames() ++
         originUtils.getGitlabProjects()
             .flatMap(schema => schema.project_id match {
@@ -332,6 +335,33 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             .toMap
     }
 
+    def getPipelineProjectNameMap(): Map[(String, Int), String] = {
+        // returns a mapping from (host name, pipeline id) pair to project name
+        getPipelineSchemas()
+            .map(pipeline => ((pipeline.host_name, pipeline.id), pipeline.project_name))
+            .distinct()
+            .collect()
+            .toMap
+    }
+
+    def getPipelineToJobMap(): Map[(String, Int), Seq[(Int, String)]] = {
+        // returns mapping from (host name, pipeline id) pair to a list of (pipeline job id, job name) pairs
+        getPipelineJobSchemas()
+            .map(
+                pipelineJob => (
+                    pipelineJob.host_name,
+                    pipelineJob.pipeline.id,
+                    pipelineJob.id,
+                    pipelineJob.name
+                )
+            )
+            .groupByKey({case (hostName, pipelineId, _, _) => (hostName, pipelineId)})
+            .mapValues({case (_, _, jobId, jobName) => Seq((jobId, jobName))})
+            .reduceGroups((first, second) => first ++ second)
+            .collect()
+            .toMap
+    }
+
     def getModuleCumulativeValues(weeklyValuesMap: Map[Int, Map[Int, Int]]): Map[Int, Map[Int, Int]] = {
         // returns a mapping that contains cumulative values based on the input map
         weeklyValuesMap
@@ -394,6 +424,8 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
         if (!modelUtilsObject.isArtifactCacheUpdated()) {
             storeObjects(artifactUtils.getFiles(), FileArtifact.FileArtifactType)
             storeObjects(artifactUtils.getPipelineReports(), PipelineReportArtifact.PipelineReportArtifactType)
+            storeObjects(artifactUtils.getTestSuites(), TestSuiteArtifact.TestSuiteArtifactType)
+            storeObjects(artifactUtils.getTestCases(), TestCaseArtifact.TestCaseArtifactType)
             storeObjects(artifactUtils.getCoursePoints(), CoursePointsArtifact.CoursePointsArtifactType)
             storeObjects(artifactUtils.getModulePoints(), ModulePointsArtifact.ModulePointsArtifactType)
             storeObjects(artifactUtils.getExercisePoints(), ExercisePointsArtifact.ExercisePointsArtifactType)

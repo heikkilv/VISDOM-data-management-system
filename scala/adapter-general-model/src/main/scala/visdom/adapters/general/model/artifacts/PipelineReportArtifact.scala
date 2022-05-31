@@ -35,11 +35,18 @@ extends Artifact {
     val id: String = PipelineReportArtifact.getId(origin.id, pipelineReportSchema.pipeline_id)
 
     // add pipeline event to related events
-    addRelatedEvents(
-        Seq(
-            ItemLink(
-                PipelineEvent.getId(origin.id, pipelineReportSchema.pipeline_id),
-                PipelineEvent.PipelineEventType
+    addRelatedEvent(
+        ItemLink(
+            PipelineEvent.getId(origin.id, pipelineReportSchema.pipeline_id),
+            PipelineEvent.PipelineEventType
+        )
+    )
+    // add test suite artifacts to related constructs
+    addRelatedConstructs(
+        pipelineReportSchema.test_suites.map(
+            testSuite => ItemLink(
+                TestSuiteArtifact.getId(origin.id, pipelineReportSchema.pipeline_id, testSuite.name),
+                TestSuiteArtifact.TestSuiteArtifactType
             )
         )
     )

@@ -13,6 +13,7 @@ import visdom.adapters.general.model.results.EventResult.CommitEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineEventResult
 import visdom.adapters.general.model.results.EventResult.PipelineJobEventResult
 import visdom.adapters.general.model.results.EventResult.SubmissionEventResult
+import visdom.adapters.general.schemas.PipelineReportSchema
 import visdom.adapters.general.schemas.SubmissionGitDataSchema
 import visdom.database.mongodb.MongoConstants
 import visdom.utils.CommonConstants
@@ -75,17 +76,51 @@ class ModelEventUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             .map(pipelineSchema => EventResult.fromPipelineSchema(pipelineSchema))
     }
 
+    def getTestSuiteNameMap(): Map[(String, Int), Seq[String]] = {
+        // returns a mapping from (host name, pipeline job id) to a list of test suite names
+        val pipelineToJobs: Map[(String, Int), Seq[(Int, String)]] = modelUtils.getPipelineToJobMap()
+
+        modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
+            .flatMap(row => PipelineReportSchema.fromRow(row))
+            .map(
+                report => report.test_suites.map(
+                    suite => pipelineToJobs.get((report.host_name, report.pipeline_id))
+                        .map(
+                            jobElement => jobElement.map({
+                                case (jobId, jobName) => (report.host_name, jobId, jobName, suite.name)
+                            })
+                        )
+                )
+            )
+            .flatMap(sequence => sequence)
+            .flatMap(optional => optional)
+            .flatMap(sequence => sequence)
+            .filter(element => element._3 == element._4)
+            .map({case (hostName, jobId, _, suiteName) => (hostName, jobId, suiteName)})
+            .distinct()
+            .groupByKey({case (hostName, jobId, _) => (hostName, jobId)})
+            .mapValues({case (_, _, suiteName) => Seq(suiteName)})
+            .reduceGroups((first, second) => first ++ second)
+            .collect()
+            .toMap
+    }
+
     def getPipelineJobs(): Dataset[PipelineJobEventResult] = {
-        val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+        val testSuiteNames: Map[(String, Int),Seq[String]] = getTestSuiteNameMap()
 
         modelUtils.getPipelineJobSchemas()
             // include only the jobs that have a known project name
-            .filter(pipelineJob => projectNames.keySet.contains(pipelineJob.pipeline.id))
+            .filter(pipelineJob => projectNames.keySet.contains((pipelineJob.host_name, pipelineJob.pipeline.id)))
             .map(
                 pipelineJobSchema =>
                     EventResult.fromPipelineJobSchema(
                         pipelineJobSchema,
-                        projectNames.getOrElse(pipelineJobSchema.pipeline.id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(
+                            (pipelineJobSchema.host_name, pipelineJobSchema.pipeline.id),
+                            CommonConstants.EmptyString
+                        ),
+                        testSuiteNames.getOrElse((pipelineJobSchema.host_name, pipelineJobSchema.id), Seq.empty)
                     )
             )
     }

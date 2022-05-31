@@ -6,6 +6,8 @@ import visdom.adapters.general.model.artifacts.FileArtifact
 import visdom.adapters.general.model.artifacts.ModuleAverageArtifact
 import visdom.adapters.general.model.artifacts.ModulePointsArtifact
 import visdom.adapters.general.model.artifacts.PipelineReportArtifact
+import visdom.adapters.general.model.artifacts.TestCaseArtifact
+import visdom.adapters.general.model.artifacts.TestSuiteArtifact
 import visdom.adapters.general.model.authors.AplusAuthor
 import visdom.adapters.general.model.authors.CommitAuthor
 import visdom.adapters.general.model.authors.GitlabAuthor
@@ -40,6 +42,8 @@ object ObjectTypes extends ObjectTypesTrait {
     val ArtifactTypes: Set[String] = Set(
         FileArtifact.FileArtifactType,
         PipelineReportArtifact.PipelineReportArtifactType,
+        TestSuiteArtifact.TestSuiteArtifactType,
+        TestCaseArtifact.TestCaseArtifactType,
         CoursePointsArtifact.CoursePointsArtifactType,
         ModulePointsArtifact.ModulePointsArtifactType,
         ExercisePointsArtifact.ExercisePointsArtifactType,
@@ -102,6 +106,19 @@ object ObjectTypes extends ObjectTypesTrait {
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.FailedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.SkippedCount) -> IntType,
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType
+        ),
+         TestSuiteArtifact.TestSuiteArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.TotalTime) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.TotalCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SuccessCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.FailedCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.SkippedCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ErrorCount) -> IntType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PipelineId) -> IntType
+        ),
+        TestCaseArtifact.TestCaseArtifactType -> Map(
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.ExecutionTime) -> DoubleType,
+            toName(SnakeCaseConstants.Data, SnakeCaseConstants.PipelineId) -> IntType
         ),
         CoursePointsArtifact.CoursePointsArtifactType -> Map(
             toName(SnakeCaseConstants.Data, SnakeCaseConstants.CourseId) -> IntType,

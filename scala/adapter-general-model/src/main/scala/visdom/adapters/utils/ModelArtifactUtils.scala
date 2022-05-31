@@ -14,6 +14,8 @@ import visdom.adapters.general.model.results.ArtifactResult.FileArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ModuleAverageArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.ModulePointsArtifactResult
 import visdom.adapters.general.model.results.ArtifactResult.PipelineReportArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.TestCaseArtifactResult
+import visdom.adapters.general.model.results.ArtifactResult.TestSuiteArtifactResult
 import visdom.adapters.general.schemas.CourseSchema
 import visdom.adapters.general.schemas.ExerciseAdditionalSchema
 import visdom.adapters.general.schemas.ExerciseSchema
@@ -74,18 +76,25 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
             )
     }
 
-    def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
-        val projectNames: Map[Int, String] = modelUtils.getProjectNameMap()
-
+    def getPipelineReportSchemas(): Dataset[PipelineReportSchema] = {
         modelUtils.loadMongoDataGitlab[PipelineReportSchema](MongoConstants.CollectionPipelineReports)
             .flatMap(row => PipelineReportSchema.fromRow(row))
+    }
+
+    def getPipelineReports(): Dataset[PipelineReportArtifactResult] = {
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+
+       getPipelineReportSchemas()
             // include only the reports that have a known project name
-            .filter(report => projectNames.keySet.contains(report.pipeline_id))
+            .filter(report => projectNames.keySet.contains((report.host_name, report.pipeline_id)))
             .map(
                 reportSchema =>
                     ArtifactResult.fromPipelineReportSchema(
                         reportSchema,
-                        projectNames.getOrElse(reportSchema.pipeline_id, CommonConstants.EmptyString)
+                        projectNames.getOrElse(
+                            (reportSchema.host_name, reportSchema.pipeline_id),
+                            CommonConstants.EmptyString
+                        )
                     )
             )
     }
@@ -712,6 +721,52 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         ),
                         updateTime = updateTime
                     )
+            })
+    }
+
+    def getTestSuites(): Dataset[TestSuiteArtifactResult] = {
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+        val pipelineToJobs: Map[(String, Int), Seq[(Int, String)]] = modelUtils.getPipelineToJobMap()
+
+        getPipelineReportSchemas()
+            .flatMap(report => report.test_suites.map(
+                testSuite => (
+                    testSuite,
+                    report.host_name,
+                    projectNames.getOrElse((report.host_name, report.pipeline_id), CommonConstants.EmptyString),
+                    report.pipeline_id,
+                    pipelineToJobs.get((report.host_name, report.pipeline_id))
+                        .map(jobSeq => jobSeq.find({case (jobId, jobName) => jobName == testSuite.name}))
+                        .flatten
+                        .map({case (jobId, _) => jobId})
+                )
+            ))
+            .map({
+                case (testSuite, hostName, projectName, pipelineId, pipelineJobId) =>
+                    ArtifactResult.fromTestSuiteSchema(testSuite, hostName, projectName, pipelineId, pipelineJobId)
+            })
+    }
+
+    def getTestCases(): Dataset[TestCaseArtifactResult] = {
+        val projectNames: Map[(String, Int), String] = modelUtils.getPipelineProjectNameMap()
+
+        getPipelineReportSchemas()
+            .flatMap(
+                report => report.test_suites.flatMap(
+                    testSuite => testSuite.test_cases.map(
+                        testCase => (
+                            testCase,
+                            report.host_name,
+                            projectNames.getOrElse((report.host_name, report.pipeline_id), CommonConstants.EmptyString),
+                            report.pipeline_id,
+                            testSuite.name
+                        )
+                    )
+                )
+            )
+            .map({
+                case (testSuite, hostName, projectName, pipelineId, testSuiteName) =>
+                    ArtifactResult.fromTestCaseSchema(testSuite, hostName, projectName, pipelineId, testSuiteName)
             })
     }
 }

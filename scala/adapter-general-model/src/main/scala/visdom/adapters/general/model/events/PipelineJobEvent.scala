@@ -1,6 +1,7 @@
 package visdom.adapters.general.model.events
 
 import java.time.ZonedDateTime
+import visdom.adapters.general.model.artifacts.TestSuiteArtifact
 import visdom.adapters.general.model.authors.GitlabAuthor
 import visdom.adapters.general.model.base.Author
 import visdom.adapters.general.model.base.Event
@@ -15,32 +16,22 @@ import visdom.utils.TimeUtils
 
 class PipelineJobEvent(
     pipelineJobSchema: PipelineJobSchema,
-    projectName: String
+    projectName: String,
+    testSuiteNames: Seq[String]
 )
 extends Event {
     def getType: String = PipelineJobEvent.PipelineJobEventType
     val duration: Double = pipelineJobSchema.duration.getOrElse(0.0)
 
-    val origin: ItemLink =
-        new GitlabOrigin(
-            pipelineJobSchema.host_name,
-            CommonConstants.EmptyString,
-            projectName,
-            None
-        ).link
+    val origin: ItemLink = ItemLink(
+        GitlabOrigin.getId(pipelineJobSchema.host_name, projectName),
+        GitlabOrigin.GitlabOriginType
+    )
 
-    val author: ItemLink =
-        new GitlabAuthor(
-            userId = pipelineJobSchema.user.id,
-            username = pipelineJobSchema.user.username,
-            authorName = pipelineJobSchema.user.name,
-            authorState = pipelineJobSchema.user.state,
-            hostName = pipelineJobSchema.host_name,
-            relatedCommitterIds = Seq.empty,
-            relatedCommitEventIds = Seq.empty,
-            relatedPipelineEventIds = Seq.empty,
-            relatedPipelineJobEventIds = Seq.empty
-        ).link
+    val author: ItemLink = ItemLink(
+        GitlabAuthor.getId(GitlabOrigin.getId(pipelineJobSchema.host_name), pipelineJobSchema.user.id),
+        GitlabAuthor.GitlabAuthorType
+    )
 
     val data: PipelineJobData = PipelineJobData.fromPipelineJobSchema(pipelineJobSchema)
 
@@ -55,7 +46,16 @@ extends Event {
     val id: String = PipelineJobEvent.getId(origin.id, data.job_id)
 
     // add a link to the author
-    addRelatedConstructs(Seq(author))
+    addRelatedConstruct(author)
+    // add links to the related test suites
+    addRelatedConstructs(
+        testSuiteNames.map(
+            testSuiteName => ItemLink(
+                TestSuiteArtifact.getId(origin.id, data.pipeline_id, testSuiteName),
+                TestSuiteArtifact.TestSuiteArtifactType
+            )
+        )
+    )
 
     // add links to the related pipeline and commit events
     addRelatedEvents(
@@ -68,10 +68,6 @@ extends Event {
 
 object PipelineJobEvent {
     final val PipelineJobEventType: String = "pipeline_job"
-
-    def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEvent = {
-        new PipelineJobEvent(pipelineJobSchema, projectName)
-    }
 
     def getId(originId: String, jobId: Int): String = {
         GeneralUtils.getUuid(originId, PipelineJobEventType, jobId.toString())

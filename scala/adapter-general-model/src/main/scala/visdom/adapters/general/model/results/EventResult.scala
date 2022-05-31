@@ -119,8 +119,12 @@ object EventResult {
         fromEvent(pipelineEvent, pipelineEvent.data)
     }
 
-    def fromPipelineJobSchema(pipelineJobSchema: PipelineJobSchema, projectName: String): PipelineJobEventResult = {
-        val pipelineJobEvent: PipelineJobEvent = new PipelineJobEvent(pipelineJobSchema, projectName)
+    def fromPipelineJobSchema(
+        pipelineJobSchema: PipelineJobSchema,
+        projectName: String,
+        testSuiteNames: Seq[String]
+    ): PipelineJobEventResult = {
+        val pipelineJobEvent: PipelineJobEvent = new PipelineJobEvent(pipelineJobSchema, projectName, testSuiteNames)
         fromEvent(pipelineJobEvent, pipelineJobEvent.data)
     }
 

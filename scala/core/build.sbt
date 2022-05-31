@@ -48,3 +48,5 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 
 dependencyUpdatesFilter -= moduleFilter(organization = "org.scala-lang")
 dependencyUpdatesFilter -= moduleFilter(organization = "org.apache.spark")
+
+Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-u", "core/target")
