@@ -19,9 +19,11 @@ class ModulePointsArtifact(
     moduleSchema: ModuleSchema,
     userId: Int,
     exerciseCount: Int,
+    maxExerciseCount: Int,
     commitCount: Int,
     cumulativeValues: ModuleNumbersSchema,
     cumulativeMaxPoints: Int,
+    cumulativeMaxExerciseCount: Int,
     updateTime: String
 )
 extends Artifact {
@@ -51,12 +53,14 @@ extends Artifact {
     }
 
     val data: ModulePointsData = ModulePointsData.fromPointsSchema(
-        modulePointsSchema,
-        userId,
-        exerciseCount,
-        commitCount,
-        cumulativeValues,
-        cumulativeMaxPoints
+        modulePointsSchema = modulePointsSchema,
+        userId = userId,
+        exerciseCount = exerciseCount,
+        maxExerciseCount = maxExerciseCount,
+        commitCount = commitCount,
+        cumulativeValues = cumulativeValues,
+        cumulativeMaxPoints = cumulativeMaxPoints,
+        cumulativeMaxExerciseCount = cumulativeMaxExerciseCount
     )
 
     val id: String = ModulePointsArtifact.getId(origin.id, data.module_id, data.user_id)

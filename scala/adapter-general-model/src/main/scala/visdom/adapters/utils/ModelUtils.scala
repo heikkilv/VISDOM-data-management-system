@@ -309,22 +309,43 @@ class ModelUtils(sparkSession: SparkSession, cache: QueryCache, generalQueryUtil
             .toMap
     }
 
-    def getModuleCumulativeMaxPoints(): Map[Int, Map[Int, Int]] = {
-        // returns a mapping from course id to a mapping from module number to cumulative max points for the module
-        val moduleMaxPoints: Map[Int, Map[Int, Int]] = getModuleMaxPoints()
+    def getModuleMaxExercises(): Map[Int, Map[Int, Int]] = {
+        // returns a mapping from course id to a mapping from module number to the total number of exercises
+        getModuleSchemas()
+            .map(
+                module => (
+                    module.course_id,
+                    module.id,
+                    ModuleData.getModuleNumber(module.display_name),
+                    module._links.map(links => links.exercises.getOrElse(Seq.empty).size).getOrElse(0)
+                )
+            )
+            .distinct()
+            .groupByKey({case (courseId, _, moduleNumber, _) => (courseId, moduleNumber)})
+            .mapValues({case (_, _, _, maxExercises) => maxExercises})
+            .reduceGroups((first, second) => first + second)
+            .groupByKey({case ((courseId, _), _) => courseId})
+            .mapValues({case ((_, moduleNumber), maxExercises) => Seq((moduleNumber, maxExercises))})
+            .reduceGroups((first, second) => first ++ second)
+            .map({case (courseId, modules) => (courseId, modules.toMap)})
+            .collect()
+            .toMap
+    }
 
-        moduleMaxPoints
+    def getModuleCumulativeValues(weeklyValuesMap: Map[Int, Map[Int, Int]]): Map[Int, Map[Int, Int]] = {
+        // returns a mapping that contains cumulative values based on the input map
+        weeklyValuesMap
             .map({
-                case (courseId, courseMaxPoints) => (
+                case (courseId, weeklyValues) => (
                     courseId,
-                    courseMaxPoints.map({
+                    weeklyValues.map({
                         case (moduleNumber, _) => (
                             moduleNumber,
-                            moduleMaxPoints
+                            weeklyValuesMap
                                 .getOrElse(courseId, Map.empty)
                                 .toSeq
                                 .filter({case (otherModuleNumber, _) => otherModuleNumber <= moduleNumber})
-                                .map({case (_, maxPoints) => maxPoints})
+                                .map({case (_, weeklyValues) => weeklyValues})
                                 .reduceOption((first, second) => first + second)
                                 .getOrElse(0)
                         )

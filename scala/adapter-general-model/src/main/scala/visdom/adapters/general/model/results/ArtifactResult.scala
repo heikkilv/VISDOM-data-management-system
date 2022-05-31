@@ -196,29 +196,35 @@ object ArtifactResult {
         fromArtifact(coursePointsArtifact, coursePointsArtifact.data)
     }
 
+    // scalastyle:off parameter.number
     def fromModulePointsSchema(
         modulePointsSchema: PointsModuleSchema,
         moduleSchema: ModuleSchema,
         userId: Int,
         exerciseCount: Int,
+        maxExerciseCount: Int,
         commitCount: Int,
         cumulativeValues: ModuleNumbersSchema,
         cumulativeMaxPoints: Int,
+        cumulativeMaxExerciseCount: Int,
         updateTime: String
     ): ModulePointsArtifactResult = {
         val modulePointsArtifact: ModulePointsArtifact =
             new ModulePointsArtifact(
-                modulePointsSchema,
-                moduleSchema,
-                userId,
-                exerciseCount,
-                commitCount,
-                cumulativeValues,
-                cumulativeMaxPoints,
-                updateTime
+                modulePointsSchema = modulePointsSchema,
+                moduleSchema = moduleSchema,
+                userId = userId,
+                exerciseCount = exerciseCount,
+                maxExerciseCount = maxExerciseCount,
+                commitCount = commitCount,
+                cumulativeValues = cumulativeValues,
+                cumulativeMaxPoints = cumulativeMaxPoints,
+                cumulativeMaxExerciseCount = cumulativeMaxExerciseCount,
+                updateTime = updateTime
             )
         fromArtifact(modulePointsArtifact, modulePointsArtifact.data)
     }
+    // scalastyle:on parameter.number
 
     def fromExercisePointsSchema(
         exercisePointsSchema: PointsExerciseSchema,

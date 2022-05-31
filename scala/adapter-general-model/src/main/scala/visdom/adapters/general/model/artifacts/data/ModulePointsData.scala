@@ -22,9 +22,11 @@ final case class ModulePointsData(
     commit_count: Int,
     points: Int,
     max_points: Int,
+    max_exercise_count: Int,
     points_by_difficulty: PointsByDifficulty,
     passed: Boolean,
     cumulative_exercise_count: Int,
+    cumulative_max_exercise_count: Int,
     cumulative_points: Int,
     cumulative_max_points: Int,
     cumulative_submission_count: Int,
@@ -42,9 +44,11 @@ extends Data {
                 SnakeCaseConstants.CommitCount -> JsonUtils.toBsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toBsonValue(points),
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toBsonValue(max_points),
+                SnakeCaseConstants.MaxExerciseCount -> JsonUtils.toBsonValue(max_exercise_count),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toBsonValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toBsonValue(passed),
                 SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toBsonValue(cumulative_exercise_count),
+                SnakeCaseConstants.CumulativeMaxExerciseCount -> JsonUtils.toBsonValue(cumulative_max_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toBsonValue(cumulative_points),
                 SnakeCaseConstants.CumulativeMaxPoints -> JsonUtils.toBsonValue(cumulative_max_points),
                 SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toBsonValue(cumulative_submission_count),
@@ -64,9 +68,11 @@ extends Data {
                 SnakeCaseConstants.CommitCount -> JsonUtils.toJsonValue(commit_count),
                 SnakeCaseConstants.Points -> JsonUtils.toJsonValue(points),
                 SnakeCaseConstants.MaxPoints -> JsonUtils.toJsonValue(max_points),
+                SnakeCaseConstants.MaxExerciseCount -> JsonUtils.toJsonValue(max_exercise_count),
                 SnakeCaseConstants.PointsByDifficulty -> points_by_difficulty.toJsValue(),
                 SnakeCaseConstants.Passed -> JsonUtils.toJsonValue(passed),
                 SnakeCaseConstants.CumulativeExerciseCount -> JsonUtils.toJsonValue(cumulative_exercise_count),
+                SnakeCaseConstants.CumulativeMaxExerciseCount -> JsonUtils.toJsonValue(cumulative_max_exercise_count),
                 SnakeCaseConstants.CumulativePoints -> JsonUtils.toJsonValue(cumulative_points),
                 SnakeCaseConstants.CumulativeMaxPoints -> JsonUtils.toJsonValue(cumulative_max_points),
                 SnakeCaseConstants.CumulativeSubmissionCount -> JsonUtils.toJsonValue(cumulative_submission_count),
@@ -81,9 +87,11 @@ object ModulePointsData {
         modulePointsSchema: PointsModuleSchema,
         userId: Int,
         exerciseCount: Int,
+        maxExerciseCount: Int,
         commitCount: Int,
         cumulativeValues: ModuleNumbersSchema,
-        cumulativeMaxPoints: Int
+        cumulativeMaxPoints: Int,
+        cumulativeMaxExerciseCount: Int
     ): ModulePointsData = {
         ModulePointsData(
             module_id = modulePointsSchema.id,
@@ -94,6 +102,7 @@ object ModulePointsData {
             commit_count = commitCount,
             points = modulePointsSchema.points,
             max_points = modulePointsSchema.max_points,
+            max_exercise_count = maxExerciseCount,
             points_by_difficulty = PointsByDifficulty(
                 categoryN = modulePointsSchema.points_by_difficulty.category,
                 categoryP = modulePointsSchema.points_by_difficulty.categoryP,
@@ -104,7 +113,8 @@ object ModulePointsData {
             cumulative_points = cumulativeValues.point_count.total(),
             cumulative_submission_count = cumulativeValues.submission_count,
             cumulative_commit_count = cumulativeValues.commit_count,
-            cumulative_max_points = cumulativeMaxPoints
+            cumulative_max_points = cumulativeMaxPoints,
+            cumulative_max_exercise_count = cumulativeMaxExerciseCount
         )
     }
 }

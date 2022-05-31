@@ -206,7 +206,11 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
 
     def getModulePoints(): Dataset[ModulePointsArtifactResult] = {
         val cumulativeValuesMap: Map[(Int, Int, Int), ModuleNumbersSchema] = getCumulativeValuesMap()
-        val moduleCumulativeMaxPoints: Map[Int, Map[Int, Int]] = modelUtils.getModuleCumulativeMaxPoints()
+        val moduleCumulativeMaxPoints: Map[Int, Map[Int, Int]] =
+            modelUtils.getModuleCumulativeValues(modelUtils.getModuleMaxPoints())
+        val moduleMaxExercises: Map[Int, Map[Int, Int]] =modelUtils.getModuleMaxExercises()
+        val moduleCumulativeMaxExercises: Map[Int, Map[Int, Int]] =
+            modelUtils.getModuleCumulativeValues(moduleMaxExercises)
 
         getModulePointsInformation()
             .map({
@@ -218,6 +222,9 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                         moduleSchema = moduleMetadata,
                         userId = userId,
                         exerciseCount = exerciseCount,
+                        maxExerciseCount = moduleMaxExercises
+                            .getOrElse(moduleMetadata.course_id, Map.empty)
+                            .getOrElse(moduleNumber, 0),
                         commitCount = commitCount,
                         cumulativeValues = cumulativeValuesMap.getOrElse(
                             (
@@ -231,6 +238,9 @@ class ModelArtifactUtils(sparkSession: SparkSession, modelUtils: ModelUtils) {
                             moduleCumulativeMaxPoints
                                 .getOrElse(moduleMetadata.course_id, Map.empty)
                                 .getOrElse(moduleNumber, 0),
+                        cumulativeMaxExerciseCount = moduleCumulativeMaxExercises
+                            .getOrElse(moduleMetadata.course_id, Map.empty)
+                            .getOrElse(moduleNumber, 0),
                         updateTime = lastModified
                     )
                 }
