@@ -1,3 +1,8 @@
+// Copyright 2022 Tampere University
+// This software was developed as a part of the VISDOM project: https://iteavisdom.org/
+// This source code is licensed under the MIT license. See LICENSE in the repository root directory.
+// Author(s): Ville Heikkilä <ville.heikkila@tuni.fi>
+
 // JavaScript for adding a user to MongoDB with read/write permissions to the appropriate databases
 
 const MONGO_INITDB_ROOT_USERNAME = "MONGO_INITDB_ROOT_USERNAME";
